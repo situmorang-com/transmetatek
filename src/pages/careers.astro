@@ -1,0 +1,663 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const openRoles = [
+  {
+    title: 'Senior ML Engineer',
+    type: 'Full-time',
+    location: 'Jakarta / Remote',
+    dept: 'Engineering',
+    tag: 'Engineering',
+    desc: 'Design and deploy production-grade machine learning pipelines for clients across fintech, retail, and government sectors.',
+    skills: ['PyTorch', 'MLflow', 'Kubernetes', 'Python'],
+    level: 'Senior',
+  },
+  {
+    title: 'NLP / LLM Specialist',
+    type: 'Full-time',
+    location: 'Jakarta / Hybrid',
+    dept: 'Engineering',
+    tag: 'Engineering',
+    desc: 'Fine-tune large language models for Bahasa Indonesia use cases. Build RAG pipelines, prompt engineering frameworks, and production LLM systems.',
+    skills: ['HuggingFace', 'LangChain', 'vLLM', 'Bahasa Indonesia NLP'],
+    level: 'Mid–Senior',
+  },
+  {
+    title: 'AI Strategy Consultant',
+    type: 'Full-time',
+    location: 'Jakarta',
+    dept: 'Consulting',
+    tag: 'Consulting',
+    desc: 'Partner with enterprise clients to identify AI opportunities, build transformation roadmaps, and translate technical solutions into business outcomes.',
+    skills: ['AI Strategy', 'Stakeholder Management', 'Business Analysis', 'Presentations'],
+    level: 'Mid–Senior',
+  },
+  {
+    title: 'Data Scientist',
+    type: 'Full-time',
+    location: 'Jakarta / Remote',
+    dept: 'Engineering',
+    tag: 'Engineering',
+    desc: 'Build predictive models, design experiments, and extract actionable intelligence from large-scale datasets for client engagements.',
+    skills: ['Python', 'SQL', 'Spark', 'Statistical Modeling'],
+    level: 'Mid',
+  },
+  {
+    title: 'Computer Vision Engineer',
+    type: 'Full-time',
+    location: 'Jakarta / Hybrid',
+    dept: 'Engineering',
+    tag: 'Engineering',
+    desc: 'Develop and deploy computer vision systems for real-world applications — object detection, OCR, video analytics, and industrial inspection.',
+    skills: ['OpenCV', 'YOLO', 'TensorRT', 'ONNX'],
+    level: 'Mid–Senior',
+  },
+  {
+    title: 'Business Development Manager',
+    type: 'Full-time',
+    location: 'Jakarta',
+    dept: 'Growth',
+    tag: 'Growth',
+    desc: 'Drive new client acquisition, manage relationships with enterprise accounts, and shape how we take AI solutions to the Indonesian market.',
+    skills: ['Enterprise Sales', 'CRM', 'AI Market Knowledge', 'Bahasa Indonesia'],
+    level: 'Senior',
+  },
+];
+
+const perks = [
+  {
+    icon: '🧠',
+    title: 'Work on Real AI',
+    desc: 'Every project ships to production. No demo-ware, no sandbox experiments — your code impacts real businesses.',
+  },
+  {
+    icon: '🌏',
+    title: 'Shape Indonesian AI',
+    desc: 'Be part of building Indonesia\'s AI ecosystem from the ground up. Your work becomes national infrastructure.',
+  },
+  {
+    icon: '📚',
+    title: 'Learning Budget',
+    desc: 'Rp 10M/year for conferences, courses, certifications, and books. We invest in your growth.',
+  },
+  {
+    icon: '🏠',
+    title: 'Flexible Work',
+    desc: 'Hybrid-first culture. Results over presence. Work from our Jakarta office or anywhere that works for you.',
+  },
+  {
+    icon: '💰',
+    title: 'Competitive Pay',
+    desc: 'Market-rate salaries benchmarked against top Indonesian tech companies, with performance bonuses.',
+  },
+  {
+    icon: '🚀',
+    title: 'Early Team Access',
+    desc: 'Join early and grow with us. As we scale, you scale. Leadership opportunities are real and imminent.',
+  },
+];
+
+const values = [
+  { label: 'Builders first', desc: 'We ship. Ideas matter, but execution is everything.' },
+  { label: 'Bahasa-native', desc: 'We think in Indonesia\'s context, not translated from the West.' },
+  { label: 'Transparent', desc: 'No corporate theatre. Honest feedback, open roadmaps.' },
+  { label: 'Curious', desc: 'The AI field moves fast. Staying still means falling behind.' },
+];
+---
+
+<Layout
+  title="Careers at Trans Meta Teknologi | Join Indonesia's AI Team"
+  description="Join Trans Meta Teknologi and help build Indonesia's AI future. Open roles in ML engineering, NLP, AI strategy, data science, and business development. Jakarta-based, remote-friendly."
+>
+  <Nav />
+
+  <main>
+
+    <!-- ── Hero ─────────────────────────────────────────────── -->
+    <section id="careers-hero">
+      <div class="hero-ambient"></div>
+      <div class="container hero-content">
+        <div class="tag reveal">// We're Hiring</div>
+        <h1 class="hero-title reveal reveal-delay-1">
+          Build Indonesia's<br />
+          <span class="gradient-text">AI Future</span><br />
+          With Us
+        </h1>
+        <p class="hero-sub reveal reveal-delay-2">
+          We're a small team doing outsized work. If you want to work on real AI
+          problems — not slide decks — and help shape how Indonesia adopts artificial
+          intelligence, you belong here.
+        </p>
+        <div class="hero-actions reveal reveal-delay-3">
+          <a href="#open-roles" class="btn-primary">
+            <span>See Open Roles</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 3v10M3 9l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="/#contact" class="btn-outline"><span>General Enquiry</span></a>
+        </div>
+
+        <div class="hero-stats reveal reveal-delay-4">
+          <div class="hstat">
+            <span class="hstat-val">2–10</span>
+            <span class="hstat-label">Team size now</span>
+          </div>
+          <div class="hstat-div"></div>
+          <div class="hstat">
+            <span class="hstat-val">100%</span>
+            <span class="hstat-label">AI-focused work</span>
+          </div>
+          <div class="hstat-div"></div>
+          <div class="hstat">
+            <span class="hstat-val">Day 1</span>
+            <span class="hstat-label">Real ownership</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Values ───────────────────────────────────────────── -->
+    <section id="values">
+      <div class="container">
+        <div class="values-header reveal-scale">
+          <div class="tag">// How We Work</div>
+          <h2 class="section-heading" style="margin-top:1rem;">
+            Our <span>Values</span>
+          </h2>
+        </div>
+        <div class="values-grid">
+          {values.map((v, i) => (
+            <div class={`value-item reveal reveal-delay-${i + 1}`}>
+              <div class="value-line"></div>
+              <div class="value-label">{v.label}</div>
+              <div class="value-desc">{v.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Perks ─────────────────────────────────────────────── -->
+    <section id="perks">
+      <div class="container">
+        <div class="section-center reveal-scale">
+          <div class="tag">// Why Join</div>
+          <h2 class="section-heading" style="margin-top:1rem;">
+            What You <span>Get</span>
+          </h2>
+          <p class="section-sub" style="margin-top:1rem;">
+            We're not a big corporation. We can't offer you a corporate gym membership.
+            What we offer is more valuable — meaningful work, real autonomy, and a seat
+            at the table while Indonesia's AI industry is still being written.
+          </p>
+        </div>
+        <div class="perks-grid">
+          {perks.map((p, i) => (
+            <div class={`glass-card perk-card ${i % 2 === 0 ? 'reveal-left' : 'reveal-right'} reveal-delay-${(i % 3) + 1}`}>
+              <span class="perk-icon">{p.icon}</span>
+              <h3 class="perk-title">{p.title}</h3>
+              <p class="perk-desc">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Open Roles ────────────────────────────────────────── -->
+    <section id="open-roles">
+      <div class="container">
+        <div class="roles-header reveal-scale">
+          <div class="tag">// Open Positions</div>
+          <h2 class="section-heading" style="margin-top:1rem;">
+            <span>{openRoles.length} Roles</span> Available
+          </h2>
+          <p class="section-sub" style="margin-top:1rem;">
+            Jakarta-based with remote and hybrid options. All roles are full-time unless stated.
+          </p>
+        </div>
+
+        <div class="roles-list">
+          {openRoles.map((role, i) => (
+            <div class={`glass-card role-card reveal reveal-delay-${(i % 3) + 1}`}>
+              <div class="role-top">
+                <div class="role-info">
+                  <div class="role-meta">
+                    <span class={`role-dept dept-${role.tag.toLowerCase()}`}>{role.dept}</span>
+                    <span class="role-level">{role.level}</span>
+                  </div>
+                  <h3 class="role-title">{role.title}</h3>
+                  <p class="role-desc">{role.desc}</p>
+                </div>
+                <a href={`mailto:careers@transmetatek.com?subject=Application: ${role.title}`} class="role-apply-btn">
+                  Apply
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </div>
+              <div class="role-footer">
+                <div class="role-details">
+                  <span class="role-detail">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5A3 3 0 003.5 4.5c0 3 3 6 3 6s3-3 3-6a3 3 0 00-3-3z" stroke="currentColor" stroke-width="1.2"/><circle cx="6.5" cy="4.5" r="1" stroke="currentColor" stroke-width="1.2"/></svg>
+                    {role.location}
+                  </span>
+                  <span class="role-detail">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 3.5v3l2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    {role.type}
+                  </span>
+                </div>
+                <div class="role-skills">
+                  {role.skills.map((s) => (
+                    <span class="role-skill">{s}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ── No Role? ───────────────────────────────────────────── -->
+    <section id="open-app">
+      <div class="container">
+        <div class="open-app-card glass-card reveal-scale">
+          <div class="open-app-icon">✉️</div>
+          <h2 class="open-app-title">Don't see your role?</h2>
+          <p class="open-app-desc">
+            We hire for talent and attitude, not just open slots. If you're exceptional
+            at what you do and passionate about AI in Indonesia, send us a note anyway.
+          </p>
+          <a href="mailto:careers@transmetatek.com?subject=Open Application" class="btn-primary">
+            <span>Send Open Application</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 4l6 5 6-5M2 4h12v9H2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* ── Hero ── */
+  #careers-hero {
+    position: relative;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    padding: 10rem 0 6rem;
+    overflow: hidden;
+  }
+
+  .hero-ambient {
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(232, 25, 44, 0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 760px; }
+
+  .hero-title {
+    font-size: clamp(2.75rem, 6vw, 5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin: 1rem 0 1.5rem;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--cyan) 0%, #ff8080 50%, var(--purple) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+  }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    max-width: 540px;
+    margin-bottom: 2rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-stats {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .hstat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .hstat-val {
+    font-size: 1.75rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .hstat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: var(--font-mono);
+  }
+  .hstat-div { width: 1px; height: 36px; background: var(--border); }
+
+  /* ── Values ── */
+  #values {
+    padding: 5rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .values-header {
+    margin-bottom: 3rem;
+  }
+
+  .values-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+
+  .value-item {
+    padding: 2rem;
+    border-right: 1px solid var(--border);
+  }
+  .value-item:last-child { border-right: none; }
+
+  .value-line {
+    width: 32px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    margin-bottom: 1.25rem;
+    animation: drawLine 1s ease forwards;
+    transform-origin: left;
+  }
+
+  .value-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .value-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ── Perks ── */
+  #perks { padding: 7rem 0; }
+
+  .section-center {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 4rem;
+  }
+
+  .perks-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .perk-card { padding: 2rem; }
+
+  .perk-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+  }
+  .perk-card:hover .perk-icon { transform: scale(1.2) rotate(-5deg); }
+
+  .perk-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+  }
+
+  .perk-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  /* ── Open Roles ── */
+  #open-roles {
+    padding: 7rem 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(232,25,44,0.02) 50%, transparent 100%);
+  }
+
+  .roles-header {
+    margin-bottom: 3rem;
+  }
+
+  .roles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .role-card {
+    padding: 1.75rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .role-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .role-info { flex: 1; }
+
+  .role-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .role-dept {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .dept-engineering { background: rgba(232,25,44,0.12); color: var(--cyan); border: 1px solid rgba(232,25,44,0.2); }
+  .dept-consulting   { background: rgba(255,82,82,0.1);  color: var(--purple); border: 1px solid rgba(255,82,82,0.2); }
+  .dept-growth       { background: rgba(255,112,67,0.1); color: var(--blue);   border: 1px solid rgba(255,112,67,0.2); }
+
+  .role-level {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .role-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .role-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 580px;
+  }
+
+  .role-apply-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.25rem;
+    background: transparent;
+    border: 1px solid var(--border-hover);
+    border-radius: 8px;
+    color: var(--cyan);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    font-family: var(--font-sans);
+  }
+
+  .role-apply-btn:hover {
+    background: var(--cyan-dim);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--cyan-glow);
+  }
+
+  .role-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .role-details {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .role-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .role-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .role-skill {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Open Application ── */
+  #open-app {
+    padding: 2rem 0 7rem;
+  }
+
+  .open-app-card {
+    padding: 4rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .open-app-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(232,25,44,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .open-app-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+  .open-app-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .open-app-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 500px;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .values-grid { grid-template-columns: repeat(2, 1fr); }
+    .value-item:nth-child(2) { border-right: none; }
+    .value-item:nth-child(3) { border-top: 1px solid var(--border); }
+    .value-item:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
+    .perks-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    .role-top { flex-direction: column; }
+    .role-apply-btn { width: 100%; justify-content: center; }
+    .open-app-card { padding: 2.5rem 1.5rem; }
+  }
+
+  @media (max-width: 640px) {
+    .values-grid { grid-template-columns: 1fr; }
+    .value-item { border-right: none; border-top: 1px solid var(--border); }
+    .value-item:first-child { border-top: none; }
+    .perks-grid { grid-template-columns: 1fr; }
+    .hero-stats { gap: 1.25rem; }
+    .hstat-div { height: 28px; }
+  }
+</style>
