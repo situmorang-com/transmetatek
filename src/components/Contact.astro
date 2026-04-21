@@ -25,9 +25,9 @@ const contactInfo = [
   <div class="container">
     <div class="contact-grid">
 
-      <div class="contact-left">
-        <div class="tag reveal">// Get In Touch</div>
-        <h2 class="section-heading reveal reveal-delay-1" style="margin: 1rem 0;">
+      <div class="contact-left reveal-left">
+        <div class="tag">// Get In Touch</div>
+        <h2 class="section-heading reveal-delay-1" style="margin: 1rem 0;">
           Ready to Build<br /><span>Your AI Future?</span>
         </h2>
         <p class="section-sub reveal reveal-delay-2">
@@ -62,7 +62,7 @@ const contactInfo = [
         </div>
       </div>
 
-      <div class="contact-right reveal reveal-delay-2">
+      <div class="contact-right reveal-right reveal-delay-2">
         <div class="glass-card form-card">
           <h3 class="form-title">Send Us a Message</h3>
           <form class="contact-form" id="contactForm">
@@ -308,9 +308,42 @@ const contactInfo = [
   @media (max-width: 500px) {
     .form-row { grid-template-columns: 1fr; }
   }
+
+  /* Form fields: hidden until staggered in */
+  .form-group {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .form-group.form-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Animated underline on focused inputs */
+  input, select, textarea { border-bottom: 2px solid transparent; }
+  input:focus, select:focus, textarea:focus {
+    border-bottom-color: var(--cyan);
+    animation: drawLine 0.3s ease forwards;
+  }
+
+  /* Submit button ripple */
+  .submit-btn { overflow: hidden; }
+  .submit-btn .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    transform: scale(0);
+    animation: rippleOut 0.6s linear;
+    pointer-events: none;
+  }
+  @keyframes rippleOut {
+    to { transform: scale(4); opacity: 0; }
+  }
 </style>
 
 <script>
+  /* Submit form handling */
   const form = document.getElementById('contactForm') as HTMLFormElement;
   const success = document.getElementById('formSuccess')!;
 
@@ -319,4 +352,41 @@ const contactInfo = [
     form.style.display = 'none';
     success.classList.add('show');
   });
+
+  /* Button ripple */
+  document.querySelectorAll('.submit-btn').forEach((btn) => {
+    btn.addEventListener('click', (e: Event) => {
+      const me = e as MouseEvent;
+      const b  = (btn as HTMLElement).getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      const size = Math.max(b.width, b.height) * 2;
+      ripple.style.cssText = `width:${size}px;height:${size}px;left:${me.clientX - b.left - size/2}px;top:${me.clientY - b.top - size/2}px`;
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 650);
+    });
+  });
+
+  /* Staggered form groups */
+  const formCard = document.querySelector('.form-card');
+  if (formCard) {
+    const formObs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        formCard.querySelectorAll('.form-group, .submit-btn').forEach((el, i) => {
+          setTimeout(() => el.classList.add('form-visible'), i * 80);
+        });
+        formObs.disconnect();
+      }
+    }, { threshold: 0.2 });
+    formObs.observe(formCard);
+  }
+
+  /* Also make submit btn visible via same class */
+  const submitBtn = document.querySelector('.submit-btn') as HTMLElement | null;
+  if (submitBtn) {
+    submitBtn.style.opacity = '0';
+    submitBtn.style.transform = 'translateY(16px)';
+    submitBtn.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    submitBtn.classList.add('form-group');
+  }
 </script>

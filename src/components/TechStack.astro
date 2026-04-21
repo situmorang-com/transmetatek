@@ -29,7 +29,7 @@ const categories = [
 
 <section id="tech">
   <div class="container">
-    <div class="section-header reveal">
+    <div class="section-header reveal-scale">
       <div class="tag">// Technology Stack</div>
       <h2 class="section-heading" style="margin-top: 1rem;">
         Built with <span>Best-in-Class</span><br />AI Technologies
@@ -42,7 +42,7 @@ const categories = [
 
     <div class="tech-grid">
       {categories.map((cat, i) => (
-        <div class={`glass-card tech-card reveal reveal-delay-${(i % 3) + 1}`}>
+        <div class={`glass-card tech-card ${i % 2 === 0 ? 'reveal-left' : 'reveal-right'} reveal-delay-${(i % 3) + 1}`}>
           <div class="tech-category">{cat.label}</div>
           <div class="tech-items">
             {cat.items.map((item) => (
@@ -184,4 +184,26 @@ const categories = [
   @media (max-width: 600px) {
     .tech-grid { grid-template-columns: 1fr; }
   }
+
+  /* Tech items hidden until stagger plays */
+  .tech-item { opacity: 0; transform: translateX(-8px); transition: opacity 0.3s ease, transform 0.3s ease, color 0.2s ease; }
+  .tech-card.visible .tech-item { opacity: 1; transform: none; }
 </style>
+
+<script>
+  /* Stagger tech-items inside each card once card is visible */
+  const cardObs = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const items = entry.target.querySelectorAll('.tech-item');
+        items.forEach((item, i) => {
+          (item as HTMLElement).style.transitionDelay = `${0.05 + i * 0.07}s`;
+        });
+        entry.target.classList.add('visible');
+        cardObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('.tech-card').forEach((c) => cardObs.observe(c));
+</script>

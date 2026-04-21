@@ -1,9 +1,9 @@
 ---
 const stats = [
-  { value: '50', suffix: '+', label: 'AI Projects Delivered', icon: '🚀' },
-  { value: '10', suffix: '+', label: 'Industries Served', icon: '🌐' },
-  { value: '98', suffix: '%', label: 'Client Satisfaction', icon: '⭐' },
-  { value: '3', suffix: 'x', label: 'Average ROI Uplift', icon: '📈' },
+  { value: '50', suffix: '+', label: 'AI Projects Delivered', icon: '🚀', bar: 80 },
+  { value: '10', suffix: '+', label: 'Industries Served',     icon: '🌐', bar: 65 },
+  { value: '98', suffix: '%', label: 'Client Satisfaction',   icon: '⭐', bar: 98 },
+  { value: '3',  suffix: 'x', label: 'Average ROI Uplift',    icon: '📈', bar: 70 },
 ];
 ---
 
@@ -12,13 +12,16 @@ const stats = [
   <div class="container">
     <div class="stats-grid">
       {stats.map((s, i) => (
-        <div class={`stat-item reveal reveal-delay-${i + 1}`}>
+        <div class={`stat-item reveal-scale reveal-delay-${i + 1}`}>
           <span class="stat-icon">{s.icon}</span>
           <div class="stat-value-row">
             <span class="stat-value" data-target={s.value}>0</span>
             <span class="stat-suffix">{s.suffix}</span>
           </div>
           <div class="stat-label">{s.label}</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar" data-width={s.bar}></div>
+          </div>
         </div>
       ))}
     </div>
@@ -27,9 +30,7 @@ const stats = [
 </section>
 
 <style>
-  #stats {
-    padding: 1rem 0;
-  }
+  #stats { padding: 1rem 0; }
 
   .stats-line {
     height: 1px;
@@ -55,10 +56,8 @@ const stats = [
   .stat-item + .stat-item::before {
     content: '';
     position: absolute;
-    left: 0;
-    top: 20%;
-    height: 60%;
-    width: 1px;
+    left: 0; top: 20%;
+    height: 60%; width: 1px;
     background: var(--border);
   }
 
@@ -66,7 +65,9 @@ const stats = [
     font-size: 1.75rem;
     margin-bottom: 0.75rem;
     display: block;
+    transition: transform 0.3s ease;
   }
+  .stat-item:hover .stat-icon { transform: scale(1.25) rotate(-5deg); }
 
   .stat-value-row {
     display: flex;
@@ -84,6 +85,9 @@ const stats = [
     -webkit-text-fill-color: transparent;
     background-clip: text;
     line-height: 1;
+    /* odometer slot effect */
+    display: inline-block;
+    transition: transform 0.1s ease;
   }
 
   .stat-suffix {
@@ -95,20 +99,38 @@ const stats = [
   }
 
   .stat-label {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-family: var(--font-mono);
+    margin-bottom: 1rem;
+  }
+
+  /* Progress bar */
+  .stat-bar-track {
+    width: 80%;
+    height: 2px;
+    background: rgba(232, 25, 44, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .stat-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    border-radius: 2px;
+    transition: width 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 0 6px var(--cyan-glow);
   }
 
   @media (max-width: 768px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .stat-item:nth-child(3)::before { display: none; }
-    .stat-item:nth-child(odd)::before { display: none; }
+    .stat-item:nth-child(odd)::before  { display: none; }
     .stat-item:nth-child(even)::before { display: block; }
+    .stat-item:nth-child(3)::before    { display: none; }
   }
-
   @media (max-width: 400px) {
     .stats-grid { grid-template-columns: 1fr; }
     .stat-item::before { display: none !important; }
@@ -116,17 +138,33 @@ const stats = [
 </style>
 
 <script>
+  /* Odometer-style counter */
   function animateCounter(el: Element) {
     const target = parseInt(el.getAttribute('data-target') || '0', 10);
-    const duration = 2000;
+    const duration = 2200;
     const start = performance.now();
+    let prev = -1;
     function step(now: number) {
-      const p = Math.min((now - start) / duration, 1);
+      const p    = Math.min((now - start) / duration, 1);
       const ease = 1 - Math.pow(1 - p, 4);
-      el.textContent = String(Math.floor(ease * target));
+      const val  = Math.floor(ease * target);
+      if (val !== prev) {
+        (el as HTMLElement).style.transform = 'translateY(-4px)';
+        setTimeout(() => { (el as HTMLElement).style.transform = ''; }, 80);
+        el.textContent = String(val);
+        prev = val;
+      }
       if (p < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
+  }
+
+  /* Animate bars */
+  function animateBars(section: Element) {
+    section.querySelectorAll('.stat-bar').forEach((bar) => {
+      const w = (bar as HTMLElement).dataset.width || '0';
+      setTimeout(() => { (bar as HTMLElement).style.width = w + '%'; }, 200);
+    });
   }
 
   const obs = new IntersectionObserver(
@@ -134,11 +172,12 @@ const stats = [
       entries.forEach((e) => {
         if (e.isIntersecting) {
           e.target.querySelectorAll('[data-target]').forEach(animateCounter);
+          animateBars(e.target);
           obs.unobserve(e.target);
         }
       });
     },
-    { threshold: 0.4 }
+    { threshold: 0.35 }
   );
 
   const grid = document.querySelector('.stats-grid');

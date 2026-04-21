@@ -26,7 +26,7 @@ const pillars = [
 <section id="about">
   <div class="container about-grid">
 
-    <div class="about-visual reveal">
+    <div class="about-visual reveal-left">
       <div class="visual-frame">
         <div class="terminal">
           <div class="terminal-bar">
@@ -67,9 +67,9 @@ const pillars = [
       </div>
     </div>
 
-    <div class="about-content">
-      <div class="tag reveal">// About Us</div>
-      <h2 class="section-heading reveal reveal-delay-1" style="margin: 1rem 0;">
+    <div class="about-content reveal-right">
+      <div class="tag">// About Us</div>
+      <h2 class="section-heading reveal-delay-1" style="margin: 1rem 0;">
         Where AI Strategy<br /><span>Meets Execution</span>
       </h2>
       <p class="section-sub reveal reveal-delay-2">
@@ -230,4 +230,46 @@ const pillars = [
   @media (max-width: 500px) {
     .pillars { grid-template-columns: 1fr; }
   }
+
+  /* Terminal lines hidden until typed */
+  .terminal-body .line { opacity: 0; }
+  .terminal-body .cursor-line { opacity: 1; }
+
+  /* Scan line sweep over terminal */
+  .terminal::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(232,25,44,0.4), transparent);
+    animation: scanline 4s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
 </style>
+
+<script>
+  /* Terminal line-by-line reveal on scroll */
+  const terminal = document.querySelector('.terminal-body');
+  if (terminal) {
+    const lines = Array.from(terminal.querySelectorAll('.line'));
+    const termObs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        lines.forEach((line, i) => {
+          setTimeout(() => {
+            (line as HTMLElement).style.opacity = '1';
+            (line as HTMLElement).style.transition = 'opacity 0.15s ease';
+          }, i * 120);
+        });
+        termObs.disconnect();
+      }
+    }, { threshold: 0.3 });
+    termObs.observe(terminal);
+  }
+
+  /* Pillar staggered pop-in */
+  document.querySelectorAll('.pillar').forEach((el, i) => {
+    el.classList.add('reveal-scale');
+    (el as HTMLElement).style.transitionDelay = `${0.1 + i * 0.1}s`;
+  });
+</script>

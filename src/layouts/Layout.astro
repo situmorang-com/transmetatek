@@ -188,8 +188,28 @@ const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`
 
   .glass-card:hover {
     border-color: var(--border-hover);
-    transform: translateY(-4px);
-    box-shadow: 0 20px 60px rgba(0, 212, 255, 0.08), 0 0 0 1px var(--border-hover);
+    transform: translateY(-6px);
+    box-shadow: 0 24px 64px rgba(232, 25, 44, 0.1), 0 0 0 1px var(--border-hover);
+  }
+
+  /* Animated gradient border on cards */
+  .glass-card::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, transparent 40%, rgba(232,25,44,0.35) 60%, transparent 80%);
+    background-size: 300% 300%;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .glass-card:hover::after { opacity: 1; animation: borderTrace 1.8s linear infinite; }
+
+  @keyframes borderTrace {
+    0%   { background-position: 0% 0%; }
+    100% { background-position: 300% 300%; }
   }
 
   /* Glow button */
@@ -248,35 +268,161 @@ const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`
     box-shadow: 0 8px 30px var(--cyan-glow);
   }
 
-  /* Fade-in animation observer */
-  .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.65s ease, transform 0.65s ease;
+  /* ─── Reveal system ─── */
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale,
+  .reveal-clip {
+    transition: opacity 0.75s cubic-bezier(0.22,1,0.36,1),
+                transform 0.75s cubic-bezier(0.22,1,0.36,1),
+                clip-path 0.75s cubic-bezier(0.22,1,0.36,1);
   }
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
+  .reveal       { opacity: 0; transform: translateY(36px); }
+  .reveal-left  { opacity: 0; transform: translateX(-64px); }
+  .reveal-right { opacity: 0; transform: translateX(64px); }
+  .reveal-scale { opacity: 0; transform: scale(0.86) translateY(20px); }
+  .reveal-clip  { opacity: 0; clip-path: inset(0 0 100% 0); }
+
+  .reveal.visible,
+  .reveal-left.visible,
+  .reveal-right.visible,
+  .reveal-scale.visible { opacity: 1; transform: none; }
+  .reveal-clip.visible  { opacity: 1; clip-path: inset(0 0 0% 0); }
+
+  .reveal-delay-1 { transition-delay: 0.08s; }
+  .reveal-delay-2 { transition-delay: 0.18s; }
+  .reveal-delay-3 { transition-delay: 0.28s; }
+  .reveal-delay-4 { transition-delay: 0.38s; }
+  .reveal-delay-5 { transition-delay: 0.48s; }
+  .reveal-delay-6 { transition-delay: 0.58s; }
+
+  /* ─── Scroll-progress bar ─── */
+  #scroll-progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    z-index: 9999;
+    transition: width 0.05s linear;
+    box-shadow: 0 0 8px var(--cyan-glow);
   }
-  .reveal-delay-1 { transition-delay: 0.1s; }
-  .reveal-delay-2 { transition-delay: 0.2s; }
-  .reveal-delay-3 { transition-delay: 0.3s; }
-  .reveal-delay-4 { transition-delay: 0.4s; }
-  .reveal-delay-5 { transition-delay: 0.5s; }
-  .reveal-delay-6 { transition-delay: 0.6s; }
+
+  /* ─── Custom cursor ─── */
+  #cursor-dot {
+    position: fixed;
+    width: 6px; height: 6px;
+    background: var(--cyan);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.05s ease, background 0.2s ease, width 0.2s ease, height 0.2s ease;
+  }
+  #cursor-ring {
+    position: fixed;
+    width: 32px; height: 32px;
+    border: 1.5px solid rgba(232, 25, 44, 0.55);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9997;
+    transform: translate(-50%, -50%);
+    transition: transform 0.18s cubic-bezier(0.22,1,0.36,1),
+                width 0.25s ease, height 0.25s ease,
+                border-color 0.2s ease, opacity 0.2s ease;
+  }
+  body:has(a:hover, button:hover) #cursor-ring {
+    width: 48px; height: 48px;
+    border-color: var(--cyan-glow);
+  }
+  body:has(a:hover, button:hover) #cursor-dot {
+    background: var(--purple);
+    width: 8px; height: 8px;
+  }
+
+  @media (pointer: coarse) {
+    #cursor-dot, #cursor-ring { display: none; }
+  }
+
+  /* ─── Global keyframes ─── */
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-10px); }
+  }
+  @keyframes glitch {
+    0%  { clip-path: inset(0 0 95% 0); transform: translate(-3px,0); }
+    10% { clip-path: inset(40% 0 40% 0); transform: translate(3px,0); }
+    20% { clip-path: inset(80% 0 0 0); transform: translate(-2px,0); }
+    30% { clip-path: inset(0 0 0 0); transform: translate(0,0); }
+    100%{ clip-path: inset(0 0 0 0); transform: translate(0,0); }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes scanline {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.7) translateY(12px); }
+    70%  { transform: scale(1.06) translateY(-2px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes drawLine {
+    from { transform: scaleX(0); transform-origin: left; }
+    to   { transform: scaleX(1); transform-origin: left; }
+  }
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 </style>
 
 <script>
-  // Intersection observer for reveal animations
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    },
-    { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+  /* ── Scroll progress ── */
+  const bar = document.createElement('div');
+  bar.id = 'scroll-progress';
+  document.body.prepend(bar);
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+    bar.style.width = pct + '%';
+  }, { passive: true });
+
+  /* ── Custom cursor ── */
+  const dot  = document.createElement('div'); dot.id  = 'cursor-dot';
+  const ring = document.createElement('div'); ring.id = 'cursor-ring';
+  document.body.append(dot, ring);
+  let mx = -100, my = -100, rx = -100, ry = -100;
+  window.addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
+  (function cursorLoop() {
+    rx += (mx - rx) * 0.14;
+    ry += (my - ry) * 0.14;
+    dot.style.left  = mx + 'px';
+    dot.style.top   = my + 'px';
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(cursorLoop);
+  })();
+
+  /* ── Scroll reveal ── */
+  const revealObs = new IntersectionObserver(
+    (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: 0.08, rootMargin: '0px 0px -32px 0px' }
   );
-  document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+  document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-clip')
+    .forEach((el) => revealObs.observe(el));
+
+  /* ── Magnetic buttons ── */
+  document.querySelectorAll('.btn-primary, .btn-outline').forEach((btn) => {
+    const el = btn as HTMLElement;
+    el.addEventListener('mousemove', (e) => {
+      const r  = el.getBoundingClientRect();
+      const x  = e.clientX - r.left - r.width  / 2;
+      const y  = e.clientY - r.top  - r.height / 2;
+      el.style.transform = `translate(${x * 0.22}px, ${y * 0.22}px)`;
+    });
+    el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+  });
 </script>
