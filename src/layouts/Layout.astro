@@ -2,26 +2,59 @@
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
 }
 const {
-  title = 'Trans Meta Teknologi — Disruption & Innovation through AI',
-  description = 'We guide companies in identifying areas where AI can significantly impact their business goals. Custom AI solutions, ML models, NLP, and computer vision tailored to your needs.',
+  title = 'Trans Meta Teknologi | AI Strategy, Machine Learning & Data Science',
+  description = 'Jakarta-based AI consultancy helping companies disrupt and innovate through artificial intelligence. We build custom ML models, NLP systems, and computer vision solutions — from strategy to production.',
+  ogImage = '/TransMetaTek-logo-color.png',
 } = Astro.props;
+
+const siteUrl = 'https://transmetatek.com';
+const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta -->
+    <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="author" content="Trans Meta Teknologi" />
+    <meta name="keywords" content="AI consultancy, machine learning, artificial intelligence, data science, NLP, computer vision, Jakarta, Indonesia, AI strategy, digital transformation" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:title" content="Trans Meta Teknologi | AI Strategy & Custom AI Solutions" />
+    <meta property="og:description" content="We help companies unlock AI's full potential — from identifying opportunities to deploying production-ready machine learning, NLP, and computer vision systems. Jakarta, Indonesia." />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:alt" content="Trans Meta Teknologi — AI Consultancy" />
+    <meta property="og:site_name" content="Trans Meta Teknologi" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Trans Meta Teknologi | AI Strategy & Custom AI Solutions" />
+    <meta name="twitter:description" content="Jakarta-based AI consultancy. We build custom ML, NLP, and computer vision solutions that deliver measurable business outcomes." />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Canonical -->
+    <link rel="canonical" href={siteUrl} />
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/TransMetaTek-logo-color.png" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <title>{title}</title>
   </head>
   <body>
     <slot />
