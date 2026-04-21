@@ -63,22 +63,22 @@ const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`
 
 <style is:global>
   :root {
-    --bg-primary: #03070f;
-    --bg-secondary: #060d1a;
-    --bg-card: rgba(6, 16, 36, 0.7);
-    --cyan: #00d4ff;
-    --cyan-dim: rgba(0, 212, 255, 0.15);
-    --cyan-glow: rgba(0, 212, 255, 0.4);
-    --purple: #a855f7;
-    --purple-dim: rgba(168, 85, 247, 0.15);
-    --purple-glow: rgba(168, 85, 247, 0.4);
-    --blue: #3b82f6;
+    --bg-primary: #0f0202;
+    --bg-secondary: #160404;
+    --bg-card: rgba(22, 4, 4, 0.7);
+    --cyan: #E8192C;
+    --cyan-dim: rgba(232, 25, 44, 0.15);
+    --cyan-glow: rgba(232, 25, 44, 0.45);
+    --purple: #FF5252;
+    --purple-dim: rgba(255, 82, 82, 0.15);
+    --purple-glow: rgba(255, 82, 82, 0.4);
+    --blue: #FF7043;
     --green: #10b981;
-    --text-primary: #e2e8f0;
-    --text-secondary: #94a3b8;
-    --text-muted: #4a5568;
-    --border: rgba(0, 212, 255, 0.12);
-    --border-hover: rgba(0, 212, 255, 0.35);
+    --text-primary: #f1e8e8;
+    --text-secondary: #a89898;
+    --text-muted: #5c4040;
+    --border: rgba(232, 25, 44, 0.14);
+    --border-hover: rgba(232, 25, 44, 0.4);
     --font-sans: 'Space Grotesk', 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   }
@@ -109,8 +109,8 @@ const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`
     position: fixed;
     inset: 0;
     background-image:
-      linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+      linear-gradient(rgba(232, 25, 44, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232, 25, 44, 0.04) 1px, transparent 1px);
     background-size: 60px 60px;
     pointer-events: none;
     z-index: 0;
@@ -124,7 +124,7 @@ const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`
     left: -10%;
     width: 60%;
     height: 60%;
-    background: radial-gradient(ellipse, rgba(168, 85, 247, 0.06) 0%, transparent 70%);
+    background: radial-gradient(ellipse, rgba(232, 25, 44, 0.07) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
   }

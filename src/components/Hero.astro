@@ -86,7 +86,7 @@
     right: -5%;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(232, 25, 44, 0.09) 0%, transparent 65%);
     pointer-events: none;
   }
 
@@ -96,7 +96,7 @@
     left: -10%;
     width: 700px;
     height: 700px;
-    background: radial-gradient(circle, rgba(168, 85, 247, 0.07) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(255, 82, 82, 0.07) 0%, transparent 65%);
     pointer-events: none;
   }
 
@@ -331,12 +331,12 @@
           ctx.beginPath();
           ctx.moveTo(nodes[i].x, nodes[i].y);
           ctx.lineTo(nodes[j].x, nodes[j].y);
-          // Alternate edge color between cyan and purple
+          // Alternate edge color: deep red vs fire red
           const t = (i + j) % 3 === 0 ? 1 : 0;
           if (t) {
-            ctx.strokeStyle = `rgba(168, 85, 247, ${alpha})`;
+            ctx.strokeStyle = `rgba(232, 25, 44, ${alpha})`;
           } else {
-            ctx.strokeStyle = `rgba(0, 212, 255, ${alpha * 0.7})`;
+            ctx.strokeStyle = `rgba(255, 82, 82, ${alpha * 0.7})`;
           }
           ctx.lineWidth = 0.7;
           ctx.stroke();
@@ -351,7 +351,7 @@
 
       // Outer glow
       const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 4);
-      grad.addColorStop(0, `rgba(0, 212, 255, ${0.25 * pulse})`);
+      grad.addColorStop(0, `rgba(232, 25, 44, ${0.28 * pulse})`);
       grad.addColorStop(1, 'transparent');
       ctx.beginPath();
       ctx.arc(n.x, n.y, r * 4, 0, Math.PI * 2);
@@ -361,7 +361,7 @@
       // Core dot
       ctx.beginPath();
       ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(0, 212, 255, ${0.6 + pulse * 0.4})`;
+      ctx.fillStyle = `rgba(255, 82, 82, ${0.7 + pulse * 0.3})`;
       ctx.fill();
     });
 
