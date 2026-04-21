@@ -183,15 +183,15 @@ const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`
     border-radius: 16px;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    transition: border-color 1.2s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: border-color 2.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 2.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .glass-card:hover {
     border-color: var(--border-hover);
     transform: translateY(-6px);
-    box-shadow: 0 24px 64px rgba(232, 25, 44, 0.1), 0 0 0 1px var(--border-hover);
+    box-shadow: 0 24px 64px rgba(232, 25, 44, 0.08), 0 0 0 1px var(--border-hover);
   }
 
   /* Animated gradient border on cards */
@@ -200,14 +200,14 @@ const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`
     position: absolute;
     inset: -1px;
     border-radius: inherit;
-    background: linear-gradient(135deg, transparent 40%, rgba(232,25,44,0.35) 60%, transparent 80%);
+    background: linear-gradient(135deg, transparent 40%, rgba(232,25,44,0.2) 60%, transparent 80%);
     background-size: 300% 300%;
     opacity: 0;
-    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 2.4s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
     z-index: -1;
   }
-  .glass-card:hover::after { opacity: 1; animation: borderTrace 1.8s linear infinite; }
+  .glass-card:hover::after { opacity: 1; animation: borderTrace 3.5s linear infinite; }
 
   @keyframes borderTrace {
     0%   { background-position: 0% 0%; }
