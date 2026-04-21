@@ -1,0 +1,232 @@
+---
+const pillars = [
+  {
+    icon: '⚡',
+    title: 'Speed to Value',
+    desc: 'We move fast — from discovery to deployed solution in weeks, not months.',
+  },
+  {
+    icon: '🎯',
+    title: 'Business-First AI',
+    desc: 'Every model and algorithm is tied to a concrete business outcome, not a science experiment.',
+  },
+  {
+    icon: '🛡️',
+    title: 'Ethical by Design',
+    desc: 'Responsible AI practices baked in — fairness, transparency, and privacy from day one.',
+  },
+  {
+    icon: '🔗',
+    title: 'Seamless Integration',
+    desc: 'We work with your existing stack — cloud-native, on-prem, or hybrid.',
+  },
+];
+---
+
+<section id="about">
+  <div class="container about-grid">
+
+    <div class="about-visual reveal">
+      <div class="visual-frame">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="terminal-title">transmetatek_ai.py</span>
+          </div>
+          <div class="terminal-body">
+            <div class="line"><span class="kw">import</span> <span class="mod">transmetatek</span> <span class="kw">as</span> <span class="mod">tmt</span></div>
+            <div class="line">&nbsp;</div>
+            <div class="line"><span class="comment"># Define your business challenge</span></div>
+            <div class="line"><span class="var">challenge</span> = tmt.<span class="fn">identify_opportunity</span>(</div>
+            <div class="line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="str">domain</span>=<span class="val">"your_industry"</span>,</div>
+            <div class="line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="str">goal</span>=<span class="val">"growth"</span></div>
+            <div class="line">)</div>
+            <div class="line">&nbsp;</div>
+            <div class="line"><span class="comment"># Build a tailored AI strategy</span></div>
+            <div class="line"><span class="var">strategy</span> = tmt.<span class="fn">create_roadmap</span>(challenge)</div>
+            <div class="line">&nbsp;</div>
+            <div class="line"><span class="comment"># Deploy custom AI solutions</span></div>
+            <div class="line"><span class="var">model</span> = tmt.<span class="fn">build_and_deploy</span>(</div>
+            <div class="line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="str">strategy</span>=strategy,</div>
+            <div class="line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="str">ethics</span>=<span class="val">True</span></div>
+            <div class="line">)</div>
+            <div class="line">&nbsp;</div>
+            <div class="line"><span class="kw">print</span>(<span class="val">"Impact delivered ✓"</span>)</div>
+            <div class="cursor-line"><span class="cursor">█</span></div>
+          </div>
+        </div>
+        <div class="visual-badge">
+          <span class="badge-icon">🤖</span>
+          <div>
+            <div class="badge-metric">AI-Native</div>
+            <div class="badge-label">Jakarta, Indonesia</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-content">
+      <div class="tag reveal">// About Us</div>
+      <h2 class="section-heading reveal reveal-delay-1" style="margin: 1rem 0;">
+        Where AI Strategy<br /><span>Meets Execution</span>
+      </h2>
+      <p class="section-sub reveal reveal-delay-2">
+        Trans Meta Teknologi is a Jakarta-based AI consultancy specializing in disruption and
+        innovation through artificial intelligence. We partner with companies to build AI strategies
+        that are both ambitious and achievable.
+      </p>
+      <p class="section-sub reveal reveal-delay-3" style="margin-top: 0.75rem;">
+        Our team of AI experts assists in designing and developing custom solutions —
+        machine learning models, NLP systems, and computer vision applications tailored
+        to your specific needs, fully integrated with your existing infrastructure.
+      </p>
+
+      <div class="pillars reveal reveal-delay-4">
+        {pillars.map((p) => (
+          <div class="pillar">
+            <span class="pillar-icon">{p.icon}</span>
+            <div>
+              <div class="pillar-title">{p.title}</div>
+              <div class="pillar-desc">{p.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  #about {
+    padding: 7rem 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(168, 85, 247, 0.02) 50%, transparent 100%);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  /* Terminal */
+  .visual-frame { position: relative; }
+
+  .terminal {
+    background: #0a1628;
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,255,0.08);
+  }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.25rem;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .dot.red { background: #ff5f57; }
+  .dot.yellow { background: #febc2e; }
+  .dot.green { background: #28c840; }
+
+  .terminal-title {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .terminal-body {
+    padding: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.7;
+  }
+
+  .line { white-space: nowrap; }
+  .kw { color: #a855f7; }
+  .mod { color: #60a5fa; }
+  .comment { color: #4a5568; font-style: italic; }
+  .var { color: #e2e8f0; }
+  .fn { color: #00d4ff; }
+  .str { color: #f59e0b; }
+  .val { color: #10b981; }
+
+  .cursor-line { height: 1.4rem; }
+  .cursor {
+    color: var(--cyan);
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  .visual-badge {
+    position: absolute;
+    bottom: -1.5rem;
+    right: -1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(6, 16, 36, 0.95);
+    border: 1px solid var(--border);
+    padding: 0.85rem 1.25rem;
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .badge-icon { font-size: 1.5rem; }
+  .badge-metric { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+  .badge-label { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+  /* Pillars */
+  .pillars {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .pillar {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .pillar:hover {
+    border-color: var(--border-hover);
+    background: rgba(0, 212, 255, 0.03);
+  }
+
+  .pillar-icon { font-size: 1.25rem; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+  .pillar-title { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem; }
+  .pillar-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
+
+  @media (max-width: 1024px) {
+    .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .about-visual { order: 2; }
+    .about-content { order: 1; }
+    .visual-badge { right: 0; }
+  }
+
+  @media (max-width: 500px) {
+    .pillars { grid-template-columns: 1fr; }
+  }
+</style>

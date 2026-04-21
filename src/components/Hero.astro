@@ -1,0 +1,402 @@
+---
+---
+
+<section id="hero">
+  <canvas id="neuralCanvas"></canvas>
+
+  <div class="hero-ambient-1"></div>
+  <div class="hero-ambient-2"></div>
+
+  <div class="container hero-content">
+    <div class="badge reveal">
+      <span class="badge-dot"></span>
+      <span class="badge-text">AI-First Technology Consultancy</span>
+    </div>
+
+    <h1 class="hero-title reveal reveal-delay-1">
+      <span class="title-line">Disruption &amp;</span>
+      <span class="title-line gradient-text">Innovation</span>
+      <span class="title-line">Through <span class="gradient-text-alt">AI</span></span>
+    </h1>
+
+    <p class="hero-sub reveal reveal-delay-2">
+      We guide companies in identifying where AI can significantly impact their business goals —
+      building custom machine learning, NLP, and computer vision solutions aligned to your
+      long-term vision.
+    </p>
+
+    <div class="hero-actions reveal reveal-delay-3">
+      <a href="#services" class="btn-primary">
+        <span>Explore Our Services</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="#contact" class="btn-outline">
+        <span>Talk to Us</span>
+      </a>
+    </div>
+
+    <div class="hero-metrics reveal reveal-delay-4">
+      <div class="metric">
+        <span class="metric-value" data-target="100">0</span><span class="metric-suffix">%</span>
+        <span class="metric-label">AI-Native Approach</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value" data-target="5">0</span><span class="metric-suffix">+</span>
+        <span class="metric-label">AI Domains Covered</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value" data-target="24">0</span><span class="metric-suffix">/7</span>
+        <span class="metric-label">Strategic Support</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<style>
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 8rem 0 4rem;
+  }
+
+  #neuralCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .hero-ambient-1 {
+    position: absolute;
+    top: 10%;
+    right: -5%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-ambient-2 {
+    position: absolute;
+    bottom: -10%;
+    left: -10%;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 760px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    background: rgba(0, 212, 255, 0.07);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.75rem;
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--cyan);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.75); }
+  }
+
+  .hero-title {
+    font-size: clamp(2.75rem, 7vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .title-line { display: block; }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--cyan) 0%, #60a5fa 50%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-alt {
+    background: linear-gradient(135deg, var(--purple) 0%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 2.25rem;
+    max-width: 560px;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3.5rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-metrics {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .metric-suffix {
+    font-size: 1.25rem;
+    color: var(--cyan);
+    font-weight: 700;
+  }
+
+  .metric-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: var(--font-mono);
+  }
+
+  .metric-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--border);
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: fadeUp 3s ease-in-out infinite;
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--text-muted), transparent);
+    animation: scrollLine 2s ease-in-out infinite;
+  }
+
+  @keyframes fadeUp {
+    0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+    50% { opacity: 0.8; transform: translateX(-50%) translateY(4px); }
+  }
+
+  @keyframes scrollLine {
+    0% { transform: scaleY(0); transform-origin: top; }
+    50% { transform: scaleY(1); transform-origin: top; }
+    51% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+
+  @media (max-width: 600px) {
+    .hero-metrics { gap: 1.25rem; }
+    .metric-divider { height: 30px; }
+  }
+</style>
+
+<script>
+  // Neural network canvas animation
+  const canvas = document.getElementById('neuralCanvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+
+  let W = 0, H = 0;
+  let nodes: { x: number; y: number; vx: number; vy: number; r: number; pulse: number }[] = [];
+  const NODE_COUNT = 80;
+  const MAX_DIST = 160;
+
+  function resize() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+
+  function init() {
+    nodes = [];
+    for (let i = 0; i < NODE_COUNT; i++) {
+      nodes.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 1.5 + 0.5,
+        pulse: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+
+  let mouse = { x: -9999, y: -9999 };
+  window.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+  });
+
+  let animId: number;
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Update
+    nodes.forEach((n) => {
+      n.x += n.vx;
+      n.y += n.vy;
+      n.pulse += 0.025;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+
+      // Mouse repulsion
+      const dx = n.x - mouse.x;
+      const dy = n.y - mouse.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 100) {
+        n.vx += (dx / d) * 0.08;
+        n.vy += (dy / d) * 0.08;
+        const speed = Math.sqrt(n.vx * n.vx + n.vy * n.vy);
+        if (speed > 2) { n.vx /= speed; n.vy /= speed; }
+      }
+    });
+
+    // Edges
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < MAX_DIST) {
+          const alpha = (1 - d / MAX_DIST) * 0.35;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          // Alternate edge color between cyan and purple
+          const t = (i + j) % 3 === 0 ? 1 : 0;
+          if (t) {
+            ctx.strokeStyle = `rgba(168, 85, 247, ${alpha})`;
+          } else {
+            ctx.strokeStyle = `rgba(0, 212, 255, ${alpha * 0.7})`;
+          }
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Nodes
+    nodes.forEach((n) => {
+      const pulse = (Math.sin(n.pulse) + 1) / 2;
+      const r = n.r + pulse * 1.5;
+
+      // Outer glow
+      const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 4);
+      grad.addColorStop(0, `rgba(0, 212, 255, ${0.25 * pulse})`);
+      grad.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r * 4, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Core dot
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0, 212, 255, ${0.6 + pulse * 0.4})`;
+      ctx.fill();
+    });
+
+    animId = requestAnimationFrame(draw);
+  }
+
+  const ro = new ResizeObserver(() => { resize(); init(); });
+  ro.observe(canvas);
+  resize();
+  init();
+  draw();
+
+  // Counter animation
+  function animateCounter(el: Element) {
+    const target = parseInt(el.getAttribute('data-target') || '0', 10);
+    const duration = 1800;
+    const start = performance.now();
+    function step(now: number) {
+      const p = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      el.textContent = String(Math.floor(ease * target));
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  const counterObs = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('[data-target]').forEach(animateCounter);
+        counterObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  const metrics = document.querySelector('.hero-metrics');
+  if (metrics) counterObs.observe(metrics);
+</script>

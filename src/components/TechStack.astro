@@ -1,0 +1,187 @@
+---
+const categories = [
+  {
+    label: 'ML Frameworks',
+    items: ['TensorFlow', 'PyTorch', 'Scikit-learn', 'XGBoost', 'Keras'],
+  },
+  {
+    label: 'LLMs & NLP',
+    items: ['OpenAI GPT', 'Anthropic Claude', 'HuggingFace', 'LangChain', 'spaCy'],
+  },
+  {
+    label: 'Cloud & Infra',
+    items: ['AWS SageMaker', 'Google Cloud AI', 'Azure ML', 'Kubernetes', 'Docker'],
+  },
+  {
+    label: 'Data & Analytics',
+    items: ['Apache Spark', 'Kafka', 'dbt', 'Airflow', 'Snowflake'],
+  },
+  {
+    label: 'Computer Vision',
+    items: ['OpenCV', 'YOLO', 'Detectron2', 'Roboflow', 'ONNX'],
+  },
+  {
+    label: 'MLOps',
+    items: ['MLflow', 'Weights & Biases', 'Seldon', 'BentoML', 'Kubeflow'],
+  },
+];
+---
+
+<section id="tech">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="tag">// Technology Stack</div>
+      <h2 class="section-heading" style="margin-top: 1rem;">
+        Built with <span>Best-in-Class</span><br />AI Technologies
+      </h2>
+      <p class="section-sub" style="margin-top: 1rem;">
+        We leverage the most powerful tools in the AI ecosystem to build solutions that
+        are scalable, maintainable, and production-ready.
+      </p>
+    </div>
+
+    <div class="tech-grid">
+      {categories.map((cat, i) => (
+        <div class={`glass-card tech-card reveal reveal-delay-${(i % 3) + 1}`}>
+          <div class="tech-category">{cat.label}</div>
+          <div class="tech-items">
+            {cat.items.map((item) => (
+              <span class="tech-item">
+                <span class="tech-dot"></span>
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="tech-marquee-wrap reveal">
+      <div class="marquee-label">Trusted Technologies</div>
+      <div class="marquee">
+        <div class="marquee-track">
+          {[...categories.flatMap(c => c.items), ...categories.flatMap(c => c.items)].map((item) => (
+            <span class="marquee-item">{item}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  #tech {
+    padding: 7rem 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 212, 255, 0.015) 50%, transparent 100%);
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 4rem;
+  }
+
+  .tech-card { padding: 1.5rem 1.75rem; }
+
+  .tech-category {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tech-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .tech-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+  }
+
+  .tech-card:hover .tech-item { color: var(--text-primary); }
+
+  .tech-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--cyan);
+    flex-shrink: 0;
+    opacity: 0.5;
+  }
+
+  /* Marquee */
+  .tech-marquee-wrap {
+    border-top: 1px solid var(--border);
+    padding-top: 2rem;
+  }
+
+  .marquee-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+    text-align: center;
+  }
+
+  .marquee {
+    overflow: hidden;
+    -webkit-mask: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+    mask: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    gap: 1.5rem;
+    width: max-content;
+    animation: marquee 35s linear infinite;
+  }
+
+  .marquee-item {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    padding: 0.35rem 0.85rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+    transition: color 0.2s ease;
+  }
+
+  .marquee-item:hover { color: var(--cyan); }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @media (max-width: 1024px) {
+    .tech-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 600px) {
+    .tech-grid { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,0 +1,191 @@
+---
+const year = new Date().getFullYear();
+
+const links = {
+  Services: [
+    'AI Strategy',
+    'Machine Learning',
+    'NLP Systems',
+    'Computer Vision',
+    'Data Science',
+    'AI Training',
+  ],
+  Company: ['About', 'Careers', 'Blog', 'Contact'],
+  Legal: ['Privacy Policy', 'Terms of Service'],
+};
+---
+
+<footer id="footer">
+  <div class="footer-glow"></div>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="/" class="logo">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <polygon points="16,2 30,26 2,26" fill="none" stroke="url(#fLogo)" stroke-width="2"/>
+            <polygon points="16,8 26,24 6,24" fill="url(#fLogo)" opacity="0.3"/>
+            <line x1="16" y1="2" x2="16" y2="18" stroke="url(#fLogo)" stroke-width="1.5"/>
+            <defs>
+              <linearGradient id="fLogo" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#00d4ff"/>
+                <stop offset="100%" stop-color="#a855f7"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="logo-text">Trans<span class="logo-accent">Meta</span> Teknologi</span>
+        </a>
+        <p class="brand-desc">
+          Disruption and Innovation through<br />Artificial Intelligence.
+        </p>
+        <div class="brand-location">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5A3.5 3.5 0 003.5 5C3.5 8.25 7 12.5 7 12.5S10.5 8.25 10.5 5A3.5 3.5 0 007 1.5z" stroke="currentColor" stroke-width="1.2"/><circle cx="7" cy="5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          Jakarta, Indonesia
+        </div>
+      </div>
+
+      <div class="footer-links">
+        {Object.entries(links).map(([group, items]) => (
+          <div class="link-group">
+            <div class="link-group-title">{group}</div>
+            <ul>
+              {items.map((item) => (
+                <li><a href="#" class="footer-link">{item}</a></li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-bottom-left">
+        <span class="copyright">© {year} Trans Meta Teknologi. All rights reserved.</span>
+      </div>
+      <div class="footer-bottom-right">
+        <span class="made-with">Made with</span>
+        <span class="heart">♥</span>
+        <span class="made-with">in Jakarta</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  #footer {
+    padding: 5rem 0 2rem;
+    position: relative;
+    border-top: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .footer-glow {
+    position: absolute;
+    bottom: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(0, 212, 255, 0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1.2fr 2fr;
+    gap: 4rem;
+    margin-bottom: 3rem;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    margin-bottom: 1rem;
+  }
+
+  .logo-text {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+  }
+
+  .logo-accent {
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .brand-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+  }
+
+  .brand-location {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .footer-links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  .link-group-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .link-group ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .footer-link {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .footer-link:hover { color: var(--cyan); }
+
+  .footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .copyright, .made-with {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .footer-bottom-right { display: flex; align-items: center; gap: 0.3rem; }
+  .heart { color: #ef4444; font-size: 0.85rem; }
+
+  @media (max-width: 900px) {
+    .footer-top { grid-template-columns: 1fr; gap: 2.5rem; }
+  }
+
+  @media (max-width: 600px) {
+    .footer-links { grid-template-columns: repeat(2, 1fr); }
+    .footer-bottom { flex-direction: column; gap: 0.75rem; text-align: center; }
+  }
+</style>
