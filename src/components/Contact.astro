@@ -312,19 +312,14 @@ const contactInfo = [
   /* Form fields: hidden until staggered in */
   .form-group {
     opacity: 0;
-    transform: translateY(16px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: translateY(22px);
+    /* Slower, spring-like easing — professional feel */
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .form-group.form-visible {
     opacity: 1;
     transform: none;
-  }
-
-  /* Animated underline on focused inputs */
-  input, select, textarea { border-bottom: 2px solid transparent; }
-  input:focus, select:focus, textarea:focus {
-    border-bottom-color: var(--cyan);
-    animation: drawLine 0.3s ease forwards;
   }
 
   /* Submit button ripple */
@@ -332,9 +327,9 @@ const contactInfo = [
   .submit-btn .ripple {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.2);
     transform: scale(0);
-    animation: rippleOut 0.6s linear;
+    animation: rippleOut 0.7s ease-out;
     pointer-events: none;
   }
   @keyframes rippleOut {
@@ -370,23 +365,35 @@ const contactInfo = [
   /* Staggered form groups */
   const formCard = document.querySelector('.form-card');
   if (formCard) {
+    // Pre-hide submit button with same system
+    const submitBtn = formCard.querySelector('.submit-btn') as HTMLElement | null;
+    if (submitBtn) {
+      submitBtn.style.opacity = '0';
+      submitBtn.style.transform = 'translateY(22px)';
+      submitBtn.style.transition =
+        'opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1)';
+    }
+
     const formObs = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
-        formCard.querySelectorAll('.form-group, .submit-btn').forEach((el, i) => {
-          setTimeout(() => el.classList.add('form-visible'), i * 80);
+        const fields = Array.from(formCard.querySelectorAll('.form-group'));
+
+        // Wait 300ms for the card slide-in to settle, then cascade fields
+        fields.forEach((el, i) => {
+          setTimeout(() => el.classList.add('form-visible'), 300 + i * 140);
         });
+
+        // Submit button appears after all fields
+        if (submitBtn) {
+          setTimeout(() => {
+            submitBtn.style.opacity = '1';
+            submitBtn.style.transform = 'none';
+          }, 300 + fields.length * 140 + 80);
+        }
+
         formObs.disconnect();
       }
-    }, { threshold: 0.2 });
+    }, { threshold: 0.15 });
     formObs.observe(formCard);
-  }
-
-  /* Also make submit btn visible via same class */
-  const submitBtn = document.querySelector('.submit-btn') as HTMLElement | null;
-  if (submitBtn) {
-    submitBtn.style.opacity = '0';
-    submitBtn.style.transform = 'translateY(16px)';
-    submitBtn.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-    submitBtn.classList.add('form-group');
   }
 </script>
