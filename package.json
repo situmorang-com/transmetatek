@@ -5,9 +5,18 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node migrate.mjs",
+    "start": "node migrate.mjs && node dist/server/entry.mjs"
   },
   "dependencies": {
-    "astro": "^6.1.8"
+    "@astrojs/node": "^10.0.5",
+    "@libsql/client": "^0.17.2",
+    "astro": "^6.1.8",
+    "drizzle-orm": "^0.45.2"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10"
   }
 }

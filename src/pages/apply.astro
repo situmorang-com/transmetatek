@@ -1,0 +1,2042 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const roles = [
+  { value: 'senior-ml-engineer',            label: 'Senior ML Engineer',           dept: 'Engineering', skills: ['PyTorch', 'MLflow', 'Kubernetes', 'Python', 'TensorFlow', 'Docker', 'Ray', 'CUDA'] },
+  { value: 'nlp-llm-specialist',             label: 'NLP / LLM Specialist',          dept: 'Engineering', skills: ['HuggingFace', 'LangChain', 'vLLM', 'Bahasa Indonesia NLP', 'Python', 'RAG', 'Prompt Engineering', 'Fine-tuning'] },
+  { value: 'ai-strategy-consultant',         label: 'AI Strategy Consultant',        dept: 'Consulting',  skills: ['AI Strategy', 'Stakeholder Management', 'Business Analysis', 'Presentations', 'Change Management', 'ROI Modeling'] },
+  { value: 'data-scientist',                 label: 'Data Scientist',                dept: 'Engineering', skills: ['Python', 'SQL', 'Spark', 'Statistical Modeling', 'Machine Learning', 'Data Visualization', 'Experiment Design'] },
+  { value: 'computer-vision-engineer',       label: 'Computer Vision Engineer',      dept: 'Engineering', skills: ['OpenCV', 'YOLO', 'TensorRT', 'ONNX', 'Python', 'Deep Learning', 'Object Detection', 'Video Analytics'] },
+  { value: 'business-development-manager',  label: 'Business Development Manager',  dept: 'Growth',      skills: ['Enterprise Sales', 'CRM', 'AI Market Knowledge', 'Bahasa Indonesia', 'Negotiation', 'Account Management'] },
+  { value: 'open-application',              label: 'Open Application',              dept: 'General',     skills: ['Python', 'Machine Learning', 'AI Strategy', 'Data Science', 'NLP', 'Computer Vision', 'Leadership', 'Communication'] },
+];
+---
+
+<Layout
+  title="Apply | Trans Meta Teknologi"
+  description="Apply to join Indonesia's AI team at Trans Meta Teknologi. Our AI-assisted screening process helps us find the best candidates fast."
+>
+  <Nav />
+
+  <main id="apply-main">
+
+    <!-- ── Hero ── -->
+    <section id="apply-hero">
+      <div class="hero-ambient-left"></div>
+      <div class="hero-ambient-right"></div>
+      <div class="container hero-content">
+        <div class="tag reveal">// AI-Assisted Screening</div>
+        <h1 class="hero-title reveal reveal-delay-1">
+          Apply to <span class="gradient-text">Trans Meta</span><br />Teknologi
+        </h1>
+        <p class="hero-sub reveal reveal-delay-2">
+          Our AI screening system reviews every application in real-time,
+          matching your skills and experience against what we need most.
+          No black boxes — you'll see exactly how you score.
+        </p>
+        <div class="ai-badge reveal reveal-delay-3">
+          <div class="ai-badge-dot"></div>
+          <span class="ai-badge-text">AI Screening Active — Analysing candidates now</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Form Section ── -->
+    <section id="apply-form-section">
+      <div class="container form-layout">
+
+        <!-- ─── Multi-step Form ─── -->
+        <div class="form-container glass-card">
+
+          <!-- Step Progress Bar -->
+          <div class="step-progress">
+            <div class="step-track">
+              <div class="step-fill" id="step-fill"></div>
+            </div>
+            <div class="steps-labels">
+              {[
+                { n: 1, label: 'Identity' },
+                { n: 2, label: 'Experience' },
+                { n: 3, label: 'Your Story' },
+              ].map(s => (
+                <div class={`step-label`} data-step={s.n}>
+                  <div class="step-dot">
+                    <span class="step-num">{s.n}</span>
+                    <svg class="step-check" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <span class="step-name">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <!-- ── Step 1: Identity ── -->
+          <div class="form-step" id="step-1">
+            <div class="step-header">
+              <div class="step-eyebrow">Step 1 of 3</div>
+              <h2 class="step-title">Tell us who you are</h2>
+              <p class="step-desc">The AI will start building your candidate profile as you fill this in.</p>
+            </div>
+
+            <div class="form-fields">
+              <div class="field-group">
+                <label class="field-label" for="role">Role you're applying for <span class="req">*</span></label>
+                <div class="field-select-wrap">
+                  <select id="role" name="role" class="field-select" required>
+                    <option value="">— Select a role —</option>
+                    {roles.map(r => (
+                      <option value={r.value} data-dept={r.dept}>{r.label}</option>
+                    ))}
+                  </select>
+                  <svg class="select-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="field-ai-hint" id="role-hint"></div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label" for="fname">First name <span class="req">*</span></label>
+                  <input type="text" id="fname" name="fname" class="field-input" placeholder="Budi" required autocomplete="given-name" />
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="lname">Last name <span class="req">*</span></label>
+                  <input type="text" id="lname" name="lname" class="field-input" placeholder="Santoso" required autocomplete="family-name" />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="email">Email address <span class="req">*</span></label>
+                <input type="email" id="email" name="email" class="field-input" placeholder="budi@example.com" required autocomplete="email" />
+                <div class="field-ai-hint" id="email-hint"></div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label" for="city">City / Location <span class="req">*</span></label>
+                  <input type="text" id="city" name="city" class="field-input" placeholder="Jakarta" required />
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="phone">Phone (optional)</label>
+                  <input type="tel" id="phone" name="phone" class="field-input" placeholder="+62 812 xxxx xxxx" autocomplete="tel" />
+                </div>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <div></div>
+              <button type="button" class="btn-primary step-next" data-next="2">
+                <span>Next: Your Experience</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Step 2: Experience ── -->
+          <div class="form-step hidden" id="step-2">
+            <div class="step-header">
+              <div class="step-eyebrow">Step 2 of 3</div>
+              <h2 class="step-title">Your background</h2>
+              <p class="step-desc">The AI matches your skills against the role requirements in real-time.</p>
+            </div>
+
+            <div class="form-fields">
+              <div class="field-group">
+                <label class="field-label">Years of relevant experience <span class="req">*</span></label>
+                <div class="exp-options" id="exp-options">
+                  {[
+                    { value: '0-2',  label: '0–2 yrs',  sub: 'Early career' },
+                    { value: '3-5',  label: '3–5 yrs',  sub: 'Mid-level' },
+                    { value: '5-10', label: '5–10 yrs', sub: 'Senior' },
+                    { value: '10+',  label: '10+ yrs',  sub: 'Lead / Principal' },
+                  ].map(e => (
+                    <label class="exp-option">
+                      <input type="radio" name="experience" value={e.value} />
+                      <div class="exp-card">
+                        <span class="exp-val">{e.label}</span>
+                        <span class="exp-sub">{e.sub}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label">
+                  Skills &amp; technologies
+                  <span class="field-label-hint"> — select all that apply</span>
+                </label>
+                <div class="skills-container" id="skills-container">
+                  <p class="skills-placeholder">← Select a role first to see relevant skills</p>
+                </div>
+                <div class="skills-match-bar">
+                  <div class="skills-match-label">
+                    <span>Role match</span>
+                    <span id="skills-match-pct">0%</span>
+                  </div>
+                  <div class="skills-bar-track">
+                    <div class="skills-bar-fill" id="skills-bar-fill"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label" for="linkedin">LinkedIn profile <span class="req">*</span></label>
+                  <input type="url" id="linkedin" name="linkedin" class="field-input" placeholder="linkedin.com/in/yourname" required />
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="portfolio">Portfolio / GitHub (optional)</label>
+                  <input type="url" id="portfolio" name="portfolio" class="field-input" placeholder="github.com/yourname" />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="current-org">Current or most recent organisation</label>
+                <input type="text" id="current-org" name="current-org" class="field-input" placeholder="e.g. Gojek, Tokopedia, Telkom" />
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button type="button" class="btn-outline step-prev" data-prev="1">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Back</span>
+              </button>
+              <button type="button" class="btn-primary step-next" data-next="3">
+                <span>Next: Your Story</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Step 3: Story ── -->
+          <div class="form-step hidden" id="step-3">
+            <div class="step-header">
+              <div class="step-eyebrow">Step 3 of 3</div>
+              <h2 class="step-title">Your story</h2>
+              <p class="step-desc">Our AI analyses response clarity, depth, and alignment with our mission. Write naturally.</p>
+            </div>
+
+            <div class="form-fields">
+              <div class="field-group">
+                <label class="field-label" for="why-tmk">
+                  Why do you want to build AI for Indonesia? <span class="req">*</span>
+                  <span class="field-label-hint"> (min 80 words)</span>
+                </label>
+                <div class="textarea-wrap">
+                  <textarea id="why-tmk" name="why-tmk" class="field-textarea" rows="4"
+                    placeholder="Tell us what drives you about Indonesia's AI opportunity and why Trans Meta Teknologi is where you want to build it..."
+                    required></textarea>
+                  <div class="textarea-meta">
+                    <span class="word-count" id="why-count">0 words</span>
+                    <div class="sentiment-bar" id="why-sentiment">
+                      <div class="sentiment-fill"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="field-ai-hint" id="why-hint"></div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="ai-project">
+                  Describe an AI project you're most proud of <span class="req">*</span>
+                  <span class="field-label-hint"> (min 60 words)</span>
+                </label>
+                <div class="textarea-wrap">
+                  <textarea id="ai-project" name="ai-project" class="field-textarea" rows="4"
+                    placeholder="What did you build, what was the impact, and what did you learn?"
+                    required></textarea>
+                  <div class="textarea-meta">
+                    <span class="word-count" id="project-count">0 words</span>
+                    <div class="sentiment-bar" id="project-sentiment">
+                      <div class="sentiment-fill"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="role-question" id="role-question-label">
+                  Role-specific question <span class="req">*</span>
+                </label>
+                <div class="textarea-wrap">
+                  <textarea id="role-question" name="role-question" class="field-textarea" rows="3"
+                    placeholder="Loading role-specific question..."
+                    required></textarea>
+                  <div class="textarea-meta">
+                    <span class="word-count" id="role-q-count">0 words</span>
+                    <div class="sentiment-bar" id="role-q-sentiment">
+                      <div class="sentiment-fill"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button type="button" class="btn-outline step-prev" data-prev="2">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Back</span>
+              </button>
+              <button type="button" id="submit-btn" class="btn-primary btn-submit">
+                <span>Submit Application</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 8l5 5 7-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Analysis Overlay ── -->
+          <div class="analysis-overlay hidden" id="analysis-overlay">
+            <canvas id="analysis-canvas"></canvas>
+            <div class="analysis-content">
+              <div class="analysis-logo">
+                <div class="analysis-ring ring-1"></div>
+                <div class="analysis-ring ring-2"></div>
+                <div class="analysis-ring ring-3"></div>
+                <div class="analysis-core">
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <circle cx="14" cy="14" r="5" fill="var(--cyan)" opacity="0.9"/>
+                    <path d="M14 2v4M14 22v4M2 14h4M22 14h4" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M5.5 5.5l2.8 2.8M19.7 19.7l2.8 2.8M5.5 22.5l2.8-2.8M19.7 8.3l2.8-2.8" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="analysis-title">AI Analysis in Progress</div>
+              <div class="analysis-message" id="analysis-message">Initialising screening engine...</div>
+              <div class="analysis-progress-wrap">
+                <div class="analysis-progress-track">
+                  <div class="analysis-progress-fill" id="analysis-progress"></div>
+                </div>
+                <span class="analysis-pct" id="analysis-pct">0%</span>
+              </div>
+              <div class="analysis-log" id="analysis-log"></div>
+            </div>
+          </div>
+
+          <!-- ── Success Screen ── -->
+          <div class="success-screen hidden" id="success-screen">
+            <div class="success-icon">
+              <div class="success-ring"></div>
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                <path d="M8 18l7 7 13-14" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h2 class="success-title">Application Received</h2>
+            <p class="success-sub">
+              Our AI has flagged your profile for human review. You'll hear from us within
+              <strong>3–5 business days</strong> — often sooner.
+            </p>
+            <div class="success-stats" id="success-stats">
+              <div class="success-stat">
+                <span class="success-stat-val" id="final-score">—</span>
+                <span class="success-stat-label">AI Match Score</span>
+              </div>
+              <div class="success-stat-div"></div>
+              <div class="success-stat">
+                <span class="success-stat-val" id="final-skills">—</span>
+                <span class="success-stat-label">Skills Matched</span>
+              </div>
+              <div class="success-stat-div"></div>
+              <div class="success-stat">
+                <span class="success-stat-val">✓ Queued</span>
+                <span class="success-stat-label">Review Status</span>
+              </div>
+            </div>
+            <a href="/careers" class="btn-outline" style="margin-top:1rem;">
+              <span>Back to Careers</span>
+            </a>
+          </div>
+
+        </div><!-- /form-container -->
+
+        <!-- ─── AI Panel ─── -->
+        <aside class="ai-panel glass-card">
+          <div class="ai-panel-header">
+            <div class="ai-status-dot"></div>
+            <span class="ai-panel-title">AI SCREENING</span>
+          </div>
+
+          <!-- Score Gauge -->
+          <div class="gauge-wrap">
+            <svg class="gauge-svg" viewBox="0 0 120 120">
+              <circle class="gauge-track"    cx="60" cy="60" r="50" />
+              <circle class="gauge-fill"     cx="60" cy="60" r="50" id="gauge-fill" />
+              <text class="gauge-pct"  x="60" y="54" text-anchor="middle" dominant-baseline="middle" id="gauge-pct-text">0%</text>
+              <text class="gauge-label" x="60" y="70" text-anchor="middle">Match Score</text>
+            </svg>
+          </div>
+
+          <!-- Criteria Checklist -->
+          <div class="criteria-section">
+            <div class="criteria-title">CANDIDATE CRITERIA</div>
+            <div class="criteria-list" id="criteria-list">
+              <div class="criterion" data-key="role">
+                <div class="crit-icon pending">
+                  <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="3" fill="currentColor"/></svg>
+                </div>
+                <span>Role selected</span>
+              </div>
+              <div class="criterion" data-key="identity">
+                <div class="crit-icon pending">
+                  <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="3" fill="currentColor"/></svg>
+                </div>
+                <span>Identity verified</span>
+              </div>
+              <div class="criterion" data-key="experience">
+                <div class="crit-icon pending">
+                  <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="3" fill="currentColor"/></svg>
+                </div>
+                <span>Experience declared</span>
+              </div>
+              <div class="criterion" data-key="skills">
+                <div class="crit-icon pending">
+                  <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="3" fill="currentColor"/></svg>
+                </div>
+                <span>Skills profiled</span>
+              </div>
+              <div class="criterion" data-key="portfolio">
+                <div class="crit-icon pending">
+                  <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="3" fill="currentColor"/></svg>
+                </div>
+                <span>Portfolio linked</span>
+              </div>
+              <div class="criterion" data-key="story">
+                <div class="crit-icon pending">
+                  <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="3" fill="currentColor"/></svg>
+                </div>
+                <span>Story quality assessed</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Status Message -->
+          <div class="ai-status-section">
+            <div class="ai-status-label">AI STATUS</div>
+            <div class="ai-message-box">
+              <div class="ai-message-cursor"></div>
+              <div class="ai-message-text" id="ai-message-text">Waiting for application data...</div>
+            </div>
+          </div>
+
+          <!-- Criteria count -->
+          <div class="criteria-count">
+            <span id="criteria-count-num">0</span>
+            <span class="criteria-count-label"> / 6 criteria met</span>
+          </div>
+
+          <!-- Scan line animation -->
+          <div class="scan-line" id="scan-line"></div>
+        </aside>
+
+      </div>
+    </section>
+
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* ── Hero ── */
+  #apply-hero {
+    position: relative;
+    padding: 9rem 0 5rem;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-ambient-left {
+    position: absolute;
+    top: -10%;
+    left: -5%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(232,25,44,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-ambient-right {
+    position: absolute;
+    bottom: -20%;
+    right: 5%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,82,82,0.05) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 680px; }
+
+  .hero-title {
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    margin: 1rem 0 1.25rem;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--cyan) 0%, #ff8080 50%, var(--purple) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+  }
+
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    max-width: 500px;
+    margin-bottom: 1.75rem;
+  }
+
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(232,25,44,0.08);
+    border: 1px solid rgba(232,25,44,0.2);
+    border-radius: 100px;
+    padding: 0.5rem 1rem;
+  }
+
+  .ai-badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--cyan);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(232,25,44,0.5); }
+    50% { opacity: 0.8; transform: scale(1.2); box-shadow: 0 0 0 5px rgba(232,25,44,0); }
+  }
+
+  .ai-badge-text {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--cyan);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Form Layout ── */
+  #apply-form-section {
+    padding: 5rem 0 8rem;
+  }
+
+  .form-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  /* ── Form Container ── */
+  .form-container {
+    position: relative;
+    padding: 2.5rem 2.5rem 2rem;
+    min-height: 540px;
+    overflow: hidden;
+  }
+
+  /* ── Step Progress ── */
+  .step-progress {
+    margin-bottom: 2.5rem;
+  }
+
+  .step-track {
+    height: 2px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+  }
+
+  .step-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    border-radius: 2px;
+    width: 33.33%;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .steps-labels {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .step-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: default;
+  }
+
+  .step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .step-num {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    transition: opacity 0.2s;
+  }
+
+  .step-check {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: var(--bg-primary);
+  }
+
+  .step-label.active .step-dot {
+    border-color: var(--cyan);
+    background: rgba(232,25,44,0.15);
+  }
+
+  .step-label.active .step-num { color: var(--cyan); }
+
+  .step-label.completed .step-dot {
+    background: var(--cyan);
+    border-color: var(--cyan);
+  }
+
+  .step-label.completed .step-num { opacity: 0; }
+  .step-label.completed .step-check { opacity: 1; }
+
+  .step-name {
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: color 0.3s;
+  }
+
+  .step-label.active .step-name { color: var(--text-secondary); }
+  .step-label.completed .step-name { color: var(--text-muted); }
+
+  /* ── Form Step ── */
+  .form-step { animation: stepIn 0.4s ease both; }
+  .form-step.hidden { display: none; }
+
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateX(16px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .step-header { margin-bottom: 2rem; }
+
+  .step-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+  }
+
+  .step-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+  }
+
+  .step-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ── Form Fields ── */
+  .form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 0.4rem; }
+
+  .field-label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.01em;
+  }
+
+  .field-label-hint {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .req { color: var(--cyan); }
+
+  .field-input,
+  .field-select,
+  .field-textarea {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 0.875rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+  }
+
+  .field-input::placeholder,
+  .field-textarea::placeholder { color: var(--text-muted); }
+
+  .field-input:focus,
+  .field-select:focus,
+  .field-textarea:focus {
+    border-color: rgba(232,25,44,0.4);
+    background: rgba(232,25,44,0.04);
+    box-shadow: 0 0 0 3px rgba(232,25,44,0.08);
+  }
+
+  .field-input.valid { border-color: rgba(16,185,129,0.4); }
+  .field-input.invalid { border-color: rgba(232,25,44,0.5); }
+
+  .field-select-wrap { position: relative; }
+
+  .field-select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 2.5rem;
+  }
+
+  .field-select option { background: #1a0404; color: var(--text-primary); }
+
+  .select-icon {
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  .field-ai-hint {
+    font-size: 0.75rem;
+    color: var(--cyan);
+    font-family: var(--font-mono);
+    min-height: 1rem;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .field-ai-hint:empty { display: none; }
+
+  /* ── Experience Options ── */
+  .exp-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+  }
+
+  .exp-option { cursor: pointer; }
+  .exp-option input { display: none; }
+
+  .exp-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.875rem 0.5rem;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+
+  .exp-card:hover {
+    border-color: rgba(232,25,44,0.3);
+    background: rgba(232,25,44,0.04);
+  }
+
+  .exp-option input:checked + .exp-card {
+    border-color: var(--cyan);
+    background: rgba(232,25,44,0.1);
+    box-shadow: 0 0 14px rgba(232,25,44,0.1);
+  }
+
+  .exp-val {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+  }
+
+  .exp-sub {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .exp-option input:checked + .exp-card .exp-val { color: var(--cyan); }
+  .exp-option input:checked + .exp-card .exp-sub { color: rgba(232,25,44,0.6); }
+
+  /* ── Skills ── */
+  .skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    min-height: 60px;
+  }
+
+  /* All chip styles in :global() because chips are created dynamically in JS
+     and won't receive Astro's scoped data attribute */
+  :global(.skills-placeholder) {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-style: italic;
+    margin: auto;
+  }
+
+  :global(.skill-chip) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem 0.35rem 0.45rem;
+    border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    font-family: var(--font-sans);
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  :global(.skill-chip:hover) {
+    border-color: rgba(232,25,44,0.4);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+  }
+
+  :global(.skill-chip.selected) {
+    border-color: transparent;
+    background:
+      linear-gradient(#0f0202, #0f0202) padding-box,
+      linear-gradient(135deg, #E8192C 0%, #FF5252 100%) border-box;
+    color: var(--text-primary);
+    box-shadow: 0 0 16px rgba(232,25,44,0.25), 0 2px 8px rgba(0,0,0,0.3);
+    transform: translateY(-1px);
+  }
+
+  :global(.skill-chip::after) {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at center, rgba(232,25,44,0.4), transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :global(.skill-chip.flash::after) {
+    animation: chip-flash 0.45s ease forwards;
+  }
+
+  @keyframes chip-flash {
+    0%   { opacity: 1; transform: scale(0.4); }
+    100% { opacity: 0; transform: scale(2.5); }
+  }
+
+  :global(.skill-tick-badge) {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+    color: transparent;
+  }
+
+  :global(.skill-chip.selected .skill-tick-badge) {
+    background: #E8192C;
+    border-color: #E8192C;
+    color: #fff;
+    transform: scale(1.1);
+    animation: badge-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes badge-pop {
+    0%   { transform: scale(0) rotate(-45deg); }
+    100% { transform: scale(1.1) rotate(0deg); }
+  }
+
+  :global(.skill-name-text) {
+    transition: color 0.2s ease;
+  }
+
+  :global(.skill-chip.selected .skill-name-text) {
+    background: linear-gradient(135deg, #E8192C, #FF5252);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+  }
+
+  .skills-match-bar {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .skills-match-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .skills-bar-track {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .skills-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ── Textarea ── */
+  .field-textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.65;
+  }
+
+  .textarea-wrap { display: flex; flex-direction: column; gap: 0.4rem; }
+
+  .textarea-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .word-count {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    min-width: 60px;
+  }
+
+  .sentiment-bar {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .sentiment-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  /* ── Step Actions ── */
+  .step-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-submit { position: relative; overflow: hidden; }
+
+  .btn-submit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: translateX(-100%);
+  }
+
+  .btn-submit:hover::after {
+    animation: btn-shine 0.6s ease;
+  }
+
+  @keyframes btn-shine {
+    to { transform: translateX(100%); }
+  }
+
+  /* ── Analysis Overlay ── */
+  .analysis-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-primary);
+    border-radius: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 10;
+    overflow: hidden;
+  }
+
+  .analysis-overlay.hidden { display: none; }
+
+  #analysis-canvas {
+    position: absolute;
+    inset: 0;
+    opacity: 0.35;
+  }
+
+  .analysis-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 2rem;
+    max-width: 420px;
+  }
+
+  .analysis-logo { position: relative; width: 80px; height: 80px; }
+
+  .analysis-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(232,25,44,0.3);
+    animation: ring-spin 3s linear infinite;
+  }
+
+  .analysis-ring.ring-1 { animation-duration: 3s; }
+  .analysis-ring.ring-2 { inset: 8px; animation-duration: 2.2s; animation-direction: reverse; border-color: rgba(255,82,82,0.25); }
+  .analysis-ring.ring-3 { inset: 16px; animation-duration: 1.5s; border-color: rgba(255,112,67,0.2); }
+
+  @keyframes ring-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  .analysis-core {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .analysis-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .analysis-message {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--cyan);
+    min-height: 1.2rem;
+    letter-spacing: 0.02em;
+  }
+
+  .analysis-progress-wrap {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .analysis-progress-track {
+    height: 4px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .analysis-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    width: 0%;
+    transition: width 0.5s ease;
+    border-radius: 2px;
+  }
+
+  .analysis-pct {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-align: right;
+  }
+
+  .analysis-log {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-height: 80px;
+  }
+
+  .analysis-log-item {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: logIn 0.4s ease forwards;
+  }
+
+  @keyframes logIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .analysis-log-item::before {
+    content: '▸';
+    color: var(--cyan);
+    font-size: 0.65rem;
+  }
+
+  /* ── Success Screen ── */
+  .success-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--bg-primary);
+    border-radius: inherit;
+    z-index: 11;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .success-screen.hidden { display: none; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .success-icon {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(232,25,44,0.1);
+    border-radius: 50%;
+    border: 1.5px solid rgba(232,25,44,0.3);
+  }
+
+  .success-ring {
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 1px solid rgba(232,25,44,0.15);
+    animation: success-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes success-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.08); opacity: 0.3; }
+  }
+
+  .success-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .success-sub {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 380px;
+  }
+
+  .success-stats {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+    padding: 1.25rem 2rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .success-stat { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+
+  .success-stat-val {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--cyan);
+  }
+
+  .success-stat-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .success-stat-div { width: 1px; height: 36px; background: var(--border); }
+
+  /* ── AI Panel ── */
+  .ai-panel {
+    position: sticky;
+    top: 100px;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow: hidden;
+  }
+
+  .ai-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .ai-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cyan);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  .ai-panel-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  /* ── Gauge ── */
+  .gauge-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .gauge-svg {
+    width: 140px;
+    height: 140px;
+    transform: rotate(-90deg);
+  }
+
+  .gauge-track {
+    fill: none;
+    stroke: rgba(255,255,255,0.06);
+    stroke-width: 8;
+  }
+
+  .gauge-fill {
+    fill: none;
+    stroke: url(#gaugeGrad);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 314.16;
+    stroke-dashoffset: 314.16;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .gauge-pct {
+    fill: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    transform: rotate(90deg);
+    transform-origin: 60px 60px;
+  }
+
+  .gauge-label {
+    fill: var(--text-muted);
+    font-size: 9px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transform: rotate(90deg);
+    transform-origin: 60px 60px;
+  }
+
+  /* ── Criteria ── */
+  .criteria-section { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .criteria-title {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .criteria-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .criterion {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    transition: color 0.3s;
+  }
+
+  .criterion.met { color: var(--text-secondary); }
+
+  .crit-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+  }
+
+  .crit-icon.pending {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-muted);
+  }
+
+  .crit-icon.met {
+    background: rgba(232,25,44,0.15);
+    border: 1px solid rgba(232,25,44,0.3);
+    color: var(--cyan);
+  }
+
+  /* ── AI Status ── */
+  .ai-status-section { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .ai-status-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .ai-message-box {
+    background: rgba(232,25,44,0.05);
+    border: 1px solid rgba(232,25,44,0.15);
+    border-radius: 6px;
+    padding: 0.75rem 0.875rem;
+    position: relative;
+    min-height: 56px;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .ai-message-cursor {
+    width: 7px;
+    height: 12px;
+    background: var(--cyan);
+    border-radius: 1px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    margin-right: 0.5rem;
+    animation: blink-cursor 1s step-end infinite;
+  }
+
+  @keyframes blink-cursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .ai-message-text {
+    font-family: var(--font-mono);
+    font-size: 0.73rem;
+    color: var(--cyan);
+    line-height: 1.55;
+  }
+
+  .criteria-count {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-align: center;
+    color: var(--text-secondary);
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  #criteria-count-num {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--cyan);
+  }
+
+  .criteria-count-label { color: var(--text-muted); }
+
+  /* ── Scan Line ── */
+  .scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.5;
+    top: 0;
+    animation: scan-anim 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes scan-anim {
+    0%   { top: 0%; opacity: 0; }
+    10%  { opacity: 0.5; }
+    90%  { opacity: 0.5; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .form-layout { grid-template-columns: 1fr; }
+    .ai-panel { position: static; order: -1; flex-direction: row; flex-wrap: wrap; gap: 1rem; }
+    .gauge-wrap { order: 1; flex-basis: 120px; }
+    .criteria-section { order: 2; flex: 1; min-width: 200px; }
+    .ai-status-section { order: 3; flex: 1; min-width: 180px; }
+    .criteria-count { order: 4; flex-basis: 100%; }
+    .scan-line { display: none; }
+  }
+
+  @media (max-width: 640px) {
+    .form-container { padding: 1.5rem; }
+    .field-row { grid-template-columns: 1fr; }
+    .exp-options { grid-template-columns: repeat(2, 1fr); }
+    .step-actions { flex-wrap: wrap; }
+    .step-actions .btn-primary, .step-actions .btn-outline { flex: 1; justify-content: center; }
+    .success-stats { flex-direction: column; gap: 0.75rem; }
+    .success-stat-div { width: 60px; height: 1px; }
+    .ai-panel { display: none; }
+  }
+</style>
+
+<script is:inline define:vars={{ roles }}>
+  // ── State ──────────────────────────────────────────────────────────────
+  let currentStep = 1;
+  let criteriaState = { role: false, identity: false, experience: false, skills: false, portfolio: false, story: false };
+  let selectedSkills = new Set();
+  let currentRoleSkills = [];
+  let aiMsgInterval = null;
+  let matchScore = 0;
+
+  const roleSkillsMap = {};
+  roles.forEach(r => { roleSkillsMap[r.value] = r.skills; });
+
+  const roleQuestions = {
+    'senior-ml-engineer':           'Describe a time you scaled an ML model from prototype to production. What bottlenecks did you encounter?',
+    'nlp-llm-specialist':           'How would you approach fine-tuning an LLM for a low-resource language like Bahasa Indonesia with limited labelled data?',
+    'ai-strategy-consultant':       'Describe how you would build an AI transformation roadmap for an Indonesian bank that has zero ML infrastructure today.',
+    'data-scientist':               'Walk us through how you\'d design an A/B experiment to validate a new ML-based recommendation system for an e-commerce client.',
+    'computer-vision-engineer':     'How would you approach building a real-time OCR system for handwritten Bahasa Indonesia documents with inconsistent formatting?',
+    'business-development-manager': 'How would you identify and close your first enterprise AI deal with an Indonesian manufacturing company that is sceptical of AI?',
+    'open-application':             'What\'s the most ambitious AI project you can imagine building for Indonesia in the next 3 years? Walk us through your vision.',
+  };
+
+  const aiMessages = [
+    'Waiting for application data...',
+    'Parsing candidate profile...',
+    'Cross-referencing skill matrix...',
+    'Evaluating cultural alignment signals...',
+    'Running semantic analysis on responses...',
+    'Comparing against top performer profiles...',
+    'Assessing communication clarity...',
+    'Building candidate profile graph...',
+    'Calculating role alignment score...',
+    'Reviewing portfolio signals...',
+    'Analysing career trajectory...',
+    'Checking domain expertise depth...',
+    'Scoring motivation indicators...',
+    'Profiling technical vocabulary...',
+  ];
+
+  // ── DOM refs ────────────────────────────────────────────────────────────
+  const stepFill       = document.getElementById('step-fill');
+  const stepLabels     = document.querySelectorAll('.step-label');
+  const gaugeFill      = document.getElementById('gauge-fill');
+  const gaugePctText   = document.getElementById('gauge-pct-text');
+  const aiMsgText      = document.getElementById('ai-message-text');
+  const criteriaItems  = document.querySelectorAll('.criterion');
+  const countNum       = document.getElementById('criteria-count-num');
+  const roleSelect     = document.getElementById('role');
+  const skillsContainer= document.getElementById('skills-container');
+  const matchPct       = document.getElementById('skills-match-pct');
+  const matchBar       = document.getElementById('skills-bar-fill');
+  const roleHint       = document.getElementById('role-hint');
+  const emailHint      = document.getElementById('email-hint');
+  const whyHint        = document.getElementById('why-hint');
+
+  // ── Gauge SVG gradient ──────────────────────────────────────────────────
+  const gaugeSvg = document.querySelector('.gauge-svg');
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+  grad.setAttribute('id', 'gaugeGrad');
+  grad.setAttribute('x1', '0%'); grad.setAttribute('y1', '0%');
+  grad.setAttribute('x2', '100%'); grad.setAttribute('y2', '100%');
+  const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+  stop1.setAttribute('offset', '0%'); stop1.setAttribute('stop-color', '#E8192C');
+  const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+  stop2.setAttribute('offset', '100%'); stop2.setAttribute('stop-color', '#FF5252');
+  grad.appendChild(stop1); grad.appendChild(stop2); defs.appendChild(grad);
+  gaugeSvg.insertBefore(defs, gaugeSvg.firstChild);
+
+  // ── AI message rotation ─────────────────────────────────────────────────
+  function startAIMessages() {
+    let idx = 0;
+    aiMsgInterval && clearInterval(aiMsgInterval);
+    aiMsgInterval = setInterval(() => {
+      idx = (idx + 1) % aiMessages.length;
+      typeMessage(aiMessages[idx]);
+    }, 3200);
+  }
+
+  function typeMessage(msg) {
+    if (!aiMsgText) return;
+    aiMsgText.textContent = '';
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < msg.length) {
+        aiMsgText.textContent += msg[i++];
+      } else {
+        clearInterval(interval);
+      }
+    }, 28);
+  }
+
+  startAIMessages();
+
+  // ── Step navigation ──────────────────────────────────────────────────────
+  function goToStep(n) {
+    const from = document.getElementById(`step-${currentStep}`);
+    const to   = document.getElementById(`step-${n}`);
+    if (!to) return;
+    from.classList.add('hidden');
+    to.classList.remove('hidden');
+    currentStep = n;
+    updateStepUI();
+    updateScore();
+  }
+
+  function updateStepUI() {
+    const pct = ((currentStep - 1) / 2) * 100 + 16.67;
+    if (stepFill) stepFill.style.width = Math.min(pct, 100) + '%';
+
+    stepLabels.forEach(el => {
+      const n = parseInt(el.dataset.step);
+      el.classList.remove('active', 'completed');
+      if (n === currentStep) el.classList.add('active');
+      if (n < currentStep)   el.classList.add('completed');
+    });
+  }
+
+  updateStepUI();
+
+  // ── Validate step ─────────────────────────────────────────────────────────
+  function validateStep(n) {
+    if (n === 1) {
+      const role  = document.getElementById('role').value;
+      const fname = document.getElementById('fname').value.trim();
+      const lname = document.getElementById('lname').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const city  = document.getElementById('city').value.trim();
+      if (!role)  { shakeField('role');  return false; }
+      if (!fname) { shakeField('fname'); return false; }
+      if (!lname) { shakeField('lname'); return false; }
+      if (!email || !email.includes('@')) { shakeField('email'); return false; }
+      if (!city)  { shakeField('city');  return false; }
+      return true;
+    }
+    if (n === 2) {
+      const exp  = document.querySelector('input[name="experience"]:checked');
+      const linkedin = document.getElementById('linkedin').value.trim();
+      if (!exp)     { shakeField('exp-options'); return false; }
+      if (!linkedin){ shakeField('linkedin');    return false; }
+      return true;
+    }
+    if (n === 3) {
+      const why     = document.getElementById('why-tmk').value.trim();
+      const project = document.getElementById('ai-project').value.trim();
+      const roleQ   = document.getElementById('role-question').value.trim();
+      if (countWords(why) < 30)     { shakeField('why-tmk');      return false; }
+      if (countWords(project) < 20) { shakeField('ai-project');   return false; }
+      if (countWords(roleQ) < 15)   { shakeField('role-question');return false; }
+      return true;
+    }
+    return true;
+  }
+
+  function shakeField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('invalid');
+    el.style.animation = 'shake 0.4s ease';
+    setTimeout(() => { el.style.animation = ''; }, 400);
+    setTimeout(() => el.classList.remove('invalid'), 2500);
+  }
+
+  // ── Button wiring ──────────────────────────────────────────────────────
+  document.querySelectorAll('.step-next').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const next = parseInt(btn.dataset.next);
+      if (validateStep(currentStep)) goToStep(next);
+    });
+  });
+
+  document.querySelectorAll('.step-prev').forEach(btn => {
+    btn.addEventListener('click', () => {
+      goToStep(parseInt(btn.dataset.prev));
+    });
+  });
+
+  document.getElementById('submit-btn')?.addEventListener('click', () => {
+    if (validateStep(3)) runAnalysis();
+  });
+
+  // ── Role select ────────────────────────────────────────────────────────
+  roleSelect.addEventListener('change', () => {
+    const val = roleSelect.value;
+    currentRoleSkills = roleSkillsMap[val] || [];
+    renderSkills();
+    updateRoleQuestion();
+    if (val) {
+      const deptMap = { engineering: 'Engineering', consulting: 'Consulting', growth: 'Growth', general: 'All roles' };
+      const role = roles.find(r => r.value === val);
+      if (role && roleHint) roleHint.textContent = `✓ ${role.dept} — ${currentRoleSkills.length} skills to profile`;
+    }
+    updateScore();
+  });
+
+  function renderSkills() {
+    skillsContainer.innerHTML = '';
+    if (!currentRoleSkills.length) {
+      skillsContainer.innerHTML = '<p class="skills-placeholder">← Select a role first to see relevant skills</p>';
+      return;
+    }
+    currentRoleSkills.forEach(skill => {
+      const chip = document.createElement('div');
+      const isSelected = selectedSkills.has(skill);
+      chip.className = 'skill-chip' + (isSelected ? ' selected' : '');
+      chip.innerHTML = `
+        <span class="skill-tick-badge">
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+            <path d="M1.5 4.5l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="skill-name-text">${skill}</span>
+      `;
+      chip.addEventListener('click', () => {
+        if (selectedSkills.has(skill)) {
+          selectedSkills.delete(skill);
+          chip.classList.remove('selected');
+        } else {
+          selectedSkills.add(skill);
+          chip.classList.add('selected');
+          // burst flash
+          chip.classList.add('flash');
+          setTimeout(() => chip.classList.remove('flash'), 500);
+        }
+        updateSkillBar();
+        updateScore();
+      });
+      skillsContainer.appendChild(chip);
+    });
+    updateSkillBar();
+  }
+
+  function updateSkillBar() {
+    const total = currentRoleSkills.length;
+    const matched = currentRoleSkills.filter(s => selectedSkills.has(s)).length;
+    const pct = total > 0 ? Math.round((matched / total) * 100) : 0;
+    if (matchPct) matchPct.textContent = pct + '%';
+    if (matchBar) matchBar.style.width = pct + '%';
+  }
+
+  // ── Role-specific question ─────────────────────────────────────────────
+  function updateRoleQuestion() {
+    const val = roleSelect.value;
+    const label = document.getElementById('role-question-label');
+    const textarea = document.getElementById('role-question');
+    if (val && roleQuestions[val]) {
+      if (label) label.childNodes[0].textContent = roleQuestions[val] + ' ';
+      if (textarea) textarea.placeholder = 'Share your thinking here...';
+    }
+  }
+
+  // ── Score calculator ──────────────────────────────────────────────────
+  function updateScore() {
+    let score = 0;
+    const criteria = { ...criteriaState };
+
+    // Role
+    if (roleSelect.value) { criteria.role = true; score += 15; }
+
+    // Identity (step 1 fields)
+    const fname = document.getElementById('fname').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const city  = document.getElementById('city').value.trim();
+    if (fname && email.includes('@') && city) { criteria.identity = true; score += 20; }
+
+    // Experience
+    const exp = document.querySelector('input[name="experience"]:checked');
+    if (exp) { criteria.experience = true; score += 15; }
+
+    // Skills
+    const total   = currentRoleSkills.length;
+    const matched = currentRoleSkills.filter(s => selectedSkills.has(s)).length;
+    if (matched > 0) {
+      const skillPct = total > 0 ? matched / total : 0;
+      score += Math.round(skillPct * 20);
+      if (matched >= 2) criteria.skills = true;
+    }
+
+    // Portfolio
+    const linkedin = document.getElementById('linkedin').value.trim();
+    if (linkedin) { criteria.portfolio = true; score += 10; }
+
+    // Story
+    const why     = document.getElementById('why-tmk').value.trim();
+    const project = document.getElementById('ai-project').value.trim();
+    const totalWords = countWords(why) + countWords(project);
+    if (totalWords > 40) { criteria.story = true; score += Math.min(Math.round(totalWords / 10), 20); }
+
+    score = Math.min(score, 99);
+    matchScore = score;
+    criteriaState = criteria;
+
+    updateGauge(score);
+    updateCriteria(criteria);
+  }
+
+  function updateGauge(score) {
+    const circumference = 314.16;
+    const offset = circumference - (score / 100) * circumference;
+    if (gaugeFill) gaugeFill.style.strokeDashoffset = offset;
+    if (gaugePctText) gaugePctText.textContent = score + '%';
+  }
+
+  function updateCriteria(criteria) {
+    let met = 0;
+    criteriaItems.forEach(el => {
+      const key = el.dataset.key;
+      const icon = el.querySelector('.crit-icon');
+      if (criteria[key]) {
+        el.classList.add('met');
+        icon.classList.replace('pending', 'met');
+        icon.innerHTML = `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 3.5-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        met++;
+      } else {
+        el.classList.remove('met');
+        icon.classList.replace('met', 'pending');
+        icon.innerHTML = `<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="3" fill="currentColor"/></svg>`;
+      }
+    });
+    if (countNum) countNum.textContent = met;
+  }
+
+  // ── Text fields ────────────────────────────────────────────────────────
+  ['fname','lname','email','city'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updateScore);
+  });
+
+  document.getElementById('linkedin')?.addEventListener('input', updateScore);
+  document.getElementById('portfolio')?.addEventListener('input', updateScore);
+
+  // Textarea word count + sentiment
+  function wireTextarea(id, countId, sentId) {
+    const ta = document.getElementById(id);
+    const counter = document.getElementById(countId);
+    const sentFill = document.getElementById(sentId)?.querySelector('.sentiment-fill');
+    if (!ta) return;
+    ta.addEventListener('input', () => {
+      const words = countWords(ta.value);
+      if (counter) counter.textContent = words + (words === 1 ? ' word' : ' words');
+      if (sentFill) sentFill.style.width = Math.min(words * 1.2, 100) + '%';
+      updateScore();
+    });
+  }
+
+  wireTextarea('why-tmk',      'why-count',    'why-sentiment');
+  wireTextarea('ai-project',   'project-count','project-sentiment');
+  wireTextarea('role-question','role-q-count', 'role-q-sentiment');
+
+  document.querySelectorAll('input[name="experience"]').forEach(r => {
+    r.addEventListener('change', updateScore);
+  });
+
+  // Email hint
+  document.getElementById('email')?.addEventListener('input', (e) => {
+    if (e.target.value.includes('@') && e.target.value.includes('.')) {
+      if (emailHint) emailHint.textContent = '✓ Valid email format detected';
+    }
+  });
+
+  // ── Analysis animation ─────────────────────────────────────────────────
+  const analysisSteps = [
+    { msg: 'Parsing application data...',               pct: 12 },
+    { msg: 'Cross-referencing skill requirements...',   pct: 25 },
+    { msg: 'Evaluating culture fit signals...',         pct: 40 },
+    { msg: 'Analysing written response quality...',     pct: 55 },
+    { msg: 'Comparing against benchmark profiles...',   pct: 68 },
+    { msg: 'Scoring motivation indicators...',          pct: 80 },
+    { msg: 'Building candidate profile graph...',       pct: 91 },
+    { msg: 'Finalising match score...',                 pct: 98 },
+    { msg: 'Application submitted successfully.',       pct: 100 },
+  ];
+
+  async function collectFormData() {
+    return {
+      role:         document.getElementById('role').value,
+      firstName:    document.getElementById('fname').value.trim(),
+      lastName:     document.getElementById('lname').value.trim(),
+      email:        document.getElementById('email').value.trim(),
+      city:         document.getElementById('city').value.trim(),
+      phone:        document.getElementById('phone').value.trim() || null,
+      experience:   document.querySelector('input[name="experience"]:checked')?.value ?? '',
+      skills:       Array.from(selectedSkills),
+      linkedin:     document.getElementById('linkedin').value.trim(),
+      portfolio:    document.getElementById('portfolio').value.trim() || null,
+      currentOrg:   document.getElementById('current-org').value.trim() || null,
+      whyTmk:       document.getElementById('why-tmk').value.trim(),
+      aiProject:    document.getElementById('ai-project').value.trim(),
+      roleQuestion: document.getElementById('role-question').value.trim(),
+      matchScore,
+    };
+  }
+
+  function runAnalysis() {
+    const overlay   = document.getElementById('analysis-overlay');
+    const progressEl= document.getElementById('analysis-progress');
+    const pctEl     = document.getElementById('analysis-pct');
+    const msgEl     = document.getElementById('analysis-message');
+    const logEl     = document.getElementById('analysis-log');
+    if (!overlay) return;
+
+    overlay.classList.remove('hidden');
+    initAnalysisCanvas();
+    aiMsgInterval && clearInterval(aiMsgInterval);
+
+    // POST data to API in the background while animation plays
+    collectFormData().then(data =>
+      fetch('/api/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).catch(err => console.error('[apply] submit error:', err))
+    );
+
+    let i = 0;
+    function next() {
+      if (i >= analysisSteps.length) { setTimeout(showSuccess, 600); return; }
+      const s = analysisSteps[i++];
+      if (progressEl) progressEl.style.width = s.pct + '%';
+      if (pctEl)      pctEl.textContent = s.pct + '%';
+      if (msgEl)      msgEl.textContent = s.msg;
+
+      if (logEl && i > 1) {
+        const item = document.createElement('div');
+        item.className = 'analysis-log-item';
+        item.textContent = analysisSteps[i - 2].msg;
+        logEl.appendChild(item);
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+      setTimeout(next, i === analysisSteps.length ? 400 : 550 + Math.random() * 300);
+    }
+    next();
+  }
+
+  function showSuccess() {
+    const overlay = document.getElementById('analysis-overlay');
+    const success = document.getElementById('success-screen');
+    const finalScore  = document.getElementById('final-score');
+    const finalSkills = document.getElementById('final-skills');
+
+    if (overlay) overlay.classList.add('hidden');
+    if (success) success.classList.remove('hidden');
+
+    const matched = currentRoleSkills.filter(s => selectedSkills.has(s)).length;
+    if (finalScore)  finalScore.textContent  = matchScore + '%';
+    if (finalSkills) finalSkills.textContent = matched + '/' + currentRoleSkills.length;
+
+    // mark step-fill 100%
+    if (stepFill) stepFill.style.width = '100%';
+  }
+
+  // ── Canvas neural net for analysis overlay ─────────────────────────────
+  function initAnalysisCanvas() {
+    const canvas = document.getElementById('analysis-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const parent = canvas.parentElement;
+    canvas.width  = parent.offsetWidth;
+    canvas.height = parent.offsetHeight;
+    const W = canvas.width, H = canvas.height;
+
+    const nodes = Array.from({ length: 40 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+    }));
+
+    let running = true;
+
+    function draw() {
+      if (!running) return;
+      ctx.clearRect(0, 0, W, H);
+      nodes.forEach(n => {
+        n.x += n.vx; n.y += n.vy;
+        if (n.x < 0 || n.x > W) n.vx *= -1;
+        if (n.y < 0 || n.y > H) n.vy *= -1;
+      });
+
+      for (let a = 0; a < nodes.length; a++) {
+        for (let b = a + 1; b < nodes.length; b++) {
+          const dx = nodes[a].x - nodes[b].x;
+          const dy = nodes[a].y - nodes[b].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(232,25,44,${0.35 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.6;
+            ctx.moveTo(nodes[a].x, nodes[a].y);
+            ctx.lineTo(nodes[b].x, nodes[b].y);
+            ctx.stroke();
+          }
+        }
+        ctx.beginPath();
+        ctx.arc(nodes[a].x, nodes[a].y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(232,25,44,0.6)';
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    // Stop when success screen appears
+    const observer = new MutationObserver(() => {
+      const success = document.getElementById('success-screen');
+      if (success && !success.classList.contains('hidden')) { running = false; observer.disconnect(); }
+    });
+    observer.observe(document.getElementById('success-screen'), { attributes: true });
+  }
+
+  // ── URL param: pre-select role ─────────────────────────────────────────
+  function initFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const roleParam = params.get('role');
+    if (roleParam && roleSelect) {
+      const opt = Array.from(roleSelect.options).find(o => o.value === roleParam);
+      if (opt) {
+        roleSelect.value = roleParam;
+        roleSelect.dispatchEvent(new Event('change'));
+      }
+    }
+  }
+
+  initFromURL();
+
+  // ── Helpers ────────────────────────────────────────────────────────────
+  function countWords(str) {
+    return str.trim().split(/\s+/).filter(w => w.length > 0).length;
+  }
+
+  // ── CSS shake keyframe (injected) ───────────────────────────────────────
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes shake {
+      0%,100%{ transform:translateX(0) }
+      20%{ transform:translateX(-6px) }
+      40%{ transform:translateX(6px) }
+      60%{ transform:translateX(-4px) }
+      80%{ transform:translateX(4px) }
+    }
+  `;
+  document.head.appendChild(style);
+</script>

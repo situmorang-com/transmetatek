@@ -3,23 +3,34 @@ FROM node:23-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies first (cached layer)
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source and build
 COPY . .
-RUN npm run build
 
-# ── Stage 2: Serve ─────────────────────────────────────────────────────────────
-FROM nginx:alpine AS runner
+RUN npm run db:generate && npm run build
 
-# Copy built static files
-COPY --from=builder /app/dist /usr/share/nginx/html
+# ── Stage 2: Run ───────────────────────────────────────────────────────────────
+FROM node:23-alpine AS runner
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
 
-EXPOSE 80
+# sqlite3 CLI for debugging inside the container
+RUN apk add --no-cache sqlite
 
-CMD ["nginx", "-g", "daemon off;"]
+RUN mkdir -p /data
+
+COPY --from=builder /app/dist         ./dist
+COPY --from=builder /app/drizzle      ./drizzle
+COPY --from=builder /app/migrate.mjs  ./migrate.mjs
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+
+ENV HOST=0.0.0.0
+ENV PORT=4321
+ENV NODE_ENV=production
+ENV DB_PATH=/data/applications.db
+
+EXPOSE 4321
+
+CMD ["sh", "-c", "node migrate.mjs && node dist/server/entry.mjs"]

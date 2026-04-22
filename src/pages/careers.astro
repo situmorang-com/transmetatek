@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 
 const openRoles = [
   {
+    value: 'senior-ml-engineer',
     title: 'Senior ML Engineer',
     type: 'Full-time',
     location: 'Jakarta / Remote',
@@ -15,6 +16,7 @@ const openRoles = [
     level: 'Senior',
   },
   {
+    value: 'nlp-llm-specialist',
     title: 'NLP / LLM Specialist',
     type: 'Full-time',
     location: 'Jakarta / Hybrid',
@@ -25,6 +27,7 @@ const openRoles = [
     level: 'Mid–Senior',
   },
   {
+    value: 'ai-strategy-consultant',
     title: 'AI Strategy Consultant',
     type: 'Full-time',
     location: 'Jakarta',
@@ -35,6 +38,7 @@ const openRoles = [
     level: 'Mid–Senior',
   },
   {
+    value: 'data-scientist',
     title: 'Data Scientist',
     type: 'Full-time',
     location: 'Jakarta / Remote',
@@ -45,6 +49,7 @@ const openRoles = [
     level: 'Mid',
   },
   {
+    value: 'computer-vision-engineer',
     title: 'Computer Vision Engineer',
     type: 'Full-time',
     location: 'Jakarta / Hybrid',
@@ -55,6 +60,7 @@ const openRoles = [
     level: 'Mid–Senior',
   },
   {
+    value: 'business-development-manager',
     title: 'Business Development Manager',
     type: 'Full-time',
     location: 'Jakarta',
@@ -231,7 +237,7 @@ const values = [
                   <h3 class="role-title">{role.title}</h3>
                   <p class="role-desc">{role.desc}</p>
                 </div>
-                <a href={`mailto:careers@transmetatek.com?subject=Application: ${role.title}`} class="role-apply-btn">
+                <a href={`/apply?role=${role.value}`} class="role-apply-btn">
                   Apply
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                     <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -271,7 +277,7 @@ const values = [
             We hire for talent and attitude, not just open slots. If you're exceptional
             at what you do and passionate about AI in Indonesia, send us a note anyway.
           </p>
-          <a href="mailto:careers@transmetatek.com?subject=Open Application" class="btn-primary">
+          <a href="/apply?role=open-application" class="btn-primary">
             <span>Send Open Application</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M2 4l6 5 6-5M2 4h12v9H2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
