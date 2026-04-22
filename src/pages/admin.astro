@@ -1,0 +1,647 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { db } from '../db';
+import { applications, internships } from '../db/schema';
+import { desc } from 'drizzle-orm';
+
+// ── Auth: require ?token=ADMIN_TOKEN or Authorization header ──────────────────
+const adminToken = import.meta.env.ADMIN_TOKEN;
+
+if (!adminToken) {
+  return new Response('ADMIN_TOKEN env var not set.', { status: 500 });
+}
+
+const url   = new URL(Astro.request.url);
+const token = url.searchParams.get('token')
+           ?? Astro.request.headers.get('x-admin-token');
+
+if (token !== adminToken) {
+  return new Response('Unauthorized', { status: 401 });
+}
+
+// ── Fetch data ────────────────────────────────────────────────────────────────
+const apps   = await db.select().from(applications).orderBy(desc(applications.createdAt));
+const interns= await db.select().from(internships) .orderBy(desc(internships.createdAt));
+
+// Keep token in links so navigation stays authenticated
+const t = `?token=${encodeURIComponent(adminToken)}`;
+---
+
+<Layout
+  title="Admin — Trans Meta Teknologi"
+  description="Internal admin dashboard"
+>
+  <main id="admin-main">
+    <div class="admin-container">
+
+      <!-- Header -->
+      <div class="admin-header">
+        <div class="admin-logo">
+          <div class="admin-logo-dot"></div>
+          <span>TransMetaTek Admin</span>
+        </div>
+        <div class="admin-meta">
+          <span class="admin-badge">{apps.length} applications</span>
+          <span class="admin-badge">{interns.length} internships</span>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="applications">
+          Job Applications
+          <span class="tab-count">{apps.length}</span>
+        </button>
+        <button class="admin-tab" data-tab="internships">
+          Internship Applications
+          <span class="tab-count">{interns.length}</span>
+        </button>
+      </div>
+
+      <!-- ── Job Applications Tab ── -->
+      <div class="tab-panel" id="tab-applications">
+        {apps.length === 0 ? (
+          <div class="empty-state">No applications yet.</div>
+        ) : (
+          <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Exp</th>
+                  <th>Skills</th>
+                  <th>Score</th>
+                  <th>LinkedIn</th>
+                  <th>Submitted</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {apps.map(a => (
+                  <tr class="app-row" data-id={a.id}>
+                    <td class="td-id">{a.id}</td>
+                    <td class="td-name">
+                      <div class="name-cell">
+                        <span class="name-initials">{a.firstName[0]}{a.lastName[0]}</span>
+                        <span>{a.firstName} {a.lastName}</span>
+                      </div>
+                    </td>
+                    <td><a href={`mailto:${a.email}`} class="td-link">{a.email}</a></td>
+                    <td>
+                      <span class={`role-badge role-${a.role}`}>
+                        {a.role.replace(/-/g, ' ')}
+                      </span>
+                    </td>
+                    <td class="td-mono">{a.experience}</td>
+                    <td class="td-skills">
+                      {JSON.parse(a.skills ?? '[]').slice(0, 4).map((s: string) => (
+                        <span class="skill-tag">{s}</span>
+                      ))}
+                    </td>
+                    <td>
+                      <div class={`score-cell score-${Math.round((a.matchScore ?? 0) / 25)}`}>
+                        {a.matchScore ?? '—'}
+                        {a.matchScore ? '%' : ''}
+                      </div>
+                    </td>
+                    <td>
+                      {a.linkedin
+                        ? <a href={a.linkedin.startsWith('http') ? a.linkedin : `https://${a.linkedin}`}
+                            target="_blank" rel="noopener" class="td-link">View ↗</a>
+                        : <span class="td-muted">—</span>
+                      }
+                    </td>
+                    <td class="td-mono td-date">{new Date(a.createdAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}</td>
+                    <td>
+                      <button class="btn-expand" data-app-id={a.id}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="detail-row hidden" id={`app-detail-${a.id}`}>
+                    <td colspan="10">
+                      <div class="detail-panel">
+                        <div class="detail-grid">
+                          <div class="detail-block">
+                            <div class="detail-label">City</div>
+                            <div class="detail-value">{a.city}</div>
+                          </div>
+                          {a.currentOrg && (
+                            <div class="detail-block">
+                              <div class="detail-label">Organisation</div>
+                              <div class="detail-value">{a.currentOrg}</div>
+                            </div>
+                          )}
+                          {a.portfolio && (
+                            <div class="detail-block">
+                              <div class="detail-label">Portfolio</div>
+                              <a href={a.portfolio.startsWith('http') ? a.portfolio : `https://${a.portfolio}`}
+                                target="_blank" rel="noopener" class="td-link detail-value">{a.portfolio}</a>
+                            </div>
+                          )}
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">Why TransMetaTek</div>
+                          <div class="detail-value detail-text">{a.whyTmk}</div>
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">AI Project</div>
+                          <div class="detail-value detail-text">{a.aiProject}</div>
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">Role Question</div>
+                          <div class="detail-value detail-text">{a.roleQuestion}</div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {apps.length > 0 && (
+          <div class="table-footer">
+            <button class="btn-export" id="export-apps">Export CSV</button>
+          </div>
+        )}
+      </div>
+
+      <!-- ── Internship Applications Tab ── -->
+      <div class="tab-panel hidden" id="tab-internships">
+        {interns.length === 0 ? (
+          <div class="empty-state">No internship applications yet.</div>
+        ) : (
+          <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>University</th>
+                  <th>Year</th>
+                  <th>Area</th>
+                  <th>Duration</th>
+                  <th>Start</th>
+                  <th>Submitted</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {interns.map(i => (
+                  <tr class="app-row" data-id={i.id}>
+                    <td class="td-id">{i.id}</td>
+                    <td class="td-name">
+                      <div class="name-cell">
+                        <span class="name-initials">{i.firstName[0]}{i.lastName[0]}</span>
+                        <span>{i.firstName} {i.lastName}</span>
+                      </div>
+                    </td>
+                    <td><a href={`mailto:${i.email}`} class="td-link">{i.email}</a></td>
+                    <td>{i.university}</td>
+                    <td class="td-mono">{i.yearOfStudy}</td>
+                    <td>
+                      <span class="role-badge">
+                        {i.area.replace(/-/g, ' ')}
+                      </span>
+                    </td>
+                    <td class="td-mono">{i.duration}</td>
+                    <td class="td-mono">{i.availability}</td>
+                    <td class="td-mono td-date">{new Date(i.createdAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}</td>
+                    <td>
+                      <button class="btn-expand" data-intern-id={i.id}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="detail-row hidden" id={`intern-detail-${i.id}`}>
+                    <td colspan="10">
+                      <div class="detail-panel">
+                        <div class="detail-grid">
+                          <div class="detail-block">
+                            <div class="detail-label">Course</div>
+                            <div class="detail-value">{i.course}</div>
+                          </div>
+                          <div class="detail-block">
+                            <div class="detail-label">Skills</div>
+                            <div class="detail-value">
+                              {JSON.parse(i.skills ?? '[]').map((s: string) => (
+                                <span class="skill-tag">{s}</span>
+                              ))}
+                            </div>
+                          </div>
+                          {i.github && (
+                            <div class="detail-block">
+                              <div class="detail-label">GitHub / Portfolio</div>
+                              <a href={i.github.startsWith('http') ? i.github : `https://${i.github}`}
+                                target="_blank" rel="noopener" class="td-link detail-value">{i.github}</a>
+                            </div>
+                          )}
+                          {i.linkedin && (
+                            <div class="detail-block">
+                              <div class="detail-label">LinkedIn</div>
+                              <a href={i.linkedin.startsWith('http') ? i.linkedin : `https://${i.linkedin}`}
+                                target="_blank" rel="noopener" class="td-link detail-value">{i.linkedin}</a>
+                            </div>
+                          )}
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">What excites them about AI for Indonesia</div>
+                          <div class="detail-value detail-text">{i.whatExcites}</div>
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">Most ambitious project</div>
+                          <div class="detail-value detail-text">{i.ambitiousProject}</div>
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">AI dream for internship</div>
+                          <div class="detail-value detail-text">{i.aiDream}</div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {interns.length > 0 && (
+          <div class="table-footer">
+            <button class="btn-export" id="export-interns">Export CSV</button>
+          </div>
+        )}
+      </div>
+
+    </div>
+  </main>
+</Layout>
+
+<style>
+  :global(body) { background: #080101; }
+
+  #admin-main {
+    min-height: 100vh;
+    padding: 2rem 1.5rem 4rem;
+    font-family: var(--font-sans);
+  }
+
+  .admin-container { max-width: 1300px; margin: 0 auto; }
+
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .admin-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+  }
+
+  .admin-logo-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--cyan);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100%{opacity:1;transform:scale(1)}
+    50%{opacity:.7;transform:scale(1.2)}
+  }
+
+  .admin-meta { display: flex; gap: 0.5rem; }
+
+  .admin-badge {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    background: rgba(232,25,44,0.08);
+    border: 1px solid rgba(232,25,44,0.2);
+    color: var(--cyan);
+    border-radius: 100px;
+    padding: 0.25rem 0.75rem;
+  }
+
+  /* Tabs */
+  .admin-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .admin-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    margin-bottom: -1px;
+  }
+
+  .admin-tab:hover { color: var(--text-secondary); }
+
+  .admin-tab.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--cyan);
+  }
+
+  .tab-count {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    background: rgba(255,255,255,0.06);
+    border-radius: 100px;
+    padding: 0.1rem 0.45rem;
+    color: var(--text-muted);
+  }
+
+  .admin-tab.active .tab-count {
+    background: rgba(232,25,44,0.12);
+    color: var(--cyan);
+  }
+
+  /* Tab panels */
+  .tab-panel { }
+  .tab-panel.hidden { display: none; }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  /* Table */
+  .table-scroll { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  .admin-table thead tr {
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .admin-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .admin-table td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-secondary);
+    vertical-align: middle;
+  }
+
+  .app-row:hover td { background: rgba(255,255,255,0.015); }
+
+  .td-id {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    width: 36px;
+  }
+
+  .name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .name-initials {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(232,25,44,0.15);
+    border: 1px solid rgba(232,25,44,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--cyan);
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+  }
+
+  .td-link {
+    color: var(--cyan);
+    text-decoration: none;
+    font-size: 0.8rem;
+  }
+  .td-link:hover { text-decoration: underline; }
+
+  .td-mono { font-family: var(--font-mono); font-size: 0.75rem; }
+  .td-muted { color: var(--text-muted); }
+  .td-date  { white-space: nowrap; color: var(--text-muted); font-size: 0.75rem; }
+
+  .role-badge {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    background: rgba(232,25,44,0.1);
+    border: 1px solid rgba(232,25,44,0.2);
+    color: var(--cyan);
+    white-space: nowrap;
+  }
+
+  .td-skills { display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 220px; }
+
+  .skill-tag {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 3px;
+    padding: 0.15rem 0.4rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .score-cell {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+  }
+  .score-cell.score-0, .score-cell.score-1 { color: var(--text-muted); }
+  .score-cell.score-2 { color: #FF7043; }
+  .score-cell.score-3 { color: #FF5252; }
+  .score-cell.score-4 { color: var(--cyan); }
+
+  /* Expand button */
+  .btn-expand {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.3rem 0.4rem;
+    transition: all 0.2s;
+    display: flex; align-items: center;
+  }
+  .btn-expand:hover { border-color: var(--cyan); color: var(--cyan); }
+  .btn-expand.open svg { transform: rotate(180deg); }
+  .btn-expand svg { transition: transform 0.2s; }
+
+  /* Detail row */
+  .detail-row td { padding: 0; background: rgba(232,25,44,0.02); }
+  .detail-row.hidden { display: none; }
+
+  .detail-panel {
+    padding: 1.5rem 1.5rem 1.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-top: 1px solid rgba(232,25,44,0.1);
+  }
+
+  .detail-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .detail-block { display: flex; flex-direction: column; gap: 0.3rem; }
+  .detail-block.full { width: 100%; }
+
+  .detail-label {
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  .detail-value {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .detail-text {
+    line-height: 1.7;
+    max-width: 760px;
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+  }
+
+  /* Footer */
+  .table-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 0 0;
+  }
+
+  .btn-export {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 0.45rem 1rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .btn-export:hover { border-color: var(--cyan); color: var(--cyan); }
+</style>
+
+<script>
+  // ── Tabs ────────────────────────────────────────────────────────────────
+  document.querySelectorAll('.admin-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      tab.classList.add('active');
+      const panelId = 'tab-' + tab.dataset.tab;
+      document.getElementById(panelId)?.classList.remove('hidden');
+    });
+  });
+
+  // ── Expand rows ─────────────────────────────────────────────────────────
+  document.querySelectorAll('.btn-expand').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const appId    = btn.dataset.appId;
+      const internId = btn.dataset.internId;
+      const detailId = appId ? `app-detail-${appId}` : `intern-detail-${internId}`;
+      const row = document.getElementById(detailId);
+      if (!row) return;
+      row.classList.toggle('hidden');
+      btn.classList.toggle('open');
+    });
+  });
+
+  // ── CSV export ───────────────────────────────────────────────────────────
+  function tableToCSV(tableEl) {
+    const rows = [];
+    tableEl.querySelectorAll('tr').forEach(tr => {
+      if (tr.classList.contains('detail-row')) return;
+      const cells = [...tr.querySelectorAll('th, td')].slice(0, -1); // skip expand col
+      rows.push(cells.map(c => `"${c.textContent.trim().replace(/"/g, '""')}"`).join(','));
+    });
+    return rows.join('\n');
+  }
+
+  function downloadCSV(csv, filename) {
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob),
+      download: filename,
+    });
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  document.getElementById('export-apps')?.addEventListener('click', () => {
+    const table = document.querySelector('#tab-applications .admin-table');
+    if (table) downloadCSV(tableToCSV(table), 'applications.csv');
+  });
+
+  document.getElementById('export-interns')?.addEventListener('click', () => {
+    const table = document.querySelector('#tab-internships .admin-table');
+    if (table) downloadCSV(tableToCSV(table), 'internships.csv');
+  });
+</script>
