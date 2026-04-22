@@ -8,6 +8,13 @@
       "when": 1776815328286,
       "tag": "0000_friendly_jackal",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1776819018338,
+      "tag": "0001_thankful_imperial_guard",
+      "breakpoints": true
     }
   ]
 }

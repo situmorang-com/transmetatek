@@ -267,6 +267,255 @@ const values = [
       </div>
     </section>
 
+    <!-- ── Internship Programme ─────────────────────────────────── -->
+    <section id="internship">
+      <div class="container">
+
+        <div class="intern-header reveal-scale">
+          <div class="tag">// Internship Programme</div>
+          <h2 class="section-heading" style="margin-top:1rem;">
+            Learn by Building <span>Real AI</span>
+          </h2>
+          <p class="section-sub" style="margin-top:1rem;max-width:560px;">
+            Not a coffee-fetching internship. You'll be embedded in a real project team,
+            shipping code that runs in production, under direct mentorship from senior AI engineers.
+          </p>
+        </div>
+
+        <!-- Programme highlights -->
+        <div class="intern-highlights reveal reveal-delay-1">
+          {[
+            { icon: '⚡', label: 'Hands-on from Day 1',      desc: 'Real tickets, real codebase, real impact — from your first week.' },
+            { icon: '🧠', label: 'Senior AI mentorship',     desc: 'Paired with a senior engineer throughout your entire stint.' },
+            { icon: '🇮🇩', label: 'Indonesia-scale problems', desc: 'Work on AI challenges that affect millions of people.' },
+            { icon: '📄', label: 'Path to full-time',        desc: 'Top interns get offers. We built this programme to find future team members.' },
+          ].map(h => (
+            <div class="intern-highlight">
+              <span class="intern-h-icon">{h.icon}</span>
+              <div>
+                <div class="intern-h-label">{h.label}</div>
+                <div class="intern-h-desc">{h.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <!-- Application form -->
+        <div class="intern-form-wrap glass-card reveal reveal-delay-2">
+          <div class="intern-form-header">
+            <div class="intern-form-title-wrap">
+              <div class="intern-pulse-dot"></div>
+              <h3 class="intern-form-title">Apply for an Internship</h3>
+            </div>
+            <p class="intern-form-sub">
+              Tell us who you are and — most importantly — what you're excited to build.
+              We read every application personally.
+            </p>
+          </div>
+
+          <!-- Form -->
+          <form id="intern-form" novalidate>
+
+            <!-- Row: name -->
+            <div class="iform-row">
+              <div class="iform-group">
+                <label class="iform-label" for="i-fname">First name <span class="iform-req">*</span></label>
+                <input type="text" id="i-fname" class="iform-input" placeholder="Budi" required autocomplete="given-name" />
+              </div>
+              <div class="iform-group">
+                <label class="iform-label" for="i-lname">Last name <span class="iform-req">*</span></label>
+                <input type="text" id="i-lname" class="iform-input" placeholder="Santoso" required autocomplete="family-name" />
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="iform-group">
+              <label class="iform-label" for="i-email">Email address <span class="iform-req">*</span></label>
+              <input type="email" id="i-email" class="iform-input" placeholder="budi@ui.ac.id" required autocomplete="email" />
+            </div>
+
+            <!-- Row: university + course -->
+            <div class="iform-row">
+              <div class="iform-group">
+                <label class="iform-label" for="i-uni">University <span class="iform-req">*</span></label>
+                <input type="text" id="i-uni" class="iform-input" placeholder="Universitas Indonesia" required />
+              </div>
+              <div class="iform-group">
+                <label class="iform-label" for="i-course">Course / Major <span class="iform-req">*</span></label>
+                <input type="text" id="i-course" class="iform-input" placeholder="Computer Science" required />
+              </div>
+            </div>
+
+            <!-- Row: year + area -->
+            <div class="iform-row">
+              <div class="iform-group">
+                <label class="iform-label" for="i-year">Year of study <span class="iform-req">*</span></label>
+                <div class="iform-select-wrap">
+                  <select id="i-year" class="iform-select" required>
+                    <option value="">— Select —</option>
+                    <option value="1st year">1st Year</option>
+                    <option value="2nd year">2nd Year</option>
+                    <option value="3rd year">3rd Year</option>
+                    <option value="4th year">4th Year</option>
+                    <option value="masters">Master's</option>
+                    <option value="phd">PhD</option>
+                    <option value="fresh grad">Fresh Graduate</option>
+                  </select>
+                  <svg class="iform-select-icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 5l3.5 3.5L10 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+              <div class="iform-group">
+                <label class="iform-label" for="i-area">Internship area <span class="iform-req">*</span></label>
+                <div class="iform-select-wrap">
+                  <select id="i-area" class="iform-select" required>
+                    <option value="">— Select —</option>
+                    <option value="ml-engineering">ML Engineering</option>
+                    <option value="nlp-llm">NLP / LLM</option>
+                    <option value="computer-vision">Computer Vision</option>
+                    <option value="data-science">Data Science</option>
+                    <option value="ai-strategy">AI Strategy & Consulting</option>
+                    <option value="business-dev">Business Development</option>
+                  </select>
+                  <svg class="iform-select-icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 5l3.5 3.5L10 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row: duration + availability -->
+            <div class="iform-row">
+              <div class="iform-group">
+                <label class="iform-label" for="i-duration">Duration <span class="iform-req">*</span></label>
+                <div class="iform-select-wrap">
+                  <select id="i-duration" class="iform-select" required>
+                    <option value="">— Select —</option>
+                    <option value="1 month">1 month</option>
+                    <option value="2 months">2 months</option>
+                    <option value="3 months">3 months</option>
+                    <option value="6 months">6 months</option>
+                  </select>
+                  <svg class="iform-select-icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 5l3.5 3.5L10 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+              <div class="iform-group">
+                <label class="iform-label" for="i-avail">Earliest start <span class="iform-req">*</span></label>
+                <input type="month" id="i-avail" class="iform-input iform-month" required />
+              </div>
+            </div>
+
+            <!-- Skills -->
+            <div class="iform-group">
+              <label class="iform-label">Skills you already have <span class="iform-hint">(select any that apply)</span></label>
+              <div class="intern-skills" id="intern-skills">
+                {['Python', 'PyTorch', 'TensorFlow', 'scikit-learn', 'SQL', 'Java', 'JavaScript',
+                  'HuggingFace', 'OpenCV', 'R', 'Tableau', 'Excel / Spreadsheets', 'Git', 'Docker', 'Research / Academic writing'].map(s => (
+                  <label class="iskill-chip">
+                    <input type="checkbox" name="intern-skill" value={s} />
+                    <span class="iskill-label">{s}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <!-- Links -->
+            <div class="iform-row">
+              <div class="iform-group">
+                <label class="iform-label" for="i-linkedin">LinkedIn (optional)</label>
+                <input type="url" id="i-linkedin" class="iform-input" placeholder="linkedin.com/in/yourname" />
+              </div>
+              <div class="iform-group">
+                <label class="iform-label" for="i-github">GitHub / Portfolio (optional)</label>
+                <input type="url" id="i-github" class="iform-input" placeholder="github.com/yourname" />
+              </div>
+            </div>
+
+            <!-- ── The 3 key questions ── -->
+            <div class="iform-questions-header">
+              <div class="iform-questions-line"></div>
+              <span>The questions that matter most</span>
+              <div class="iform-questions-line"></div>
+            </div>
+
+            <div class="iform-group">
+              <label class="iform-label" for="i-excites">
+                What excites you most about building AI for Indonesia?
+                <span class="iform-req">*</span>
+                <span class="iform-hint"> — be specific, not generic</span>
+              </label>
+              <div class="iform-textarea-wrap">
+                <textarea id="i-excites" class="iform-textarea" rows="4"
+                  placeholder="What problem in Indonesia's economy, society, or industry makes you think 'AI could fix this — and I want to be the one who does'?"
+                  required></textarea>
+                <div class="iform-textarea-footer">
+                  <span class="iform-wordcount" id="i-excites-count">0 words</span>
+                  <div class="iform-sentiment"><div class="iform-sentiment-fill" id="i-excites-fill"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="iform-group">
+              <label class="iform-label" for="i-project">
+                Describe the most ambitious thing you've built or worked on
+                <span class="iform-req">*</span>
+              </label>
+              <div class="iform-textarea-wrap">
+                <textarea id="i-project" class="iform-textarea" rows="4"
+                  placeholder="A university project, personal project, hackathon, or anything you're proud of — what was it, what was hard about it, what did you ship?"
+                  required></textarea>
+                <div class="iform-textarea-footer">
+                  <span class="iform-wordcount" id="i-project-count">0 words</span>
+                  <div class="iform-sentiment"><div class="iform-sentiment-fill" id="i-project-fill"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="iform-group">
+              <label class="iform-label" for="i-dream">
+                If you could spend your internship solving one AI problem in Indonesia — what would it be and why?
+                <span class="iform-req">*</span>
+                <span class="iform-hint"> — this is your chance to dream big</span>
+              </label>
+              <div class="iform-textarea-wrap">
+                <textarea id="i-dream" class="iform-textarea" rows="4"
+                  placeholder="Don't be shy. Whether it's AI for Bahasa Indonesia dialects, crop yield prediction for farmers, fraud detection for rural banking — tell us what fires you up."
+                  required></textarea>
+                <div class="iform-textarea-footer">
+                  <span class="iform-wordcount" id="i-dream-count">0 words</span>
+                  <div class="iform-sentiment"><div class="iform-sentiment-fill" id="i-dream-fill"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="iform-submit-row">
+              <div class="iform-submit-hint" id="iform-hint"></div>
+              <button type="submit" class="btn-primary iform-submit-btn" id="intern-submit-btn">
+                <span id="intern-btn-label">Send Application</span>
+                <svg id="intern-btn-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 8h12M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+          </form>
+
+          <!-- Success state (hidden until submit) -->
+          <div class="intern-success hidden" id="intern-success">
+            <div class="intern-success-icon">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <path d="M7 16l6 6 12-12" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="intern-success-title">Application Received!</h3>
+            <p class="intern-success-desc">
+              We read every internship application personally. You'll hear back within
+              <strong>5–7 business days</strong>. In the meantime — keep building.
+            </p>
+          </div>
+
+        </div><!-- /intern-form-wrap -->
+      </div>
+    </section>
+
     <!-- ── No Role? ───────────────────────────────────────────── -->
     <section id="open-app">
       <div class="container">
@@ -666,4 +915,458 @@ const values = [
     .hero-stats { gap: 1.25rem; }
     .hstat-div { height: 28px; }
   }
+
+  /* ── Internship Section ── */
+  #internship {
+    padding: 7rem 0 5rem;
+    background: linear-gradient(180deg, transparent 0%, rgba(232,25,44,0.025) 50%, transparent 100%);
+    border-top: 1px solid var(--border);
+  }
+
+  .intern-header { margin-bottom: 3rem; }
+
+  /* Highlights strip */
+  .intern-highlights {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+  }
+
+  .intern-highlight {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 1.5rem;
+    border-right: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    transition: background 0.2s;
+  }
+
+  .intern-highlight:last-child { border-right: none; }
+  .intern-highlight:hover { background: rgba(232,25,44,0.04); }
+
+  .intern-h-icon { font-size: 1.5rem; flex-shrink: 0; line-height: 1; }
+
+  .intern-h-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+  }
+
+  .intern-h-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Form card */
+  .intern-form-wrap {
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .intern-form-header { margin-bottom: 2rem; }
+
+  .intern-form-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .intern-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cyan);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse-dot {
+    0%,100% { opacity:1; transform:scale(1); box-shadow: 0 0 0 0 rgba(232,25,44,0.5); }
+    50%     { opacity:.8; transform:scale(1.15); box-shadow: 0 0 0 5px rgba(232,25,44,0); }
+  }
+
+  .intern-form-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .intern-form-sub {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    max-width: 520px;
+  }
+
+  /* Form grid */
+  #intern-form { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .iform-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .iform-group { display: flex; flex-direction: column; gap: 0.4rem; }
+
+  .iform-label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .iform-req  { color: var(--cyan); }
+  .iform-hint { color: var(--text-muted); font-weight: 400; font-size: 0.75rem; font-family: var(--font-mono); }
+
+  .iform-input,
+  .iform-select,
+  .iform-textarea {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 0.875rem;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+
+  .iform-input::placeholder,
+  .iform-textarea::placeholder { color: var(--text-muted); }
+
+  .iform-input:focus,
+  .iform-select:focus,
+  .iform-textarea:focus {
+    border-color: rgba(232,25,44,0.4);
+    background: rgba(232,25,44,0.03);
+    box-shadow: 0 0 0 3px rgba(232,25,44,0.08);
+  }
+
+  .iform-input.invalid,
+  .iform-select.invalid,
+  .iform-textarea.invalid { border-color: rgba(232,25,44,0.6); }
+
+  .iform-select-wrap { position: relative; }
+  .iform-select { appearance: none; cursor: pointer; padding-right: 2.5rem; }
+  .iform-select option { background: #1a0404; }
+  .iform-select-icon {
+    position: absolute; right: 0.875rem; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); pointer-events: none;
+  }
+
+  .iform-month { color-scheme: dark; }
+
+  /* Skill chips */
+  .intern-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .iskill-chip { cursor: pointer; }
+  .iskill-chip input { display: none; }
+
+  .iskill-label {
+    display: inline-block;
+    padding: 0.3rem 0.75rem;
+    border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,0.09);
+    background: rgba(255,255,255,0.03);
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .iskill-chip:hover .iskill-label {
+    border-color: rgba(232,25,44,0.35);
+    color: var(--text-primary);
+  }
+
+  .iskill-chip input:checked + .iskill-label {
+    border-color: transparent;
+    background:
+      linear-gradient(#0f0202, #0f0202) padding-box,
+      linear-gradient(135deg, #E8192C, #FF5252) border-box;
+    color: #E8192C;
+    font-weight: 600;
+    box-shadow: 0 0 10px rgba(232,25,44,0.2);
+  }
+
+  /* Textarea */
+  .iform-textarea { resize: vertical; min-height: 100px; line-height: 1.65; }
+  .iform-textarea-wrap { display: flex; flex-direction: column; gap: 0.35rem; }
+
+  .iform-textarea-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .iform-wordcount {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    min-width: 55px;
+  }
+
+  .iform-sentiment {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .iform-sentiment-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* Questions divider */
+  .iform-questions-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0.5rem 0;
+  }
+
+  .iform-questions-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), rgba(232,25,44,0.2), var(--border));
+  }
+
+  /* Submit row */
+  .iform-submit-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .iform-submit-hint {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--cyan);
+    min-height: 1rem;
+  }
+
+  .iform-submit-btn { min-width: 180px; justify-content: center; }
+
+  /* Success */
+  .intern-success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.875rem;
+    padding: 3rem 2rem;
+    animation: fadeInUp 0.5s ease;
+  }
+
+  .intern-success.hidden { display: none; }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .intern-success-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(232,25,44,0.3);
+    background: rgba(232,25,44,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .intern-success-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .intern-success-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 420px;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .intern-highlights { grid-template-columns: repeat(2, 1fr); }
+    .intern-highlight:nth-child(2) { border-right: none; }
+    .intern-highlight:nth-child(3) { border-top: 1px solid var(--border); }
+    .intern-highlight:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
+  }
+
+  @media (max-width: 640px) {
+    .intern-highlights { grid-template-columns: 1fr; }
+    .intern-highlight  { border-right: none; border-top: 1px solid var(--border); }
+    .intern-highlight:first-child { border-top: none; }
+    .iform-row         { grid-template-columns: 1fr; }
+    .intern-form-wrap  { padding: 1.5rem; }
+    .iform-submit-row  { flex-direction: column; align-items: stretch; }
+    .iform-submit-btn  { width: 100%; }
+  }
 </style>
+
+<script>
+  // ── Internship form ────────────────────────────────────────────────────
+  function wordCount(str) {
+    return str.trim().split(/\s+/).filter(w => w.length > 0).length;
+  }
+
+  function wireWordCount(textareaId, countId, fillId) {
+    const ta   = document.getElementById(textareaId);
+    const cnt  = document.getElementById(countId);
+    const fill = document.getElementById(fillId);
+    if (!ta) return;
+    ta.addEventListener('input', () => {
+      const w = wordCount(ta.value);
+      if (cnt)  cnt.textContent = w + (w === 1 ? ' word' : ' words');
+      if (fill) fill.style.width = Math.min(w * 1.5, 100) + '%';
+    });
+  }
+
+  wireWordCount('i-excites', 'i-excites-count', 'i-excites-fill');
+  wireWordCount('i-project', 'i-project-count', 'i-project-fill');
+  wireWordCount('i-dream',   'i-dream-count',   'i-dream-fill');
+
+  // shake helper
+  function shake(el) {
+    if (!el) return;
+    el.classList.add('invalid');
+    el.style.animation = 'none';
+    requestAnimationFrame(() => {
+      el.style.animation = 'ishake 0.4s ease';
+    });
+    setTimeout(() => { el.classList.remove('invalid'); el.style.animation = ''; }, 2000);
+  }
+
+  // inject shake keyframe
+  const sty = document.createElement('style');
+  sty.textContent = '@keyframes ishake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}';
+  document.head.appendChild(sty);
+
+  // ── Submit ──────────────────────────────────────────────────────────────
+  document.getElementById('intern-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const get  = (id) => document.getElementById(id);
+    const val  = (id) => get(id)?.value?.trim() ?? '';
+
+    // Validate required fields
+    const required = [
+      { id: 'i-fname',    v: val('i-fname') },
+      { id: 'i-lname',   v: val('i-lname') },
+      { id: 'i-email',   v: val('i-email') },
+      { id: 'i-uni',     v: val('i-uni') },
+      { id: 'i-course',  v: val('i-course') },
+      { id: 'i-year',    v: val('i-year') },
+      { id: 'i-area',    v: val('i-area') },
+      { id: 'i-duration',v: val('i-duration') },
+      { id: 'i-avail',   v: val('i-avail') },
+      { id: 'i-excites', v: val('i-excites') },
+      { id: 'i-project', v: val('i-project') },
+      { id: 'i-dream',   v: val('i-dream') },
+    ];
+
+    const failed = required.find(f => !f.v);
+    if (failed) {
+      shake(get(failed.id));
+      get(failed.id)?.focus();
+      return;
+    }
+
+    if (wordCount(val('i-excites')) < 20) { shake(get('i-excites')); return; }
+    if (wordCount(val('i-project')) < 20) { shake(get('i-project')); return; }
+    if (wordCount(val('i-dream'))   < 20) { shake(get('i-dream'));   return; }
+
+    const skills = Array.from(
+      document.querySelectorAll('input[name="intern-skill"]:checked')
+    ).map(cb => cb.value);
+
+    const btn   = document.getElementById('intern-submit-btn');
+    const label = document.getElementById('intern-btn-label');
+    const icon  = document.getElementById('intern-btn-icon');
+    const hint  = document.getElementById('iform-hint');
+
+    // Loading state
+    if (btn)   btn.disabled = true;
+    if (label) label.textContent = 'Sending...';
+    if (icon)  icon.style.display = 'none';
+    if (hint)  hint.textContent = 'Submitting your application...';
+
+    try {
+      const res = await fetch('/api/internship', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName:        val('i-fname'),
+          lastName:         val('i-lname'),
+          email:            val('i-email'),
+          university:       val('i-uni'),
+          course:           val('i-course'),
+          yearOfStudy:      val('i-year'),
+          area:             val('i-area'),
+          duration:         val('i-duration'),
+          availability:     val('i-avail'),
+          skills,
+          linkedin:         val('i-linkedin') || null,
+          github:           val('i-github')   || null,
+          whatExcites:      val('i-excites'),
+          ambitiousProject: val('i-project'),
+          aiDream:          val('i-dream'),
+        }),
+      });
+
+      if (res.ok) {
+        const form    = document.getElementById('intern-form');
+        const success = document.getElementById('intern-success');
+        if (form)    form.style.display = 'none';
+        if (success) success.classList.remove('hidden');
+        document.getElementById('internship')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        if (hint)  hint.textContent = 'Something went wrong. Please try again.';
+        if (btn)   btn.disabled = false;
+        if (label) label.textContent = 'Send Application';
+        if (icon)  icon.style.display = '';
+      }
+    } catch {
+      if (hint)  hint.textContent = 'Network error. Please try again.';
+      if (btn)   btn.disabled = false;
+      if (label) label.textContent = 'Send Application';
+      if (icon)  icon.style.display = '';
+    }
+  });
+</script>

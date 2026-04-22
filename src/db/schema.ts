@@ -22,3 +22,26 @@ export const applications = sqliteTable('applications', {
 
 export type Application    = typeof applications.$inferSelect;
 export type NewApplication = typeof applications.$inferInsert;
+
+export const internships = sqliteTable('internships', {
+  id:                integer('id').primaryKey({ autoIncrement: true }),
+  firstName:         text('first_name').notNull(),
+  lastName:          text('last_name').notNull(),
+  email:             text('email').notNull(),
+  university:        text('university').notNull(),
+  course:            text('course').notNull(),
+  yearOfStudy:       text('year_of_study').notNull(),
+  area:              text('area').notNull(),
+  duration:          text('duration').notNull(),
+  availability:      text('availability').notNull(),
+  skills:            text('skills').notNull(),    // JSON array
+  github:            text('github'),
+  linkedin:          text('linkedin'),
+  whatExcites:       text('what_excites').notNull(),
+  ambitiousProject:  text('ambitious_project').notNull(),
+  aiDream:           text('ai_dream').notNull(),
+  createdAt:         text('created_at').notNull().$defaultFn(() => new Date().toISOString()),
+});
+
+export type Internship    = typeof internships.$inferSelect;
+export type NewInternship = typeof internships.$inferInsert;
