@@ -4,11 +4,12 @@ FROM node:23-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+# Install all deps including devDependencies (needed for astro build + drizzle-kit)
+RUN npm ci --include=dev
 
 COPY . .
 
-RUN npm run db:generate && npm run build
+RUN npm run build
 
 # ── Stage 2: Run ───────────────────────────────────────────────────────────────
 FROM node:23-alpine AS runner
