@@ -1,0 +1,205 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { db } from '../../../db';
+import { builderApplications } from '../../../db/schema';
+import { eq } from 'drizzle-orm';
+
+const adminToken = import.meta.env.ADMIN_TOKEN;
+if (!adminToken) {
+  return new Response('ADMIN_TOKEN env var not set.', { status: 500 });
+}
+
+const url = new URL(Astro.request.url);
+const token = url.searchParams.get('token') ?? Astro.request.headers.get('x-admin-token');
+if (token !== adminToken) {
+  return new Response('Unauthorized', { status: 401 });
+}
+
+const { id } = Astro.params;
+const builderId = parseInt(id as string);
+
+const builder = await db.select().from(builderApplications).where(eq(builderApplications.id, builderId)).limit(1);
+
+if (builder.length === 0) {
+  return new Response('Builder not found', { status: 404 });
+}
+
+const b = builder[0];
+const ts = JSON.parse(b.traitScores ?? '{}');
+
+const traitLongNames = {
+  ownership: 'Ownership & Hard Work',
+  tolerance: 'Startup Tolerance',
+  ego: 'Low Ego, High Standard',
+  growth: 'Growth & Learning',
+  drive: 'Drive & Motivation',
+  ambition: 'Long-term Ambition',
+  loyalty: 'Loyalty & Commitment',
+};
+
+const traitGrowthTips = {
+  ownership: 'Grow: Start with one problem outside your role this week. Don\'t report it—solve it, then tell your boss.',
+  tolerance: 'Grow: Practice "Plan B" thinking. When priorities shift, don\'t resist—ask "what do we know now, and what can we ship in 24 hours?"',
+  ego: 'Grow: Ask for hard feedback. Start meetings with "what did I miss?" not "here\'s what I did."',
+  growth: 'Grow: Pick one tool/skill you can\'t use. One-week deadline. Ship something with it.',
+  drive: 'Grow: Do one project with no external reward—no pay, no public credit, just because the problem is real.',
+  ambition: 'Grow: Write a specific five-year vision. Not "grow," but "lead retail AI product for Indonesia by 2030."',
+  loyalty: 'Grow: Ask yourself: "What would make me stay if the money stopped?" If only money, that\'s important info.',
+};
+
+let bracketText = '';
+if (b.builderScore >= 80) {
+  bracketText = '🎯 80–100: Strong builder signals across the board.';
+} else if (b.builderScore >= 60) {
+  bracketText = '📈 60–79: Solid on most traits, room to grow in one area.';
+} else if (b.builderScore >= 40) {
+  bracketText = '🔄 40–59: Mixed signals. Strong in one area, weaker in another.';
+} else {
+  bracketText = '❓ 0–39: Different profile. You might be stronger in a different path.';
+}
+---
+
+<Layout title={`${b.firstName} ${b.lastName} - Results`}>
+<style>
+  .results-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--bg-primary);
+  }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: var(--cyan);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  .back-link:hover {
+    text-decoration: underline;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+  .score-display {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(0,150,136,0.1);
+    border-radius: 8px;
+    border: 1px solid var(--cyan);
+  }
+  .score-big {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--cyan);
+    margin-bottom: 0.5rem;
+  }
+  .score-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .bracket-hint {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    border-left: 3px solid var(--cyan);
+  }
+  .traits-section {
+    margin: 2rem 0;
+  }
+  .traits-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+  }
+  .traits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  .trait-card {
+    background: rgba(0,0,0,0.2);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .trait-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .trait-score {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--cyan);
+    margin-bottom: 0.5rem;
+  }
+  .trait-tip {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .admin-note {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: rgba(255,165,0,0.1);
+    border: 1px solid rgba(255,165,0,0.3);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+</style>
+
+<div class="results-container">
+  <a href="/admin?token=dev-builder-admin-2024#tab-builders" class="back-link">← Back to all builders</a>
+
+  <div class="header">
+    <h1>{b.firstName} {b.lastName}</h1>
+    <p>{b.email} · {b.city} · {b.interviewLanguage === 'id' ? '🇮🇩 Indonesian' : '🇬🇧 English'}</p>
+  </div>
+
+  <div class="score-display">
+    <div class="score-big">{b.builderScore}%</div>
+    <div class="score-label">Builder Score</div>
+    <div class="bracket-hint">{bracketText}</div>
+  </div>
+
+  <div class="traits-section">
+    <h2>Your Builder Traits</h2>
+    <div class="traits-grid">
+      {Object.entries(traitLongNames).map(([key, name]) => (
+        <div class="trait-card">
+          <span class="trait-name">{name}</span>
+          <div class="trait-score">{Math.round(ts[key] ?? 0)}%</div>
+          <div class="trait-tip">{traitGrowthTips[key as keyof typeof traitGrowthTips]}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="admin-note">
+    <strong>Admin preview:</strong> This is what {b.firstName} sees after submitting their application. You can use this to verify their experience and scores.
+  </div>
+</div>
+</Layout>

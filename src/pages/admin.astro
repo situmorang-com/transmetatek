@@ -362,11 +362,12 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                         ? <span class={`money-flag ${moneyClass}`}>{money}%</span>
                         : <span class="td-muted">—</span>}
                     </td>
-                    <td>
+                    <td style="display:flex;gap:0.5rem;align-items:center;">
                       {b.linkedin
                         ? <a href={b.linkedin.startsWith('http') ? b.linkedin : `https://${b.linkedin}`}
-                            target="_blank" rel="noopener" class="td-link">View ↗</a>
-                        : <span class="td-muted">—</span>}
+                            target="_blank" rel="noopener" class="td-link">LinkedIn ↗</a>
+                        : null}
+                      <a href={`/admin/builder/${b.id}?token=dev-builder-admin-2024`} class="td-link">Results ↗</a>
                     </td>
                     <td class="td-mono td-date">{new Date(b.createdAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}</td>
                     <td>
