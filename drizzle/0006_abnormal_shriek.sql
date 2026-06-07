@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `builder_applications_phone_unique` ON `builder_applications` (`phone`);

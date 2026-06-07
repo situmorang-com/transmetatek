@@ -36,6 +36,20 @@
       "when": 1780644001721,
       "tag": "0004_happy_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1780872823510,
+      "tag": "0005_famous_sentinel",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1780872888293,
+      "tag": "0006_abnormal_shriek",
+      "breakpoints": true
     }
   ]
 }

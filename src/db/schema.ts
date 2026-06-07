@@ -50,9 +50,9 @@ export const builderApplications = sqliteTable('builder_applications', {
   id:                integer('id').primaryKey({ autoIncrement: true }),
   firstName:         text('first_name').notNull(),
   lastName:          text('last_name').notNull(),
-  email:             text('email').notNull(),
+  email:             text('email').notNull().unique(),
   city:              text('city').notNull(),
-  phone:             text('phone'),                         // WhatsApp number (required at app layer)
+  phone:             text('phone').unique(),                // WhatsApp number (required at app layer, unique to prevent duplicates)
   photo:             text('photo'),                         // profile photo data URL (required at app layer)
   area:              text('area').notNull(),
   interviewLanguage: text('interview_language').notNull(),  // 'id' | 'en'

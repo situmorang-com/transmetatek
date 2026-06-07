@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `builder_applications_email_unique` ON `builder_applications` (`email`);
