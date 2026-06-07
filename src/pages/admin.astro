@@ -335,6 +335,45 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                   const dv = JSON.parse(b.drivers ?? '{}');
                   const money = b.moneyOrientation;
                   const moneyClass = money == null ? '' : money >= 75 ? 'flag-high' : money >= 55 ? 'flag-mid' : 'flag-low';
+
+                  // ── Build an interpretive assessment of this candidate ──
+                  const score = b.builderScore ?? 0;
+                  const traitEntries = Object.entries(TRAIT_LABELS)
+                    .map(([key, label]) => ({ key, label, val: Math.round(ts[key] ?? 0) }))
+                    .sort((a, c) => c.val - a.val);
+                  const strengths = traitEntries.filter(t => t.val >= 70).slice(0, 3);
+                  const weaknesses = traitEntries.filter(t => t.val < 55).slice(-3).reverse();
+
+                  // Overall verdict
+                  let verdict = '', verdictClass = '', verdictWhy = '';
+                  if (score >= 80) {
+                    verdict = 'Strong candidate — invite to paid trial';
+                    verdictClass = 'verdict-strong';
+                    verdictWhy = 'Strong builder signals across the board. Read the written answers to confirm depth, then move to a paid trial.';
+                  } else if (score >= 60) {
+                    verdict = 'Worth a trial — solid with gaps';
+                    verdictClass = 'verdict-good';
+                    verdictWhy = 'Solid on most traits, weaker in one or two areas. If the written answers show real depth, worth a paid trial to see how they execute.';
+                  } else if (score >= 40) {
+                    verdict = 'Borderline — read answers carefully';
+                    verdictClass = 'verdict-mixed';
+                    verdictWhy = 'Mixed signals. Could be strong but writing poorly, or genuinely weak. The written answers and weakest traits decide. If Ownership or Tolerance is low, they will struggle in a startup.';
+                  } else {
+                    verdict = 'Likely not a fit';
+                    verdictClass = 'verdict-weak';
+                    verdictWhy = 'Multiple traits are low. Review the money flag and written answers before passing, but this profile does not match the builder bar.';
+                  }
+
+                  // Money/loyalty caveat
+                  let moneyNote = '';
+                  if (money != null && money >= 75) {
+                    moneyNote = `⚠ Money-primary (${money}%). Expect them to leave if poached aggressively. The paid trial is critical here — do they engage with the work, or are they half-hearted?`;
+                  } else if (money != null && money >= 55) {
+                    moneyNote = `Mixed money orientation (${money}%) — normal. They want fair pay AND growth.`;
+                  } else if (money != null) {
+                    moneyNote = `🟢 Mission-leaning (${money}%). Money is not their primary driver — a good loyalty signal.`;
+                  }
+
                   return (
                   <>
                   <tr class="app-row" data-id={b.id}>
@@ -379,6 +418,34 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                   <tr class="detail-row hidden" id={`builder-detail-${b.id}`}>
                     <td colspan="13">
                       <div class="detail-panel">
+                        <div class={`verdict-card ${verdictClass}`}>
+                          <div class="verdict-top">
+                            <div class="verdict-score-block">
+                              <div class="verdict-score">{score}%</div>
+                              <div class="verdict-score-label">Builder Score</div>
+                            </div>
+                            <div class="verdict-text-block">
+                              <div class="verdict-headline">{verdict}</div>
+                              <div class="verdict-why">{verdictWhy}</div>
+                            </div>
+                          </div>
+                          <div class="verdict-detail-row">
+                            <div class="verdict-col">
+                              <div class="verdict-col-label">✅ Strengths (70%+)</div>
+                              {strengths.length > 0
+                                ? <div class="verdict-chips">{strengths.map(s => <span class="verdict-chip chip-strong">{s.label} {s.val}%</span>)}</div>
+                                : <div class="verdict-none">No standout strengths above 70%.</div>}
+                            </div>
+                            <div class="verdict-col">
+                              <div class="verdict-col-label">⚠ Watch areas (below 55%)</div>
+                              {weaknesses.length > 0
+                                ? <div class="verdict-chips">{weaknesses.map(w => <span class="verdict-chip chip-weak">{w.label} {w.val}%</span>)}</div>
+                                : <div class="verdict-none">No traits below 55% — well-rounded.</div>}
+                            </div>
+                          </div>
+                          {moneyNote && <div class="verdict-money">{moneyNote}</div>}
+                          <div class="verdict-footer">The score ranks and flags — it does not decide. Read the written answers below; they are your real tiebreaker. Every builder is reviewed by a person.</div>
+                        </div>
                         <div class="detail-block full">
                           <div class="detail-label">Trait signal</div>
                           <div class="trait-grid">
@@ -816,6 +883,32 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   .money-flag.flag-low  { color: #10b981; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
   .money-flag.flag-mid  { color: #FFB74D; background: rgba(255,167,77,0.12); border: 1px solid rgba(255,167,77,0.25); }
   .money-flag.flag-high { color: #FF5252; background: rgba(255,82,82,0.12); border: 1px solid rgba(255,82,82,0.28); }
+  /* Verdict / assessment card */
+  .verdict-card { padding: 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.1); border-left-width: 4px; }
+  .verdict-card.verdict-strong { background: rgba(16,185,129,0.07); border-left-color: #10b981; }
+  .verdict-card.verdict-good   { background: rgba(56,189,248,0.07); border-left-color: #38bdf8; }
+  .verdict-card.verdict-mixed  { background: rgba(255,167,77,0.07); border-left-color: #FFB74D; }
+  .verdict-card.verdict-weak   { background: rgba(255,82,82,0.07); border-left-color: #FF5252; }
+  .verdict-top { display: flex; gap: 1.25rem; align-items: center; margin-bottom: 1rem; }
+  .verdict-score-block { text-align: center; flex-shrink: 0; min-width: 90px; }
+  .verdict-score { font-size: 2.5rem; font-weight: 800; line-height: 1; }
+  .verdict-strong .verdict-score { color: #10b981; }
+  .verdict-good   .verdict-score { color: #38bdf8; }
+  .verdict-mixed  .verdict-score { color: #FFB74D; }
+  .verdict-weak   .verdict-score { color: #FF5252; }
+  .verdict-score-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-top: 0.25rem; }
+  .verdict-headline { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; }
+  .verdict-why { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+  .verdict-detail-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding: 1rem 0; border-top: 1px solid rgba(255,255,255,0.08); }
+  .verdict-col-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.5rem; }
+  .verdict-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .verdict-chip { font-size: 0.74rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 5px; white-space: nowrap; }
+  .verdict-chip.chip-strong { color: #10b981; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
+  .verdict-chip.chip-weak { color: #FF5252; background: rgba(255,82,82,0.12); border: 1px solid rgba(255,82,82,0.25); }
+  .verdict-none { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
+  .verdict-money { font-size: 0.83rem; color: var(--text-secondary); padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 6px; margin-bottom: 0.75rem; line-height: 1.5; }
+  .verdict-footer { font-size: 0.78rem; color: var(--text-muted); font-style: italic; line-height: 1.5; }
+  @media (max-width: 640px) { .verdict-detail-row { grid-template-columns: 1fr; } .verdict-top { flex-direction: column; text-align: center; } }
   /* Trait guide toggle & panel */
   .trait-guide-toggle { transition: color 0.2s ease; }
   .trait-guide-toggle:hover { color: var(--text-primary); }
