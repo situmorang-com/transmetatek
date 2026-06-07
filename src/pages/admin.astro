@@ -383,7 +383,10 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                         {b.photo
                           ? <img src={b.photo} alt="" class="name-photo" />
                           : <span class="name-initials">{b.firstName[0]}{b.lastName[0]}</span>}
-                        <span>{b.firstName} {b.lastName}</span>
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                          <span>{b.firstName} {b.lastName}</span>
+                          <a href={`/admin/builder/${b.id}?token=dev-builder-admin-2024`} class="name-link-icon" title="View results">↗</a>
+                        </div>
                       </div>
                     </td>
                     <td><a href={`mailto:${b.email}`} class="td-link">{b.email}</a></td>
@@ -401,14 +404,16 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                         ? <span class={`money-flag ${moneyClass}`}>{money}%</span>
                         : <span class="td-muted">—</span>}
                     </td>
-                    <td style="display:flex;gap:0.5rem;align-items:center;">
+                    <td>
                       {b.linkedin
                         ? <a href={b.linkedin.startsWith('http') ? b.linkedin : `https://${b.linkedin}`}
                             target="_blank" rel="noopener" class="td-link">LinkedIn ↗</a>
-                        : null}
-                      <a href={`/admin/builder/${b.id}?token=dev-builder-admin-2024`} class="td-link">Results ↗</a>
+                        : <span class="td-muted">—</span>}
                     </td>
-                    <td class="td-mono td-date">{new Date(b.createdAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}</td>
+                    <td class="td-mono td-date">
+                      <div>{new Date(b.createdAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}</div>
+                      <div style="font-size:0.75rem;color:var(--text-muted);">{new Date(b.createdAt).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })}</div>
+                    </td>
                     <td>
                       <button class="btn-expand" data-builder-id={b.id}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -883,6 +888,9 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   .money-flag.flag-low  { color: #10b981; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
   .money-flag.flag-mid  { color: #FFB74D; background: rgba(255,167,77,0.12); border: 1px solid rgba(255,167,77,0.25); }
   .money-flag.flag-high { color: #FF5252; background: rgba(255,82,82,0.12); border: 1px solid rgba(255,82,82,0.28); }
+  /* Name link icon (Results next to name) */
+  .name-link-icon { font-size: 0.9rem; color: var(--cyan); opacity: 0; transition: opacity 0.2s ease; text-decoration: none; cursor: pointer; }
+  .app-row:hover .name-link-icon { opacity: 1; }
   /* Verdict / assessment card */
   .verdict-card { padding: 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.1); border-left-width: 4px; }
   .verdict-card.verdict-strong { background: rgba(16,185,129,0.07); border-left-color: #10b981; }
