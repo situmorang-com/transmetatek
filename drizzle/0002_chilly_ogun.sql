@@ -1,0 +1,23 @@
+CREATE TABLE `builder_applications` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`first_name` text NOT NULL,
+	`last_name` text NOT NULL,
+	`email` text NOT NULL,
+	`city` text NOT NULL,
+	`phone` text,
+	`area` text NOT NULL,
+	`interview_language` text NOT NULL,
+	`linkedin` text NOT NULL,
+	`portfolio` text,
+	`grit` text NOT NULL,
+	`tradeoffs` text NOT NULL,
+	`sjt` text NOT NULL,
+	`sjt_score` integer,
+	`work_sample` text NOT NULL,
+	`story_learning` text NOT NULL,
+	`vision` text NOT NULL,
+	`acknowledged` integer NOT NULL,
+	`trait_scores` text NOT NULL,
+	`builder_score` integer NOT NULL,
+	`created_at` text NOT NULL
+);

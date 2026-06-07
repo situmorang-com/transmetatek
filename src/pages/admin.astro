@@ -1,8 +1,28 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { db } from '../db';
-import { applications, internships } from '../db/schema';
+import { applications, internships, builderApplications } from '../db/schema';
 import { desc } from 'drizzle-orm';
+
+// Labels for the builder tab
+const TRAIT_LABELS: Record<string, string> = {
+  drive: 'Drive', growth: 'Growth', ownership: 'Ownership',
+  tolerance: 'Tolerance', ego: 'Low Ego', ambition: 'Ambition', loyalty: 'Loyalty',
+};
+const LANG_LABELS: Record<string, string> = { id: '🇮🇩 Indonesian', en: '🇬🇧 English' };
+const DRIVER_LABELS: Record<string, string> = {
+  build: 'Build something lasting', learn: 'Get better fast', own: 'Own big things',
+  money: 'Earn well soon', status: 'Title & recognition', comfort: 'Comfort & stability',
+};
+const TRAIT_GUIDE: Record<string, string> = {
+  drive: '▪ What it is: Keeps grinding on hard, unglamorous work without being chased. Real intrinsic motivation, not just pay/status. ▪ Strong (80+): Chooses boring work, describes "worked hard for no money" with specificity & joy. ▪ Weak (0–40): Avoids unglamorous tasks, vague on why they\'d keep going without reward. ▪ Red flags: "I do it because my boss told me to" or "if pay stopped, I\'d leave." ▪ Interview: Ask "Tell me about the most boring work you\'ve done that actually mattered. Why did you finish it?" ▪ In writing: Look for specificity—what was the task, why did it matter, what did they actually do?',
+  growth: '▪ What it is: Learns fast & independently. Doesn\'t wait for training courses; runs toward things they can\'t do yet. ▪ Strong (80+): Digs into docs, ships something fast, measures success concretely. ▪ Weak (0–40): Waited for formal training, or doesn\'t have examples of self-directed learning. ▪ Red flags: "I watched YouTube but didn\'t ship anything" or "I waited for proper training." ▪ Interview: Ask "When have you had to learn something hard, fast, because the deadline was real? What did you actually do?" ▪ In writing: Urgency signals real learning. Look for: problem → tried → shipped → measured.',
+  ownership: '▪ What it is: Treats problems as theirs even when "not my job." Finds a way instead of waiting for permission. ▪ Strong (80+): Solves problems proactively, moves forward under ambiguity, doesn\'t wait for clarity. ▪ Weak (0–40): Waits for instruction, reports problems and leaves them, "that\'s not my responsibility." ▪ Red flags: "I told my boss and waited" or "I focused on my own work." ▪ Interview: Ask "Tell me about a time you solved a problem that wasn\'t formally yours. Why did you own it?" ▪ In writing: Real ownership means no excuses, no blame-shifting. "I saw X was broken, I fixed it, I told my boss."',
+  tolerance: '▪ What it is: Comfortable with ambiguity, changing priorities, limited resources. Doesn\'t crumble. ▪ Strong (80+): Shifts priorities mid-week without resentment, sees constraints as creative problems, focuses on what matters now. ▪ Weak (0–40): Panics when plans change, gets frustrated, assumes perfect conditions. ▪ Red flags: "I hate changing priorities" or answers that assume stable, clear, well-resourced conditions. ▪ Interview: Ask "What happens when the company changes priorities mid-week and kills your project? How do you feel?" Listen for acceptance, not resentment. ▪ In writing: Do they adapt or resist? Do they focus on sunk costs or on what\'s next?',
+  ego: '▪ What it is: Takes hard feedback without defending. Credits others. Refuses to ship junk. ▪ Strong (80+): Actively seeks critical feedback, credits collaborators, owns mistakes directly. ▪ Weak (0–40): Defends when criticized, centers themselves, ships without quality bar. ▪ Red flags: "Everyone else was wrong" or "I\'d ship it and fix it later" (without holding a bar). ▪ Interview: Ask "Tell me about a time a junior or peer pointed out a real flaw in your work. How did you respond?" ▪ In writing: Do they credit others? When they describe a mistake, do they own it directly?',
+  ambition: '▪ What it is: Finishes what they start. Builds things that last. Not distracted by shiny. Has a real reason they\'re here *now*. ▪ Strong (80+): Specific vision (not generic), has shipped/completed things, why this work not just any startup. ▪ Weak (0–40): "I jump between interests" or "I want to grow and learn" (everyone says that). ▪ Red flags: No track record of follow-through, generic vision, or jumping every year. ▪ Interview: Ask "Where do you want to be in 5 years? Why is this the work you want to do *now*?" Generic answers = weak ambition. ▪ In writing: Concrete ≠ generic. "Ship AI for Indonesia" beats "work on cool projects."',
+  loyalty: '▪ What it is: Stays & digs in through hard times, not poached for small raises. Mission/team invested, not just paycheck. ▪ Strong (80+): Chooses loyalty even when competitor+40%, stays in rough quarters, mission/team talk. ▪ Weak (0–40): Takes competitor offer, leaves in downturns, "salary is the main thing." ▪ Red flags: Money is top driver, loyalty scenarios answered money-first, "I go where the best opportunity is." ▪ Interview: Ask "If a competitor offered you 40% more after we\'ve trained you, what would you do?" and "What would make you stay if things got hard?" ▪ In writing: Do they talk mission/team or just pay/title?',
+};
 
 // ── Auth: require ?token=ADMIN_TOKEN or Authorization header ──────────────────
 const adminToken = import.meta.env.ADMIN_TOKEN;
@@ -22,6 +42,7 @@ if (token !== adminToken) {
 // ── Fetch data ────────────────────────────────────────────────────────────────
 const apps   = await db.select().from(applications).orderBy(desc(applications.createdAt));
 const interns= await db.select().from(internships) .orderBy(desc(internships.createdAt));
+const builders = await db.select().from(builderApplications).orderBy(desc(builderApplications.createdAt));
 
 // Keep token in links so navigation stays authenticated
 const t = `?token=${encodeURIComponent(adminToken)}`;
@@ -43,6 +64,7 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
         <div class="admin-meta">
           <span class="admin-badge">{apps.length} applications</span>
           <span class="admin-badge">{interns.length} internships</span>
+          <span class="admin-badge">{builders.length} builders</span>
         </div>
       </div>
 
@@ -55,6 +77,10 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
         <button class="admin-tab" data-tab="internships">
           Internship Applications
           <span class="tab-count">{interns.length}</span>
+        </button>
+        <button class="admin-tab" data-tab="builders">
+          Startup Builders
+          <span class="tab-count">{builders.length}</span>
         </button>
       </div>
 
@@ -280,6 +306,179 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
         )}
       </div>
 
+      <!-- ── Startup Builders Tab ── -->
+      <div class="tab-panel hidden" id="tab-builders">
+        {builders.length === 0 ? (
+          <div class="empty-state">No builder profiles yet.</div>
+        ) : (
+          <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Area</th>
+                  <th>Lang</th>
+                  <th>Builder</th>
+                  <th>Loyalty</th>
+                  <th>SJT</th>
+                  <th>Money</th>
+                  <th>LinkedIn</th>
+                  <th>Submitted</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {builders.map(b => {
+                  const ts = JSON.parse(b.traitScores ?? '{}');
+                  const dv = JSON.parse(b.drivers ?? '{}');
+                  const money = b.moneyOrientation;
+                  const moneyClass = money == null ? '' : money >= 75 ? 'flag-high' : money >= 55 ? 'flag-mid' : 'flag-low';
+                  return (
+                  <>
+                  <tr class="app-row" data-id={b.id}>
+                    <td class="td-id">{b.id}</td>
+                    <td class="td-name">
+                      <div class="name-cell">
+                        {b.photo
+                          ? <img src={b.photo} alt="" class="name-photo" />
+                          : <span class="name-initials">{b.firstName[0]}{b.lastName[0]}</span>}
+                        <span>{b.firstName} {b.lastName}</span>
+                      </div>
+                    </td>
+                    <td><a href={`mailto:${b.email}`} class="td-link">{b.email}</a></td>
+                    <td><span class="role-badge">{b.area.replace(/-/g, ' ')}</span></td>
+                    <td class="td-mono">{LANG_LABELS[b.interviewLanguage] ?? b.interviewLanguage}</td>
+                    <td>
+                      <div class={`score-cell score-${Math.round((b.builderScore ?? 0) / 25)}`}>
+                        {b.builderScore ?? '—'}{b.builderScore != null ? '%' : ''}
+                      </div>
+                    </td>
+                    <td class="td-mono">{b.loyaltyScore != null ? b.loyaltyScore + '%' : '—'}</td>
+                    <td class="td-mono">{b.sjtScore != null ? b.sjtScore + '%' : '—'}</td>
+                    <td>
+                      {money != null
+                        ? <span class={`money-flag ${moneyClass}`}>{money}%</span>
+                        : <span class="td-muted">—</span>}
+                    </td>
+                    <td>
+                      {b.linkedin
+                        ? <a href={b.linkedin.startsWith('http') ? b.linkedin : `https://${b.linkedin}`}
+                            target="_blank" rel="noopener" class="td-link">View ↗</a>
+                        : <span class="td-muted">—</span>}
+                    </td>
+                    <td class="td-mono td-date">{new Date(b.createdAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}</td>
+                    <td>
+                      <button class="btn-expand" data-builder-id={b.id}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="detail-row hidden" id={`builder-detail-${b.id}`}>
+                    <td colspan="13">
+                      <div class="detail-panel">
+                        <div class="detail-block full">
+                          <div class="detail-label">Trait signal</div>
+                          <div class="trait-grid">
+                            {Object.entries(TRAIT_LABELS).map(([key, label]) => (
+                              <div class="trait-mini">
+                                <div class="trait-mini-head">
+                                  <span title={TRAIT_GUIDE[key]}>{label}</span>
+                                  <span class="td-mono">{Math.round(ts[key] ?? 0)}%</span>
+                                </div>
+                                <div class="trait-mini-track"><div class="trait-mini-fill" style={`width:${Math.round(ts[key] ?? 0)}%`}></div></div>
+                              </div>
+                            ))}
+                          </div>
+                          <div class="trait-guide-toggle" id={`guide-toggle-${b.id}`} style="margin-top:0.75rem;cursor:pointer;font-size:0.8rem;color:var(--text-muted);text-decoration:underline;">+ Show trait guide</div>
+                          <div class="trait-guide-panel hidden" id={`guide-panel-${b.id}`} style="margin-top:1rem;padding:1rem;background:rgba(255,255,255,0.04);border-radius:6px;border-left:3px solid var(--cyan);">
+                            {Object.entries(TRAIT_LABELS).map(([key, label]) => (
+                              <div style="margin-bottom:0.75rem;font-size:0.8rem;">
+                                <strong style="color:var(--text-primary);">{label}</strong>
+                                <p style="margin:0.25rem 0 0 0;color:var(--text-muted);">{TRAIT_GUIDE[key]}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">Loyalty &amp; money signal (admin only)</div>
+                          <div class="detail-grid">
+                            <div class="detail-block">
+                              <div class="detail-label">Loyalty index</div>
+                              <div class="detail-value td-mono">{b.loyaltyScore != null ? b.loyaltyScore + '%' : '—'}</div>
+                            </div>
+                            <div class="detail-block">
+                              <div class="detail-label">Money orientation</div>
+                              <div class="detail-value">
+                                {money != null
+                                  ? <span class={`money-flag ${moneyClass}`}>{money}% {money >= 75 ? '· money-primary' : money >= 55 ? '· mixed' : '· mission-leaning'}</span>
+                                  : '—'}
+                              </div>
+                            </div>
+                            <div class="detail-block">
+                              <div class="detail-label">Drives them MOST</div>
+                              <div class="detail-value">{dv.most ? (DRIVER_LABELS[dv.most] ?? dv.most) : '—'}</div>
+                            </div>
+                            <div class="detail-block">
+                              <div class="detail-label">Drives them LEAST</div>
+                              <div class="detail-value">{dv.least ? (DRIVER_LABELS[dv.least] ?? dv.least) : '—'}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="detail-grid">
+                          {b.portfolio && (
+                            <div class="detail-block">
+                              <div class="detail-label">Portfolio</div>
+                              <a href={b.portfolio.startsWith('http') ? b.portfolio : `https://${b.portfolio}`}
+                                target="_blank" rel="noopener" class="td-link detail-value">{b.portfolio}</a>
+                            </div>
+                          )}
+                          {b.phone && (
+                            <div class="detail-block">
+                              <div class="detail-label">WhatsApp</div>
+                              <a href={`https://wa.me/${b.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener" class="td-link detail-value">{b.phone} ↗</a>
+                            </div>
+                          )}
+                          <div class="detail-block">
+                            <div class="detail-label">City</div>
+                            <div class="detail-value">{b.city}</div>
+                          </div>
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">First 72 hours (work sample)</div>
+                          <div class="detail-value detail-text">{b.workSample}</div>
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">Learning under fire</div>
+                          <div class="detail-value detail-text">{b.storyLearning}</div>
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">Where they're headed (vision + drive)</div>
+                          <div class="detail-value detail-text">{b.vision}</div>
+                        </div>
+                        {b.noMoneyStory && (
+                          <div class="detail-block full">
+                            <div class="detail-label">Worked hard with little / no money</div>
+                            <div class="detail-value detail-text">{b.noMoneyStory}</div>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                  </>
+                )})}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {builders.length > 0 && (
+          <div class="table-footer">
+            <button class="btn-export" id="export-builders">Export CSV</button>
+          </div>
+        )}
+      </div>
+
     </div>
   </main>
 </Layout>
@@ -458,6 +657,14 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
     font-family: var(--font-mono);
   }
 
+  .name-photo {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(232,25,44,0.35);
+    flex-shrink: 0;
+  }
+
   .td-link {
     color: var(--cyan);
     text-decoration: none;
@@ -587,6 +794,33 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
     letter-spacing: 0.06em;
   }
   .btn-export:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  /* Builder trait mini-bars */
+  .trait-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem 1.5rem; max-width: 720px; }
+  .trait-mini { display: flex; flex-direction: column; gap: 0.3rem; }
+  .trait-mini-head { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--text-secondary); }
+  .trait-mini-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+  .trait-mini-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple)); border-radius: 3px; }
+  @media (max-width: 640px) { .trait-grid { grid-template-columns: 1fr 1fr; } }
+
+  /* Money-orientation flag */
+  .money-flag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .money-flag.flag-low  { color: #10b981; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
+  .money-flag.flag-mid  { color: #FFB74D; background: rgba(255,167,77,0.12); border: 1px solid rgba(255,167,77,0.25); }
+  .money-flag.flag-high { color: #FF5252; background: rgba(255,82,82,0.12); border: 1px solid rgba(255,82,82,0.28); }
+  /* Trait guide toggle & panel */
+  .trait-guide-toggle { transition: color 0.2s ease; }
+  .trait-guide-toggle:hover { color: var(--text-primary); }
+  .trait-guide-panel { animation: slideDown 0.25s ease; }
+  .trait-guide-panel.hidden { display: none; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 
 <script>
@@ -604,9 +838,12 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   // ── Expand rows ─────────────────────────────────────────────────────────
   document.querySelectorAll('.btn-expand').forEach(btn => {
     btn.addEventListener('click', () => {
-      const appId    = btn.dataset.appId;
-      const internId = btn.dataset.internId;
-      const detailId = appId ? `app-detail-${appId}` : `intern-detail-${internId}`;
+      const appId     = btn.dataset.appId;
+      const internId  = btn.dataset.internId;
+      const builderId = btn.dataset.builderId;
+      const detailId  = appId ? `app-detail-${appId}`
+                      : internId ? `intern-detail-${internId}`
+                      : `builder-detail-${builderId}`;
       const row = document.getElementById(detailId);
       if (!row) return;
       row.classList.toggle('hidden');
@@ -643,5 +880,22 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   document.getElementById('export-interns')?.addEventListener('click', () => {
     const table = document.querySelector('#tab-internships .admin-table');
     if (table) downloadCSV(tableToCSV(table), 'internships.csv');
+  });
+
+  document.getElementById('export-builders')?.addEventListener('click', () => {
+    const table = document.querySelector('#tab-builders .admin-table');
+    if (table) downloadCSV(tableToCSV(table), 'startup-builders.csv');
+  });
+
+  // ── Trait guide toggle ────────────────────────────────────────────────
+  document.querySelectorAll('[id^="guide-toggle-"]').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const builderId = toggle.id.replace('guide-toggle-', '');
+      const panel = document.getElementById(`guide-panel-${builderId}`);
+      if (panel) {
+        panel.classList.toggle('hidden');
+        toggle.textContent = panel.classList.contains('hidden') ? '+ Show trait guide' : '− Hide trait guide';
+      }
+    });
   });
 </script>

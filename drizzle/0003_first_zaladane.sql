@@ -1,0 +1,1 @@
+ALTER TABLE `builder_applications` ADD `photo` text;

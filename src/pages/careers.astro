@@ -516,6 +516,27 @@ const values = [
       </div>
     </section>
 
+    <!-- ── Startup Builder Track ──────────────────────────────── -->
+    <section id="builder-cta">
+      <div class="container">
+        <div class="builder-cta-card glass-card reveal-scale">
+          <div class="tag" style="margin-bottom:1.25rem;">// Startup Builder Track</div>
+          <h2 class="builder-cta-title">Think you're a <span>builder</span>, not just an applicant?</h2>
+          <p class="builder-cta-desc">
+            We're looking for drive, ownership, tolerance for ambiguity, low ego, high standards,
+            and long-term ambition. Take our short builder assessment — situational judgement, a
+            real work scenario, and a few honest questions. About 6–8 minutes, mostly clicks.
+          </p>
+          <a href="/startup-builder" class="btn-primary">
+            <span>Start Builder Assessment</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- ── No Role? ───────────────────────────────────────────── -->
     <section id="open-app">
       <div class="container">
@@ -852,6 +873,48 @@ const values = [
   }
 
   /* ── Open Application ── */
+  /* ── Builder CTA ── */
+  #builder-cta { padding: 5rem 0 2rem; }
+  .builder-cta-card {
+    padding: 3.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+    border-color: var(--border-hover);
+  }
+  .builder-cta-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(232,25,44,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .builder-cta-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    position: relative;
+  }
+  .builder-cta-title span {
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .builder-cta-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 560px;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  @media (max-width: 640px) { .builder-cta-card { padding: 2.5rem 1.5rem; } }
+
   #open-app {
     padding: 2rem 0 7rem;
   }

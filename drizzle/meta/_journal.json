@@ -15,6 +15,27 @@
       "when": 1776819018338,
       "tag": "0001_thankful_imperial_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1780625514434,
+      "tag": "0002_chilly_ogun",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1780627871638,
+      "tag": "0003_first_zaladane",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1780644001721,
+      "tag": "0004_happy_tattoo",
+      "breakpoints": true
     }
   ]
 }

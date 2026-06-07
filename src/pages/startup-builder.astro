@@ -1,0 +1,1552 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+// ── Bilingual config (EN default render; ID swapped client-side) ─────────────
+const areas = [
+  { value: 'engineering', en: 'Engineering',           id: 'Engineering' },
+  { value: 'product',     en: 'Product',               id: 'Produk' },
+  { value: 'growth',      en: 'Growth',                id: 'Growth' },
+  { value: 'operations',  en: 'Operations',            id: 'Operasional' },
+  { value: 'open',        en: 'Open / Not sure yet',   id: 'Terbuka / Belum yakin' },
+];
+
+// Situational Judgment Test. best/worst index into options.
+const sjt = [
+  {
+    key: 's1', best: 1, worst: 0,
+    en: {
+      scenario: 'Three days into a new project you realize the goal you were given is vague — and the person who assigned it just went offline for a week.',
+      options: [
+        "Wait until they're back so you don't build the wrong thing.",
+        'Pick the most likely reading, write down your assumptions, start building, and share progress early so it can be corrected.',
+        'Ask a teammate to make the call for you.',
+        'Build two quick throwaway versions of the likeliest interpretations to pull feedback fast.',
+      ],
+    },
+    id: {
+      scenario: 'Tiga hari mengerjakan proyek baru, kamu sadar tujuan yang diberikan masih kabur — dan orang yang memberi tugas baru saja tidak bisa dihubungi selama seminggu.',
+      options: [
+        'Menunggu sampai dia kembali agar tidak salah membangun.',
+        'Pilih tafsiran yang paling mungkin, catat asumsimu, mulai mengerjakan, dan bagikan progres lebih awal agar bisa dikoreksi.',
+        'Minta rekan kerja yang memutuskan untukmu.',
+        'Bangun dua versi cepat sekali pakai dari tafsiran yang paling mungkin untuk menarik masukan dengan cepat.',
+      ],
+    },
+  },
+  {
+    key: 's2', best: 1, worst: 0,
+    en: {
+      scenario: "You're 80% done with a feature you're proud of. Leadership says the market shifted — it's deprioritized, and they need something else by Friday.",
+      options: [
+        "Push to finish yours first — you're so close.",
+        'Feel the sting, reprioritize immediately, salvage anything reusable, and start the new thing.',
+        'Do the new thing, but slowly and resentfully.',
+        'Quietly keep working on your original feature on the side.',
+      ],
+    },
+    id: {
+      scenario: 'Kamu sudah 80% menyelesaikan fitur yang kamu banggakan. Pimpinan bilang pasar berubah — fitur itu diturunkan prioritasnya, dan mereka butuh hal lain hari Jumat.',
+      options: [
+        'Tetap selesaikan fiturmu dulu — kan tinggal sedikit.',
+        'Meski berat, langsung atur ulang prioritas, selamatkan bagian yang bisa dipakai ulang, dan mulai yang baru.',
+        'Kerjakan yang baru, tapi lambat dan dengan setengah hati.',
+        'Diam-diam tetap mengerjakan fitur awalmu di samping.',
+      ],
+    },
+  },
+  {
+    key: 's3', best: 1, worst: 0,
+    en: {
+      scenario: 'In a review, a junior teammate points out a real flaw in your work — in front of the whole team.',
+      options: [
+        'Explain why your approach is actually fine, to protect your standing.',
+        'Thank them, dig into the flaw on the spot, fix it, and say publicly they were right.',
+        'Acknowledge it briefly and move on without changing anything.',
+        'Get a little defensive, but quietly fix it later.',
+      ],
+    },
+    id: {
+      scenario: 'Dalam review, rekan junior menunjukkan kelemahan nyata pada hasil kerjamu — di depan seluruh tim.',
+      options: [
+        'Jelaskan kenapa pendekatanmu sebenarnya sudah benar, demi menjaga reputasimu.',
+        'Berterima kasih, telusuri kelemahannya saat itu juga, perbaiki, dan akui di depan umum bahwa dia benar.',
+        'Akui sekilas lalu lanjut tanpa mengubah apa pun.',
+        'Sedikit defensif, tapi diam-diam memperbaikinya nanti.',
+      ],
+    },
+  },
+  {
+    key: 's4', best: 1, worst: 0,
+    en: {
+      scenario: "You need a result that normally requires a tool or budget you don't have and won't get this quarter. The deadline is real.",
+      options: [
+        "Report that it can't be done without the budget.",
+        'Find a scrappy 80% workaround with what’s available, ship it, and flag the limitation.',
+        'Wait and hope the budget gets approved in time.',
+        'Grind it out manually every single time, without looking for leverage.',
+      ],
+    },
+    id: {
+      scenario: 'Kamu butuh hasil yang biasanya memerlukan alat atau anggaran yang tidak kamu punya dan tidak akan didapat kuartal ini. Tenggatnya nyata.',
+      options: [
+        'Laporkan bahwa ini tidak bisa dikerjakan tanpa anggaran.',
+        'Cari solusi akal-akalan 80% dengan yang ada, rilis, lalu sampaikan keterbatasannya.',
+        'Menunggu dan berharap anggaran disetujui tepat waktu.',
+        'Kerjakan manual terus-menerus, tanpa mencari cara yang lebih efisien.',
+      ],
+    },
+  },
+  {
+    key: 's5', best: 1, worst: 0,
+    en: {
+      scenario: "You can hit the deadline by shipping something you know is mediocre, or slip two days for work you'd be proud of. Leadership hasn't said which they want.",
+      options: [
+        'Silently ship the mediocre version to make the date.',
+        'Surface the trade-off, give a recommendation, and ship the smallest thing that truly clears the bar.',
+        'Silently slip the deadline to protect the quality.',
+        'Ship mediocre now and plan to fix it “later.”',
+      ],
+    },
+    id: {
+      scenario: 'Kamu bisa mengejar tenggat dengan merilis sesuatu yang kamu tahu biasa-biasa saja, atau mundur dua hari demi hasil yang kamu banggakan. Pimpinan belum bilang mana yang mereka mau.',
+      options: [
+        'Diam-diam rilis versi biasa-biasa saja demi mengejar tanggal.',
+        'Sampaikan trade-off-nya, beri rekomendasi, dan rilis hal terkecil yang benar-benar memenuhi standar.',
+        'Diam-diam mundurkan tenggat demi menjaga kualitas.',
+        'Rilis yang biasa-biasa saja sekarang dan berencana memperbaikinya “nanti”.',
+      ],
+    },
+  },
+  {
+    key: 's6', best: 2, worst: 0, trait: 'loyalty',
+    en: {
+      scenario: 'Six months in — after the company invested real time and money training you — a competitor offers 40% more for a similar role. The startup is doing okay, but cash is still tight.',
+      options: [
+        'Take it. Salary is the main reason anyone works.',
+        'Use the offer as leverage to demand a matching raise, and leave if they cannot.',
+        'Talk openly with the founder about your growth and the path ahead before deciding anything.',
+        'Say nothing, keep interviewing quietly, and jump the moment something even higher appears.',
+      ],
+    },
+    id: {
+      scenario: 'Enam bulan berjalan — setelah perusahaan benar-benar menginvestasikan waktu dan uang untuk melatihmu — pesaing menawarkan 40% lebih besar untuk peran serupa. Startup ini baik-baik saja, tapi arus kasnya masih ketat.',
+      options: [
+        'Ambil saja. Gaji adalah alasan utama orang bekerja.',
+        'Pakai tawaran itu sebagai daya tawar untuk menuntut kenaikan setara, dan pergi kalau tidak bisa.',
+        'Bicara terbuka dengan founder soal pertumbuhanmu dan arah ke depan sebelum memutuskan apa pun.',
+        'Diam saja, terus melamar diam-diam, dan langsung pindah begitu ada yang lebih tinggi lagi.',
+      ],
+    },
+  },
+  {
+    key: 's7', best: 1, worst: 3, trait: 'loyalty',
+    en: {
+      scenario: "The company hits a rough quarter. Salaries are still paid, but bonuses are frozen and everyone is stretched thin. No one would blame you for leaving.",
+      options: [
+        'Quietly start interviewing elsewhere right away — protect yourself first.',
+        'Ask leadership for an honest picture, and if the mission still holds, dig in and help fix it.',
+        'Stay, but quietly do the minimum until things get better.',
+        'Demand guarantees about your own compensation before you commit any further.',
+      ],
+    },
+    id: {
+      scenario: 'Perusahaan mengalami kuartal yang berat. Gaji tetap dibayar, tapi bonus dibekukan dan semua orang kewalahan. Tidak ada yang akan menyalahkanmu kalau memilih pergi.',
+      options: [
+        'Diam-diam langsung mulai melamar ke tempat lain — selamatkan diri dulu.',
+        'Minta gambaran jujur dari pimpinan, dan kalau misinya masih relevan, turun tangan dan bantu memperbaikinya.',
+        'Tetap bertahan, tapi diam-diam mengerjakan seminimal mungkin sampai keadaan membaik.',
+        'Menuntut jaminan atas kompensasimu sendiri sebelum berkomitmen lebih jauh.',
+      ],
+    },
+  },
+  {
+    key: 's8', best: 2, worst: 1, trait: 'drive',
+    en: {
+      scenario: 'A boring, invisible task lands on you — cleaning up months of messy records. No one will praise it, but the team keeps tripping over the mess. Three days in, it is as dull as you feared.',
+      options: [
+        'Do the obvious half, then quietly move to something more visible.',
+        'Push it back — argue it is not really your job and someone junior should do it.',
+        'Set a steady pace, finish it properly because it matters, and tighten the process so it stays clean.',
+        'Rush it to "done" and move on, even knowing it is still half-broken.',
+      ],
+    },
+    id: {
+      scenario: 'Tugas membosankan dan tak terlihat jatuh ke tanganmu — merapikan catatan berantakan berbulan-bulan. Tak ada yang akan memuji, tapi tim terus terhambat karenanya. Tiga hari berjalan, ternyata memang semembosankan yang kamu bayangkan.',
+      options: [
+        'Kerjakan bagian yang mudah saja, lalu diam-diam pindah ke hal yang lebih terlihat.',
+        'Tolak — beralasan ini bukan tugasmu dan seharusnya dikerjakan yang lebih junior.',
+        'Atur ritme yang stabil, selesaikan dengan benar karena ini penting, dan rapikan prosesnya agar tetap bersih.',
+        'Buru-buru sampai "selesai" lalu lanjut, walau tahu masih setengah rusak.',
+      ],
+    },
+  },
+  {
+    key: 's9', best: 1, worst: 2, trait: 'ambition',
+    en: {
+      scenario: 'You committed to a hard 12-month goal you believe in. Four months in — progress is slow and unglamorous — a flashier new opportunity appears that would reset you to month zero.',
+      options: [
+        'Drop the goal and chase the new thing; it feels more exciting right now.',
+        'Stay the course, finish what you started, and only switch if it is genuinely more important — not just newer.',
+        'Quietly half-do both, losing momentum on each.',
+        'Keep the old goal but stop really trying, waiting for the next shiny thing.',
+      ],
+    },
+    id: {
+      scenario: 'Kamu berkomitmen pada tujuan berat 12 bulan yang kamu yakini. Empat bulan berjalan — progresnya lambat dan tidak keren — muncul peluang baru yang lebih menggiurkan, tapi membuatmu mulai lagi dari nol.',
+      options: [
+        'Tinggalkan tujuan lama dan kejar yang baru; sekarang terasa lebih seru.',
+        'Tetap pada jalurmu, selesaikan yang sudah dimulai, dan baru beralih kalau memang benar-benar lebih penting — bukan sekadar lebih baru.',
+        'Diam-diam mengerjakan keduanya setengah-setengah, kehilangan momentum di kedua sisi.',
+        'Pertahankan tujuan lama tapi berhenti sungguh-sungguh berusaha, menunggu hal menarik berikutnya.',
+      ],
+    },
+  },
+  {
+    key: 's10', best: 0, worst: 3, trait: 'growth',
+    en: {
+      scenario: 'You are offered a project clearly above your current level. You might struggle in front of everyone. Turning it down is easy and no one would think less of you.',
+      options: [
+        'Take it, be open about what you do not know yet, and close the gap fast with help and hard work.',
+        'Take it, but hide your gaps and hope no one notices you are out of your depth.',
+        'Take it only if they lower what is expected of you first.',
+        'Decline, and stick to what already makes you look competent.',
+      ],
+    },
+    id: {
+      scenario: 'Kamu ditawari proyek yang jelas di atas levelmu saat ini. Kamu mungkin kesulitan di depan semua orang. Menolaknya mudah dan tak ada yang akan memandangmu rendah.',
+      options: [
+        'Ambil, terbuka soal apa yang belum kamu kuasai, dan kejar ketertinggalan dengan bantuan dan kerja keras.',
+        'Ambil, tapi sembunyikan kekuranganmu dan berharap tak ada yang sadar kamu kewalahan.',
+        'Ambil hanya kalau ekspektasi terhadapmu diturunkan dulu.',
+        'Tolak, dan tetap pada hal yang sudah membuatmu terlihat kompeten.',
+      ],
+    },
+  },
+  {
+    key: 's11', best: 2, worst: 0, trait: 'ownership',
+    en: {
+      scenario: "You notice something important quietly breaking. It's clearly outside your role, nobody asked you to touch it, and dealing with it will eat into your own work this week.",
+      options: [
+        "Leave it — it's genuinely not your job, and you have your own targets to hit.",
+        'Mention it to whoever owns it and go back to your own tasks.',
+        "Take it on (or pull in the right people) because it's hurting the company, and flex your own work to make room.",
+        'Wait until someone officially makes it your responsibility.',
+      ],
+    },
+    id: {
+      scenario: 'Kamu menyadari ada hal penting yang diam-diam mulai rusak. Jelas di luar peranmu, tak ada yang memintamu menyentuhnya, dan menanganinya akan memakan waktu kerjamu sendiri minggu ini.',
+      options: [
+        'Biarkan saja — ini memang bukan tugasmu, dan kamu punya target sendiri.',
+        'Sampaikan ke orang yang bertanggung jawab lalu kembali ke tugasmu sendiri.',
+        'Tangani (atau ajak orang yang tepat) karena ini merugikan perusahaan, dan sesuaikan pekerjaanmu sendiri agar ada ruang.',
+        'Tunggu sampai ada yang resmi menjadikannya tanggung jawabmu.',
+      ],
+    },
+  },
+  {
+    key: 's12', best: 1, worst: 0, trait: 'growth',
+    en: {
+      scenario: "You're handed a tool you've never used, with a real deadline. There's no training planned and no one free to teach you right now.",
+      options: [
+        'Wait until the company arranges proper training before you really start.',
+        'Dig into the docs and tutorials, try it straight away, build a small test, and ask for help only once you are genuinely stuck.',
+        'Find one person who knows it and get them to walk you through every step.',
+        'Do the parts you already know and leave the unfamiliar parts undone.',
+      ],
+    },
+    id: {
+      scenario: 'Kamu diberi alat yang belum pernah kamu pakai, dengan tenggat nyata. Tidak ada rencana pelatihan dan tak ada yang sempat mengajarimu sekarang.',
+      options: [
+        'Menunggu sampai perusahaan mengatur pelatihan yang layak sebelum benar-benar mulai.',
+        'Telusuri dokumentasi dan tutorial, langsung coba, buat uji kecil, dan minta bantuan hanya saat benar-benar buntu.',
+        'Cari satu orang yang menguasainya dan minta dia memandumu langkah demi langkah.',
+        'Kerjakan bagian yang sudah kamu kuasai dan biarkan bagian yang asing tidak selesai.',
+      ],
+    },
+  },
+];
+
+const workSample = {
+  en: 'A mid-sized Indonesian retailer signs with us on Monday. They want “AI to cut customer-service costs,” but the data is messy, three of their teams disagree on priorities, and the CEO expects to see something real within two weeks.',
+  id: 'Sebuah peritel menengah Indonesia tanda tangan kontrak hari Senin. Mereka ingin “AI untuk menekan biaya layanan pelanggan,” tapi datanya berantakan, tiga tim mereka berbeda pendapat soal prioritas, dan CEO berharap melihat sesuatu yang nyata dalam dua minggu.',
+};
+
+const traits = [
+  { key: 'drive',     en: 'Drive & Motivation',     id: 'Dorongan & Motivasi' },
+  { key: 'growth',    en: 'Growth & Learning',      id: 'Pertumbuhan & Belajar' },
+  { key: 'ownership', en: 'Ownership & Hard Work',  id: 'Rasa Memiliki & Kerja Keras' },
+  { key: 'tolerance', en: 'Startup Tolerance',      id: 'Toleransi Startup' },
+  { key: 'ego',       en: 'Low Ego, High Standard', id: 'Ego Rendah, Standar Tinggi' },
+  { key: 'ambition',  en: 'Long-term Ambition',     id: 'Ambisi Jangka Panjang' },
+  { key: 'loyalty',   en: 'Loyalty & Commitment',   id: 'Loyalitas & Komitmen' },
+];
+
+// Ipsative "what drives you" — pick the MOST and LEAST true. Forced trade-off
+// (every option sounds fine) makes money-primary motivation hard to hide.
+const drivers = [
+  { key: 'build',   en: 'Building something that outlasts me',     id: 'Membangun sesuatu yang bertahan lebih lama dari saya' },
+  { key: 'learn',   en: 'Getting much better, fast',               id: 'Menjadi jauh lebih baik, dengan cepat' },
+  { key: 'own',     en: 'Being trusted to own big things',         id: 'Dipercaya memegang tanggung jawab besar' },
+  { key: 'money',   en: 'Earning well, soon',                      id: 'Berpenghasilan baik, secepatnya' },
+  { key: 'status',  en: 'A respected title and recognition',       id: 'Jabatan dan pengakuan yang dihormati' },
+  { key: 'comfort', en: 'Comfort, balance, and stability',         id: 'Kenyamanan, keseimbangan, dan kestabilan' },
+];
+
+// Static UI strings. Keys referenced via data-i18n / data-i18n-html / data-i18n-ph.
+const C = {
+  en: {
+    'hero.tag': '// Startup Builder Track',
+    'hero.title': 'We&rsquo;re hiring <span class="gradient-text">builders</span>,<br />not just applicants',
+    'hero.sub': "This isn't a normal application. It's a short builder assessment — situational judgement, a real work scenario, and a few honest questions — designed to surface drive, ownership, tolerance for ambiguity, low ego, high standards, and long-term ambition. About <strong>10 minutes</strong>, mostly clicks. Answer straight.",
+    'hero.badge': 'No trick questions — just answer honestly',
+    'lang.label': 'Language',
+    'step.you': 'You', 'step.operate': 'What drives you', 'step.situations': 'Real situations', 'step.proof': 'Proof',
+    'step1.eyebrow': 'Step 1 of 4', 'step1.title': 'Tell us who you are', 'step1.desc': "The basics, plus the language you'd like to be interviewed in.",
+    'f.fname': 'First name', 'f.lname': 'Last name', 'f.email': 'Email address', 'f.city': 'City / Location', 'f.phone': 'WhatsApp number',
+    'f.area': 'Where do you want to build?', 'f.areaPlaceholder': '— Select an area —',
+    'f.linkedin': 'LinkedIn profile', 'f.portfolio': 'Portfolio / GitHub (optional)',
+    'f.photo': 'Profile photo', 'photo.hint': 'A clear, recent photo of your face. JPG, PNG, or WebP.', 'photo.btn': 'Upload photo', 'photo.change': 'Change photo',
+    'photo.reading': 'Optimising your photo…', 'photo.error': "Couldn't read that image — please try a different photo (a JPG or PNG works best).",
+    'ph.fname': 'Budi', 'ph.lname': 'Santoso', 'ph.email': 'budi@example.com', 'ph.city': 'Jakarta', 'ph.phone': '+62 812 xxxx xxxx',
+    'ph.linkedin': 'linkedin.com/in/yourname', 'ph.portfolio': 'github.com/yourname',
+    'btn.next1': 'Next: What drives you',
+    'step2.eyebrow': 'Step 2 of 4', 'step2.title': 'What actually drives you', 'step2.desc': "There's no 'right' pick to chase here — every option is fine. Just be honest with yourself.",
+    'drivers.q': 'Be honest with yourself — right now, which one matters <strong>most</strong> to you, and which matters <strong>least</strong>?',
+    'drivers.most': 'Most', 'drivers.least': 'Least',
+    'btn.back': 'Back', 'btn.next2': 'Next: Real situations',
+    'step3.eyebrow': 'Step 3 of 4', 'step3.title': 'Real situations',
+    'step3.desc': "For each one, mark the <strong>best</strong> and the <strong>worst</strong> response. There's a real difference between them.",
+    'sjt.best': 'Best', 'sjt.worst': 'Worst', 'btn.next3': 'Next: Proof',
+    'step4.eyebrow': 'Step 4 of 4', 'step4.title': 'Show us how you think', 'step4.desc': 'Two short answers. We read every one — specifics beat polish.',
+    'ws.label': 'Your first 72 hours', 'ws.hint': ' (min 60 words)',
+    'ws.ph': "What would you actually do in your first 72 hours? Be concrete — what you'd look at, who you'd talk to, what you'd ship first.",
+    'sl.label': 'Learning under fire', 'sl.hint': ' (min 50 words)',
+    'sl.ph': 'Tell us about a time you taught yourself something hard, fast, because you had to. What did you do, and how did you know it worked?',
+    'vi.label': "Where you're headed", 'vi.hint': ' (min 40 words)',
+    'vi.ph': 'Where do you want to be in 3–5 years, and why is this the work you want to be doing now?',
+    'nm.label': 'Hard work, no reward', 'nm.hint': ' (min 50 words)',
+    'nm.ph': 'Tell us about a time you worked really hard on something when there was little or no money or reward in it. What was it, and why did you keep going?',
+    'ack.text': "I understand this is a demanding, high-ownership growth journey — with ambiguity, changing priorities, and limited resources — and that's exactly what I want. <span class=\"req\">*</span>",
+    'btn.submit': 'Submit Builder Profile',
+    'success.title': 'Builder Profile received',
+    'success.sub': "Thank you — we read every builder profile personally. If there's a fit, we'll reach out to set up an interview in your chosen language, usually within <strong>3–5 business days</strong>.",
+    'success.scoreLabel': 'Builder Score', 'success.langLabel': 'Interview Language', 'success.back': 'Back to Careers',
+    'success.whatMeans': 'What your score means',
+    'success.scoreBracket': '80–100: Strong builder signals. 60–79: Solid overall, room to grow in one area. 40–59: Mixed signals — might be right fit with more context. 0–39: Different profile.',
+    'success.yourTraits': 'Your builder traits',
+    'success.note': 'These are our observations from your responses. The score is one lens; our team reads your answers by hand to make the real decision. Check out the <a href="/doc/builder-profile-applicant-guide.md" target="_blank" style="color:var(--cyan);text-decoration:underline;">Builder Profile guide</a> to understand what each trait means and how to develop it.',
+    'panel.title': 'BUILDER PROFILE', 'panel.traitTitle': 'TRAIT SIGNAL',
+    'panel.note': 'This is a self-assessment of how you build — there are no trick answers. We weight the situational and written parts most, and read everything by hand.',
+    'word.unit': 'words', 'word.unit1': 'word',
+  },
+  id: {
+    'hero.tag': '// Jalur Startup Builder',
+    'hero.title': 'Kami mencari <span class="gradient-text">builder</span>,<br />bukan sekadar pelamar',
+    'hero.sub': 'Ini bukan lamaran biasa. Ini asesmen builder singkat — penilaian situasional, satu skenario kerja nyata, dan beberapa pertanyaan jujur — untuk menggali dorongan, rasa memiliki, toleransi terhadap ketidakpastian, ego rendah, standar tinggi, dan ambisi jangka panjang. Sekitar <strong>10 menit</strong>, kebanyakan tinggal klik. Jawab apa adanya.',
+    'hero.badge': 'Tanpa pertanyaan jebakan — cukup jawab jujur',
+    'lang.label': 'Bahasa',
+    'step.you': 'Kamu', 'step.operate': 'Yang mendorongmu', 'step.situations': 'Situasi nyata', 'step.proof': 'Bukti',
+    'step1.eyebrow': 'Langkah 1 dari 4', 'step1.title': 'Ceritakan siapa kamu', 'step1.desc': 'Data dasar, plus bahasa yang kamu inginkan untuk wawancara.',
+    'f.fname': 'Nama depan', 'f.lname': 'Nama belakang', 'f.email': 'Alamat email', 'f.city': 'Kota / Lokasi', 'f.phone': 'Nomor WhatsApp',
+    'f.area': 'Di mana kamu ingin membangun?', 'f.areaPlaceholder': '— Pilih bidang —',
+    'f.linkedin': 'Profil LinkedIn', 'f.portfolio': 'Portofolio / GitHub (opsional)',
+    'f.photo': 'Foto profil', 'photo.hint': 'Foto wajahmu yang jelas dan terbaru. JPG, PNG, atau WebP.', 'photo.btn': 'Unggah foto', 'photo.change': 'Ganti foto',
+    'photo.reading': 'Mengoptimalkan fotomu…', 'photo.error': 'Gambar itu tidak bisa dibaca — coba foto lain (JPG atau PNG paling cocok).',
+    'ph.fname': 'Budi', 'ph.lname': 'Santoso', 'ph.email': 'budi@example.com', 'ph.city': 'Jakarta', 'ph.phone': '+62 812 xxxx xxxx',
+    'ph.linkedin': 'linkedin.com/in/namamu', 'ph.portfolio': 'github.com/namamu',
+    'btn.next1': 'Lanjut: Yang mendorongmu',
+    'step2.eyebrow': 'Langkah 2 dari 4', 'step2.title': 'Apa yang sebenarnya mendorongmu', 'step2.desc': "Tidak ada pilihan yang 'benar' untuk dikejar di sini — semua pilihan tidak masalah. Jujur saja pada dirimu sendiri.",
+    'drivers.q': 'Jujur pada dirimu sendiri — saat ini, mana yang <strong>paling</strong> penting bagimu, dan mana yang <strong>paling tidak</strong> penting?',
+    'drivers.most': 'Paling', 'drivers.least': 'Paling tidak',
+    'btn.back': 'Kembali', 'btn.next2': 'Lanjut: Situasi nyata',
+    'step3.eyebrow': 'Langkah 3 dari 4', 'step3.title': 'Situasi nyata',
+    'step3.desc': 'Untuk tiap situasi, tandai respons <strong>terbaik</strong> dan <strong>terburuk</strong>. Ada perbedaan nyata di antaranya.',
+    'sjt.best': 'Terbaik', 'sjt.worst': 'Terburuk', 'btn.next3': 'Lanjut: Bukti',
+    'step4.eyebrow': 'Langkah 4 dari 4', 'step4.title': 'Tunjukkan cara berpikirmu', 'step4.desc': 'Dua jawaban singkat. Kami baca semuanya — yang spesifik lebih bernilai daripada yang sekadar rapi.',
+    'ws.label': '72 jam pertamamu', 'ws.hint': ' (min. 60 kata)',
+    'ws.ph': 'Apa yang benar-benar kamu lakukan dalam 72 jam pertama? Spesifik — apa yang kamu telaah, siapa yang kamu ajak bicara, apa yang kamu rilis duluan.',
+    'sl.label': 'Belajar di bawah tekanan', 'sl.hint': ' (min. 50 kata)',
+    'sl.ph': 'Ceritakan saat kamu harus belajar hal sulit dengan cepat karena keadaan menuntut. Apa yang kamu lakukan, dan bagaimana kamu tahu itu berhasil?',
+    'vi.label': 'Ke mana arahmu', 'vi.hint': ' (min. 40 kata)',
+    'vi.ph': 'Di mana kamu ingin berada dalam 3–5 tahun, dan kenapa ini pekerjaan yang ingin kamu lakukan sekarang?',
+    'nm.label': 'Kerja keras, tanpa imbalan', 'nm.hint': ' (min. 50 kata)',
+    'nm.ph': 'Ceritakan saat kamu bekerja sangat keras untuk sesuatu padahal hampir tidak ada uang atau imbalannya. Apa itu, dan kenapa kamu terus bertahan?',
+    'ack.text': 'Saya paham bahwa ini perjalanan pertumbuhan yang menuntut dan penuh tanggung jawab — dengan ketidakpastian, prioritas yang berubah, dan sumber daya terbatas — dan justru itulah yang saya mau. <span class="req">*</span>',
+    'btn.submit': 'Kirim Profil Builder',
+    'success.title': 'Profil Builder diterima',
+    'success.sub': 'Terima kasih — kami membaca setiap profil builder secara langsung. Jika cocok, kami akan menghubungi untuk menjadwalkan wawancara dalam bahasa pilihanmu, biasanya dalam <strong>3–5 hari kerja</strong>.',
+    'success.scoreLabel': 'Builder Score', 'success.langLabel': 'Bahasa Wawancara', 'success.back': 'Kembali ke Careers',
+    'success.whatMeans': 'Apa arti skormu',
+    'success.scoreBracket': '80–100: Sinyal builder kuat. 60–79: Solid secara keseluruhan, ruang untuk berkembang di satu area. 40–59: Sinyal campur — mungkin cocok dengan konteks lebih. 0–39: Profil berbeda.',
+    'success.yourTraits': 'Trait builder-mu',
+    'success.note': 'Ini pengamatan kami dari jawabanmu. Skor adalah satu lensa; tim kami membaca jawabanmu secara langsung untuk membuat keputusan nyata. Lihat <a href="/doc/builder-profile-applicant-guide.md" target="_blank" style="color:var(--cyan);text-decoration:underline;">panduan Builder Profile</a> untuk memahami apa arti setiap trait dan cara mengembangkannya.',
+    'panel.title': 'PROFIL BUILDER', 'panel.traitTitle': 'SINYAL TRAIT',
+    'panel.note': 'Ini penilaian diri tentang cara kamu membangun — tidak ada jawaban jebakan. Kami memberi bobot terbesar pada bagian situasional dan tertulis, dan membaca semuanya secara manual.',
+    'word.unit': 'kata', 'word.unit1': 'kata',
+  },
+};
+const en = C.en;  // default server render
+---
+
+<Layout
+  title="Startup Builder Application | Trans Meta Teknologi"
+  description="Not a job application — a builder assessment. Available in English and Bahasa Indonesia. We look for drive, ownership, startup tolerance, low ego, high standards, and long-term ambition."
+>
+  <Nav />
+
+  <main id="builder-main">
+
+    <!-- ── Hero ── -->
+    <section id="builder-hero">
+      <div class="hero-ambient-left"></div>
+      <div class="hero-ambient-right"></div>
+      <div class="container hero-content">
+        <div class="tag reveal" data-i18n="hero.tag">{en['hero.tag']}</div>
+        <h1 class="hero-title reveal reveal-delay-1" data-i18n-html="hero.title" set:html={en['hero.title']}></h1>
+        <p class="hero-sub reveal reveal-delay-2" data-i18n-html="hero.sub" set:html={en['hero.sub']}></p>
+        <div class="ai-badge reveal reveal-delay-3">
+          <div class="ai-badge-dot"></div>
+          <span class="ai-badge-text" data-i18n="hero.badge">{en['hero.badge']}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Form Section ── -->
+    <section id="builder-form-section">
+      <div class="container form-layout">
+
+        <!-- ─── Multi-step Form ─── -->
+        <div class="form-container glass-card">
+
+          <!-- Language toggle -->
+          <div class="lang-toggle-wrap">
+            <span class="lang-toggle-label" data-i18n="lang.label">{en['lang.label']}</span>
+            <div class="lang-toggle" id="lang-toggle" role="group" aria-label="Language">
+              <button type="button" class="lang-btn active" data-lang="en">English</button>
+              <button type="button" class="lang-btn" data-lang="id">Bahasa Indonesia</button>
+            </div>
+          </div>
+
+          <!-- Step Progress Bar -->
+          <div class="step-progress">
+            <div class="step-track"><div class="step-fill" id="step-fill"></div></div>
+            <div class="steps-labels">
+              {[
+                { n: 1, key: 'step.you' },
+                { n: 2, key: 'step.operate' },
+                { n: 3, key: 'step.situations' },
+                { n: 4, key: 'step.proof' },
+              ].map(s => (
+                <div class="step-label" data-step={s.n}>
+                  <div class="step-dot">
+                    <span class="step-num">{s.n}</span>
+                    <svg class="step-check" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <span class="step-name" data-i18n={s.key}>{en[s.key]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <!-- ── Step 1: Identity ── -->
+          <div class="form-step" id="step-1">
+            <div class="step-header">
+              <div class="step-eyebrow" data-i18n="step1.eyebrow">{en['step1.eyebrow']}</div>
+              <h2 class="step-title" data-i18n="step1.title">{en['step1.title']}</h2>
+              <p class="step-desc" data-i18n="step1.desc">{en['step1.desc']}</p>
+            </div>
+
+            <div class="form-fields">
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label" for="fname"><span data-i18n="f.fname">{en['f.fname']}</span> <span class="req">*</span></label>
+                  <input type="text" id="fname" class="field-input" data-i18n-ph="ph.fname" placeholder={en['ph.fname']} required autocomplete="given-name" />
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="lname"><span data-i18n="f.lname">{en['f.lname']}</span> <span class="req">*</span></label>
+                  <input type="text" id="lname" class="field-input" data-i18n-ph="ph.lname" placeholder={en['ph.lname']} required autocomplete="family-name" />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="email"><span data-i18n="f.email">{en['f.email']}</span> <span class="req">*</span></label>
+                <input type="email" id="email" class="field-input" data-i18n-ph="ph.email" placeholder={en['ph.email']} required autocomplete="email" />
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label" for="city"><span data-i18n="f.city">{en['f.city']}</span> <span class="req">*</span></label>
+                  <input type="text" id="city" class="field-input" data-i18n-ph="ph.city" placeholder={en['ph.city']} required />
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="phone"><span data-i18n="f.phone">{en['f.phone']}</span> <span class="req">*</span></label>
+                  <input type="tel" id="phone" class="field-input" data-i18n-ph="ph.phone" placeholder={en['ph.phone']} required autocomplete="tel" />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="area"><span data-i18n="f.area">{en['f.area']}</span> <span class="req">*</span></label>
+                <div class="field-select-wrap">
+                  <select id="area" class="field-select" required>
+                    <option value="" data-i18n="f.areaPlaceholder">{en['f.areaPlaceholder']}</option>
+                    {areas.map(a => <option value={a.value} data-area={a.value}>{a.en}</option>)}
+                  </select>
+                  <svg class="select-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label"><span data-i18n="f.photo">{en['f.photo']}</span> <span class="req">*</span></label>
+                <div class="photo-upload" id="photo-upload">
+                  <div class="photo-preview" id="photo-preview">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/>
+                      <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div class="photo-actions">
+                    <label class="photo-btn" for="photo-input" id="photo-btn-label" data-i18n="photo.btn">{en['photo.btn']}</label>
+                    <input type="file" id="photo-input" accept="image/*" hidden />
+                    <span class="photo-hint" data-i18n="photo.hint">{en['photo.hint']}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label" for="linkedin"><span data-i18n="f.linkedin">{en['f.linkedin']}</span> <span class="req">*</span></label>
+                  <input type="url" id="linkedin" class="field-input" data-i18n-ph="ph.linkedin" placeholder={en['ph.linkedin']} required />
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="portfolio"><span data-i18n="f.portfolio">{en['f.portfolio']}</span></label>
+                  <input type="url" id="portfolio" class="field-input" data-i18n-ph="ph.portfolio" placeholder={en['ph.portfolio']} />
+                </div>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <div></div>
+              <button type="button" class="btn-primary step-next" data-next="2">
+                <span data-i18n="btn.next1">{en['btn.next1']}</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Step 2: How you operate ── -->
+          <div class="form-step hidden" id="step-2">
+            <div class="step-header">
+              <div class="step-eyebrow" data-i18n="step2.eyebrow">{en['step2.eyebrow']}</div>
+              <h2 class="step-title" data-i18n="step2.title">{en['step2.title']}</h2>
+              <p class="step-desc" data-i18n="step2.desc">{en['step2.desc']}</p>
+            </div>
+
+            <div class="form-fields">
+              <div class="field-group">
+                <label class="field-label" data-i18n-html="drivers.q" set:html={en['drivers.q']}></label>
+                <div class="drivers-head">
+                  <span></span>
+                  <span class="drivers-col-label" data-i18n="drivers.most">{en['drivers.most']}</span>
+                  <span class="drivers-col-label" data-i18n="drivers.least">{en['drivers.least']}</span>
+                </div>
+                <div class="drivers-list" id="drivers-list">
+                  {drivers.map(d => (
+                    <div class="driver-row" data-driver={d.key}>
+                      <span class="driver-text">{d.en}</span>
+                      <button type="button" class="driver-pick driver-most" data-kind="most" aria-label="Most"></button>
+                      <button type="button" class="driver-pick driver-least" data-kind="least" aria-label="Least"></button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button type="button" class="btn-outline step-prev" data-prev="1">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span data-i18n="btn.back">{en['btn.back']}</span>
+              </button>
+              <button type="button" class="btn-primary step-next" data-next="3">
+                <span data-i18n="btn.next2">{en['btn.next2']}</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Step 3: SJT ── -->
+          <div class="form-step hidden" id="step-3">
+            <div class="step-header">
+              <div class="step-eyebrow" data-i18n="step3.eyebrow">{en['step3.eyebrow']}</div>
+              <h2 class="step-title" data-i18n="step3.title">{en['step3.title']}</h2>
+              <p class="step-desc" data-i18n-html="step3.desc" set:html={en['step3.desc']}></p>
+            </div>
+
+            <div class="form-fields">
+              <div class="sjt-list" id="sjt-list">
+                {sjt.map((s, si) => (
+                  <div class="sjt-card" data-sjt={s.key} data-idx={si}>
+                    <div class="sjt-scenario"><span class="sjt-num">{si + 1}</span><span class="sjt-scen-text">{s.en.scenario}</span></div>
+                    <div class="sjt-head">
+                      <span></span>
+                      <span class="sjt-col-label" data-i18n="sjt.best">{en['sjt.best']}</span>
+                      <span class="sjt-col-label" data-i18n="sjt.worst">{en['sjt.worst']}</span>
+                    </div>
+                    {s.en.options.map((opt, oi) => (
+                      <div class="sjt-option" data-opt={oi}>
+                        <span class="sjt-opt-text">{opt}</span>
+                        <button type="button" class="sjt-pick sjt-best" data-kind="best" aria-label="Best"></button>
+                        <button type="button" class="sjt-pick sjt-worst" data-kind="worst" aria-label="Worst"></button>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button type="button" class="btn-outline step-prev" data-prev="2">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span data-i18n="btn.back">{en['btn.back']}</span>
+              </button>
+              <button type="button" class="btn-primary step-next" data-next="4">
+                <span data-i18n="btn.next3">{en['btn.next3']}</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Step 4: Proof + commitment ── -->
+          <div class="form-step hidden" id="step-4">
+            <div class="step-header">
+              <div class="step-eyebrow" data-i18n="step4.eyebrow">{en['step4.eyebrow']}</div>
+              <h2 class="step-title" data-i18n="step4.title">{en['step4.title']}</h2>
+              <p class="step-desc" data-i18n="step4.desc">{en['step4.desc']}</p>
+            </div>
+
+            <div class="form-fields">
+              <div class="field-group">
+                <label class="field-label" for="work-sample">
+                  <span data-i18n="ws.label">{en['ws.label']}</span> <span class="req">*</span>
+                  <span class="field-label-hint" data-i18n="ws.hint">{en['ws.hint']}</span>
+                </label>
+                <div class="scenario-box" data-i18n="__ws_scenario">{workSample.en}</div>
+                <div class="textarea-wrap">
+                  <textarea id="work-sample" class="field-textarea" rows="5" data-i18n-ph="ws.ph" placeholder={en['ws.ph']} required></textarea>
+                  <div class="textarea-meta">
+                    <span class="word-count" id="ws-count" data-count="0">0 words</span>
+                    <div class="sentiment-bar" id="ws-sent"><div class="sentiment-fill"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="story-learning">
+                  <span data-i18n="sl.label">{en['sl.label']}</span> <span class="req">*</span>
+                  <span class="field-label-hint" data-i18n="sl.hint">{en['sl.hint']}</span>
+                </label>
+                <div class="textarea-wrap">
+                  <textarea id="story-learning" class="field-textarea" rows="4" data-i18n-ph="sl.ph" placeholder={en['sl.ph']} required></textarea>
+                  <div class="textarea-meta">
+                    <span class="word-count" id="sl-count" data-count="0">0 words</span>
+                    <div class="sentiment-bar" id="sl-sent"><div class="sentiment-fill"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="vision">
+                  <span data-i18n="vi.label">{en['vi.label']}</span> <span class="req">*</span>
+                  <span class="field-label-hint" data-i18n="vi.hint">{en['vi.hint']}</span>
+                </label>
+                <div class="textarea-wrap">
+                  <textarea id="vision" class="field-textarea" rows="3" data-i18n-ph="vi.ph" placeholder={en['vi.ph']} required></textarea>
+                  <div class="textarea-meta">
+                    <span class="word-count" id="vi-count" data-count="0">0 words</span>
+                    <div class="sentiment-bar" id="vi-sent"><div class="sentiment-fill"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="no-money-story">
+                  <span data-i18n="nm.label">{en['nm.label']}</span> <span class="req">*</span>
+                  <span class="field-label-hint" data-i18n="nm.hint">{en['nm.hint']}</span>
+                </label>
+                <div class="textarea-wrap">
+                  <textarea id="no-money-story" class="field-textarea" rows="4" data-i18n-ph="nm.ph" placeholder={en['nm.ph']} required></textarea>
+                  <div class="textarea-meta">
+                    <span class="word-count" id="nm-count" data-count="0">0 words</span>
+                    <div class="sentiment-bar" id="nm-sent"><div class="sentiment-fill"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <label class="ack-box" id="ack-box">
+                <input type="checkbox" id="ack" />
+                <span class="ack-check">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="ack-text" data-i18n-html="ack.text" set:html={en['ack.text']}></span>
+              </label>
+            </div>
+
+            <div class="step-actions">
+              <button type="button" class="btn-outline step-prev" data-prev="3">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span data-i18n="btn.back">{en['btn.back']}</span>
+              </button>
+              <button type="button" id="submit-btn" class="btn-primary">
+                <span data-i18n="btn.submit">{en['btn.submit']}</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l5 5 7-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Success Screen ── -->
+          <div class="success-screen hidden" id="success-screen">
+            <div class="success-icon">
+              <div class="success-ring"></div>
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><path d="M8 18l7 7 13-14" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h2 class="success-title" data-i18n="success.title">{en['success.title']}</h2>
+            <p class="success-sub" data-i18n-html="success.sub" set:html={en['success.sub']}></p>
+            <div class="success-stats">
+              <div class="success-stat">
+                <span class="success-stat-val" id="final-score">—</span>
+                <span class="success-stat-label" data-i18n="success.scoreLabel">{en['success.scoreLabel']}</span>
+              </div>
+              <div class="success-stat-div"></div>
+              <div class="success-stat">
+                <span class="success-stat-val" id="final-lang">—</span>
+                <span class="success-stat-label" data-i18n="success.langLabel">{en['success.langLabel']}</span>
+              </div>
+            </div>
+
+            <!-- ── Score meaning + trait breakdown ── -->
+            <div class="success-meaning">
+              <div class="meaning-block">
+                <h3 data-i18n="success.whatMeans">{en['success.whatMeans']}</h3>
+                <div class="score-brackets">
+                  <div class="bracket" id="score-bracket-hint">
+                    <span data-i18n="success.scoreBracket" id="bracket-text">{en['success.scoreBracket']}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="meaning-block">
+                <h3 data-i18n="success.yourTraits">{en['success.yourTraits']}</h3>
+                <div class="traits-grid" id="success-traits-grid">
+                  <!-- populated from computeScores() live trait data -->
+                </div>
+              </div>
+
+              <div class="meaning-block">
+                <p style="font-size:0.9rem;color:var(--text-muted);" data-i18n="success.note">{en['success.note']}</p>
+              </div>
+            </div>
+
+            <a href="/careers" class="btn-outline" style="margin-top:1rem;"><span data-i18n="success.back">{en['success.back']}</span></a>
+          </div>
+
+        </div><!-- /form-container -->
+
+        <!-- ─── Builder Profile Panel (hidden from candidates until the success screen) ─── -->
+        <aside class="profile-panel glass-card meter-hidden" id="profile-panel">
+          <div class="profile-header">
+            <div class="profile-dot"></div>
+            <span class="profile-title" data-i18n="panel.title">{en['panel.title']}</span>
+          </div>
+
+          <div class="gauge-wrap">
+            <svg class="gauge-svg" viewBox="0 0 120 120">
+              <circle class="gauge-track" cx="60" cy="60" r="50" />
+              <circle class="gauge-fill"  cx="60" cy="60" r="50" id="gauge-fill" />
+              <text class="gauge-pct"   x="60" y="54" text-anchor="middle" dominant-baseline="middle" id="gauge-pct-text">0%</text>
+              <text class="gauge-label" x="60" y="70" text-anchor="middle">Builder Score</text>
+            </svg>
+          </div>
+
+          <div class="traits-section">
+            <div class="traits-title" data-i18n="panel.traitTitle">{en['panel.traitTitle']}</div>
+            <div class="traits-list" id="traits-list">
+              {traits.map(t => (
+                <div class="trait-row" data-trait={t.key}>
+                  <div class="trait-label-row">
+                    <span class="trait-name">{t.en}</span>
+                    <span class="trait-pct" data-trait-pct={t.key}>0%</span>
+                  </div>
+                  <div class="trait-track"><div class="trait-fill" data-trait-fill={t.key}></div></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="profile-note" data-i18n="panel.note">{en['panel.note']}</div>
+        </aside>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Founder-only meter toggle (not obvious; also Ctrl+Shift+M). Lets you watch
+       the live Builder Profile while testing different answer scenarios. -->
+  <button type="button" id="meter-toggle" class="meter-toggle" title="" aria-label="toggle"></button>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* ── Hero ── */
+  #builder-hero { position: relative; padding: 9rem 0 5rem; overflow: hidden; border-bottom: 1px solid var(--border); }
+  .hero-ambient-left { position: absolute; top: -10%; left: -5%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(232,25,44,0.07) 0%, transparent 65%); pointer-events: none; }
+  .hero-ambient-right { position: absolute; bottom: -20%; right: 5%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,82,82,0.05) 0%, transparent 65%); pointer-events: none; }
+  .hero-content { position: relative; z-index: 1; max-width: 700px; }
+  .hero-title { font-size: clamp(2.4rem, 5vw, 4rem); font-weight: 700; line-height: 1.08; letter-spacing: -0.03em; margin: 1rem 0 1.25rem; }
+  .gradient-text { background: linear-gradient(135deg, var(--cyan) 0%, #ff8080 50%, var(--purple) 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 4s linear infinite; }
+  .hero-sub { font-size: 1rem; color: var(--text-secondary); line-height: 1.75; max-width: 560px; margin-bottom: 1.75rem; }
+  .ai-badge { display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(232,25,44,0.08); border: 1px solid rgba(232,25,44,0.2); border-radius: 100px; padding: 0.5rem 1rem; }
+  .ai-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); animation: pulse-dot 1.8s ease-in-out infinite; }
+  @keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(232,25,44,0.5); } 50% { opacity: 0.8; transform: scale(1.2); box-shadow: 0 0 0 5px rgba(232,25,44,0); } }
+  .ai-badge-text { font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan); letter-spacing: 0.04em; }
+
+  /* ── Layout ── */
+  #builder-form-section { padding: 5rem 0 8rem; }
+  .form-layout { display: grid; grid-template-columns: 1fr 320px; gap: 2rem; align-items: start; }
+  .form-container { position: relative; padding: 2.5rem 2.5rem 2rem; min-height: 540px; overflow: hidden; }
+
+  /* ── Language toggle ── */
+  .lang-toggle-wrap { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; margin-bottom: 1.5rem; }
+  .lang-toggle-label { font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  .lang-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.02); }
+  .lang-btn { padding: 0.4rem 0.85rem; background: none; border: none; cursor: pointer; font-family: var(--font-sans); font-size: 0.78rem; color: var(--text-muted); transition: all 0.18s ease; }
+  .lang-btn:hover { color: var(--text-secondary); }
+  .lang-btn.active { background: rgba(232,25,44,0.12); color: var(--cyan); }
+
+  /* ── Step progress ── */
+  .step-progress { margin-bottom: 2.5rem; }
+  .step-track { height: 2px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-bottom: 1.25rem; overflow: hidden; }
+  .step-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--purple)); border-radius: 2px; width: 25%; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .steps-labels { display: flex; justify-content: space-between; gap: 0.5rem; }
+  .step-label { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+  .step-dot { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; background: var(--bg-card); transition: all 0.3s ease; position: relative; }
+  .step-num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); transition: opacity 0.2s; }
+  .step-check { position: absolute; opacity: 0; transition: opacity 0.2s; color: var(--bg-primary); }
+  .step-label.active .step-dot { border-color: var(--cyan); background: rgba(232,25,44,0.15); }
+  .step-label.active .step-num { color: var(--cyan); }
+  .step-label.completed .step-dot { background: var(--cyan); border-color: var(--cyan); }
+  .step-label.completed .step-num { opacity: 0; }
+  .step-label.completed .step-check { opacity: 1; }
+  .step-name { font-size: 0.66rem; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; transition: color 0.3s; text-align: center; }
+  .step-label.active .step-name { color: var(--text-secondary); }
+
+  /* ── Steps ── */
+  .form-step { animation: stepIn 0.4s ease both; }
+  .form-step.hidden { display: none; }
+  @keyframes stepIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+  .step-header { margin-bottom: 2rem; }
+  .step-eyebrow { font-family: var(--font-mono); font-size: 0.68rem; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.5rem; }
+  .step-title { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+  .step-desc { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ── Fields ── */
+  .form-fields { display: flex; flex-direction: column; gap: 1.75rem; margin-bottom: 2rem; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .field-group { display: flex; flex-direction: column; gap: 0.5rem; }
+  .field-label { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.01em; }
+  .field-label-hint { font-weight: 400; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.72rem; }
+  .req { color: var(--cyan); }
+  .field-input, .field-select, .field-textarea { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.875rem; font-family: var(--font-sans); font-size: 0.9rem; color: var(--text-primary); outline: none; transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease; width: 100%; }
+  .field-input::placeholder, .field-textarea::placeholder { color: var(--text-muted); }
+  .field-input:focus, .field-select:focus, .field-textarea:focus { border-color: rgba(232,25,44,0.4); background: rgba(232,25,44,0.04); box-shadow: 0 0 0 3px rgba(232,25,44,0.08); }
+  .field-input.invalid, .field-textarea.invalid { border-color: rgba(232,25,44,0.5); }
+  .field-select-wrap { position: relative; }
+  .field-select { appearance: none; cursor: pointer; padding-right: 2.5rem; }
+  .field-select option { background: #1a0404; color: var(--text-primary); }
+  .select-icon { position: absolute; right: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+
+  /* ── Photo upload ── */
+  .photo-upload { display: flex; align-items: center; gap: 1.1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,0.02); }
+  .photo-upload.invalid { border-color: rgba(232,25,44,0.5); }
+  .photo-preview { flex-shrink: 0; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--border); background: rgba(232,25,44,0.06); color: var(--text-muted); }
+  /* :global() so the rule reaches the <img> we insert via JS (which has no scope attr). */
+  .photo-preview :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-preview.filled { border-color: var(--cyan); box-shadow: 0 0 14px rgba(232,25,44,0.18); }
+  .photo-actions { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+  .photo-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem; border-radius: 8px; border: 1px solid var(--cyan-glow); background: transparent; color: var(--cyan); font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: background 0.2s ease; }
+  .photo-btn:hover { background: var(--cyan-dim); }
+  .photo-hint { font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; }
+  .photo-hint.photo-hint-error { color: #FF6B6B; }
+
+  /* ── Drivers (ipsative most/least) ── */
+  .drivers-head { display: grid; grid-template-columns: 1fr 52px 52px; gap: 0.5rem; align-items: center; padding: 0.2rem 0.875rem 0; }
+  .drivers-col-label { font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: center; }
+  .drivers-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem; }
+  .driver-row { display: grid; grid-template-columns: 1fr 52px 52px; gap: 0.5rem; align-items: center; padding: 0.7rem 0.875rem; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.02); transition: border-color 0.2s ease; }
+  .driver-text { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45; }
+  .driver-pick { width: 26px; height: 26px; margin: 0 auto; border-radius: 50%; border: 1.5px solid var(--border); background: rgba(255,255,255,0.02); cursor: pointer; transition: all 0.18s ease; }
+  .driver-most:hover { border-color: rgba(16,185,129,0.5); }
+  .driver-least:hover { border-color: rgba(232,25,44,0.5); }
+  .driver-most.on { border-color: #10b981; background: #10b981; box-shadow: 0 0 12px rgba(16,185,129,0.35); }
+  .driver-least.on { border-color: var(--cyan); background: var(--cyan); box-shadow: 0 0 12px rgba(232,25,44,0.35); }
+
+  /* ── SJT ── */
+  .sjt-list { display: flex; flex-direction: column; gap: 1.1rem; }
+  .sjt-card { padding: 1rem 1.1rem; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,0.02); transition: border-color 0.2s ease; }
+  .sjt-card.complete { border-color: rgba(16,185,129,0.3); }
+  .sjt-card.invalid { border-color: rgba(232,25,44,0.5); }
+  .sjt-scenario { font-size: 0.88rem; color: var(--text-primary); line-height: 1.55; margin-bottom: 0.9rem; display: flex; gap: 0.6rem; }
+  .sjt-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(232,25,44,0.12); border: 1px solid rgba(232,25,44,0.3); color: var(--cyan); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .sjt-head { display: grid; grid-template-columns: 1fr 44px 44px; gap: 0.5rem; align-items: center; padding: 0 0 0.35rem; }
+  .sjt-col-label { font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: center; }
+  .sjt-option { display: grid; grid-template-columns: 1fr 44px 44px; gap: 0.5rem; align-items: center; padding: 0.45rem 0; border-top: 1px solid rgba(255,255,255,0.04); }
+  .sjt-opt-text { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.45; }
+  .sjt-pick { width: 26px; height: 26px; margin: 0 auto; border-radius: 50%; border: 1.5px solid var(--border); background: rgba(255,255,255,0.02); cursor: pointer; transition: all 0.18s ease; }
+  .sjt-best:hover { border-color: rgba(16,185,129,0.5); }
+  .sjt-worst:hover { border-color: rgba(232,25,44,0.5); }
+  .sjt-best.on { border-color: #10b981; background: #10b981; box-shadow: 0 0 12px rgba(16,185,129,0.35); }
+  .sjt-worst.on { border-color: var(--cyan); background: var(--cyan); box-shadow: 0 0 12px rgba(232,25,44,0.35); }
+
+  /* ── Work-sample scenario box ── */
+  .scenario-box { font-size: 0.83rem; color: var(--text-secondary); line-height: 1.6; padding: 0.875rem 1rem; border-left: 2px solid var(--cyan); background: rgba(232,25,44,0.05); border-radius: 0 8px 8px 0; }
+
+  /* ── Textareas ── */
+  .field-textarea { resize: vertical; min-height: 90px; line-height: 1.65; }
+  .textarea-wrap { display: flex; flex-direction: column; gap: 0.4rem; }
+  .textarea-meta { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .word-count { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); min-width: 60px; }
+  .sentiment-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+  .sentiment-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cyan), var(--purple)); border-radius: 2px; transition: width 0.5s ease; }
+
+  /* ── Acknowledgment ── */
+  .ack-box { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.02); cursor: pointer; transition: border-color 0.2s ease; }
+  .ack-box.invalid { border-color: rgba(232,25,44,0.5); }
+  .ack-box input { display: none; }
+  .ack-check { flex-shrink: 0; width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; color: transparent; transition: all 0.18s ease; margin-top: 1px; }
+  .ack-box input:checked + .ack-check { background: var(--cyan); border-color: var(--cyan); color: #fff; }
+  .ack-text { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.55; }
+
+  /* ── Actions ── */
+  .step-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+
+  /* ── Success ── */
+  .success-screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center; padding: 3rem 2rem; background: var(--bg-primary); border-radius: inherit; z-index: 11; animation: fadeIn 0.5s ease; overflow-y: auto; max-height: 100vh; }
+  .success-screen.hidden { display: none; }
+  .success-meaning { width: 100%; max-width: 500px; text-align: left; margin: 1rem 0; }
+  .meaning-block { margin-bottom: 1.5rem; }
+  .meaning-block h3 { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .score-brackets { display: flex; flex-direction: column; gap: 0.5rem; }
+  .bracket { padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); border-left: 3px solid var(--cyan); }
+  .traits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .trait-card { background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 6px; text-align: left; }
+  .trait-card-name { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.5rem; }
+  .trait-card-score { font-size: 1.75rem; font-weight: 700; color: var(--cyan); margin-bottom: 0.5rem; }
+  .trait-card-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+  .success-icon { position: relative; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; background: rgba(232,25,44,0.1); border-radius: 50%; border: 1.5px solid rgba(232,25,44,0.3); }
+  .success-ring { position: absolute; inset: -8px; border-radius: 50%; border: 1px solid rgba(232,25,44,0.15); animation: success-pulse 2s ease-in-out infinite; }
+  @keyframes success-pulse { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.08); opacity: 0.3; } }
+  .success-title { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
+  .success-sub { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; max-width: 420px; }
+  .success-stats { display: flex; align-items: center; gap: 1.5rem; margin-top: 0.5rem; padding: 1.25rem 2rem; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02); }
+  .success-stat { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+  .success-stat-val { font-size: 1.25rem; font-weight: 700; font-family: var(--font-mono); color: var(--cyan); }
+  .success-stat-label { font-size: 0.68rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; }
+  .success-stat-div { width: 1px; height: 36px; background: var(--border); }
+
+  /* ── Builder Profile panel ── */
+  .profile-panel { position: sticky; top: 100px; padding: 1.75rem; display: flex; flex-direction: column; gap: 1.5rem; overflow: hidden; }
+  /* Hidden from candidates during the form; revealed only on the success screen
+     (or by the founder's private toggle while testing scenarios). */
+  .profile-panel.meter-hidden { display: none; }
+  /* Near-invisible founder toggle, bottom-right corner. */
+  .meter-toggle { position: fixed; right: 6px; bottom: 6px; width: 14px; height: 14px; border-radius: 50%; border: none; background: rgba(255,255,255,0.05); cursor: default; padding: 0; z-index: 50; transition: background 0.2s ease, transform 0.2s ease; }
+  .meter-toggle:hover { background: rgba(232,25,44,0.18); transform: scale(1.15); }
+  .meter-toggle.on { background: rgba(232,25,44,0.45); }
+  .profile-header { display: flex; align-items: center; gap: 0.6rem; }
+  .profile-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); animation: pulse-dot 1.8s ease-in-out infinite; flex-shrink: 0; }
+  .profile-title { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.14em; }
+  .gauge-wrap { display: flex; justify-content: center; }
+  .gauge-svg { width: 140px; height: 140px; transform: rotate(-90deg); }
+  .gauge-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 8; }
+  .gauge-fill { fill: none; stroke: url(#gaugeGrad); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 314.16; stroke-dashoffset: 314.16; transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1); }
+  .gauge-pct { fill: var(--text-primary); font-family: var(--font-mono); font-size: 18px; font-weight: 700; transform: rotate(90deg); transform-origin: 60px 60px; }
+  .gauge-label { fill: var(--text-muted); font-size: 9px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; transform: rotate(90deg); transform-origin: 60px 60px; }
+  .traits-section { display: flex; flex-direction: column; gap: 0.85rem; }
+  .traits-title { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em; }
+  .traits-list { display: flex; flex-direction: column; gap: 0.7rem; }
+  .trait-row { display: flex; flex-direction: column; gap: 0.3rem; }
+  .trait-label-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .trait-name { font-size: 0.74rem; color: var(--text-secondary); }
+  .trait-pct { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); }
+  .trait-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+  .trait-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cyan), var(--purple)); border-radius: 3px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+  .profile-note { font-size: 0.7rem; color: var(--text-muted); line-height: 1.6; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) { .form-layout { grid-template-columns: 1fr; } .profile-panel { position: static; order: -1; } }
+  @media (max-width: 640px) {
+    .form-container { padding: 1.5rem; }
+    .field-row { grid-template-columns: 1fr; }
+    .step-actions { flex-wrap: wrap; }
+    .step-actions .btn-primary, .step-actions .btn-outline { flex: 1; justify-content: center; }
+    .photo-upload { flex-direction: column; align-items: flex-start; gap: 0.85rem; }
+    .photo-btn { width: auto; }
+    .step-name { display: none; }
+    .lang-btn { font-size: 0.72rem; padding: 0.4rem 0.6rem; }
+    .success-stats { flex-direction: column; gap: 0.75rem; }
+    .success-stat-div { width: 60px; height: 1px; }
+  }
+</style>
+
+<script is:inline define:vars={{ C, areas, drivers, sjt, traits, workSample }}>
+  // ── State ──────────────────────────────────────────────────────────────
+  let currentStep = 1;
+  let lang = 'en';
+  const totalSteps = 4;
+  const sjtPicks = {};
+  sjt.forEach(s => sjtPicks[s.key] = { best: null, worst: null });
+  const sjtKey = {};
+  sjt.forEach(s => sjtKey[s.key] = { best: s.best, worst: s.worst });
+  const driverPicks = { most: null, least: null };  // ipsative driver pick (keys)
+  let builderScore = 0;
+  let loyaltyScore = 0;       // 0–100 (admin)
+  let moneyOrientation = 50;  // 0–100, higher = more money-driven (admin flag)
+  let photoDataUrl = null;
+  const traitScores = {};
+  traits.forEach(t => traitScores[t.key] = 0);
+
+  // ── Gauge gradient ──────────────────────────────────────────────────────
+  const gaugeSvg = document.querySelector('.gauge-svg');
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+  grad.setAttribute('id', 'gaugeGrad');
+  grad.setAttribute('x1','0%'); grad.setAttribute('y1','0%'); grad.setAttribute('x2','100%'); grad.setAttribute('y2','100%');
+  const gs1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop'); gs1.setAttribute('offset','0%'); gs1.setAttribute('stop-color','#E8192C');
+  const gs2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop'); gs2.setAttribute('offset','100%'); gs2.setAttribute('stop-color','#FF5252');
+  grad.appendChild(gs1); grad.appendChild(gs2); defs.appendChild(grad);
+  gaugeSvg.insertBefore(defs, gaugeSvg.firstChild);
+
+  // ── i18n ─────────────────────────────────────────────────────────────────
+  const dict = (k) => (C[lang] && C[lang][k] != null) ? C[lang][k] : C.en[k];
+
+  function wordUnit(n) { return n === 1 ? dict('word.unit1') : dict('word.unit'); }
+
+  function applyLanguage(next) {
+    lang = next;
+    document.documentElement.lang = next;
+    // static text
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.dataset.i18n;
+      if (k === '__ws_scenario') { el.textContent = workSample[lang] ?? workSample.en; return; }
+      const v = dict(k); if (v != null) el.textContent = v;
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const v = dict(el.dataset.i18nHtml); if (v != null) el.innerHTML = v;
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+      const v = dict(el.dataset.i18nPh); if (v != null) el.placeholder = v;
+    });
+    // dynamic lists
+    areas.forEach(a => {
+      const opt = document.querySelector(`option[data-area="${a.value}"]`);
+      if (opt) opt.textContent = a[lang] ?? a.en;
+    });
+    drivers.forEach(d => {
+      const el = document.querySelector(`[data-driver="${d.key}"] .driver-text`);
+      if (el) el.textContent = d[lang] ?? d.en;
+    });
+    sjt.forEach(s => {
+      const card = document.querySelector(`[data-sjt="${s.key}"]`);
+      if (!card) return;
+      const content = s[lang] ?? s.en;
+      card.querySelector('.sjt-scen-text').textContent = content.scenario;
+      card.querySelectorAll('.sjt-option').forEach(o => {
+        const i = parseInt(o.dataset.opt);
+        o.querySelector('.sjt-opt-text').textContent = content.options[i];
+      });
+    });
+    traits.forEach(t => {
+      const el = document.querySelector(`[data-trait="${t.key}"] .trait-name`);
+      if (el) el.textContent = t[lang] ?? t.en;
+    });
+    // word counters
+    document.querySelectorAll('.word-count').forEach(c => {
+      const n = parseInt(c.dataset.count || '0');
+      c.textContent = n + ' ' + wordUnit(n);
+    });
+    // toggle UI
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === next));
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+  const countWords = (str) => str.trim().split(/\s+/).filter(w => w.length > 0).length;
+  const clamp = (n) => Math.max(0, Math.min(100, n));
+  const depth = (wc, target) => clamp((wc / target) * 100);
+  const txt = (id) => (document.getElementById(id)?.value ?? '').trim();
+
+  function sjtTrait(id) {
+    const pick = sjtPicks[id], key = sjtKey[id];
+    let hits = 0;
+    if (pick.best  != null) hits += (pick.best  === key.best)  ? 1 : 0;
+    if (pick.worst != null) hits += (pick.worst === key.worst) ? 1 : 0;
+    return (hits / 2) * 100;
+  }
+
+  // ── Scoring ───────────────────────────────────────────────────────────────
+  // No self-report: every trait is driven by situational best/worst picks
+  // (scored against a hidden key the candidate can't see) and by the depth of
+  // the written answers the founder reads by hand. Nothing here can be gamed by
+  // just "picking the good-looking answer".
+  function computeScores() {
+    const wsDepth = depth(countWords(txt('work-sample')), 80);
+    const slDepth = depth(countWords(txt('story-learning')), 70);
+    const viDepth = depth(countWords(txt('vision')), 55);
+    const nmDepth = depth(countWords(txt('no-money-story')), 60);
+
+    traitScores.ownership = clamp(0.32*sjtTrait('s1') + 0.30*sjtTrait('s4') + 0.25*sjtTrait('s11') + 0.13*wsDepth);
+    traitScores.tolerance = clamp(0.55*sjtTrait('s2') + 0.30*sjtTrait('s1') + 0.15*wsDepth);
+    traitScores.ego       = clamp(0.40*sjtTrait('s3') + 0.35*sjtTrait('s5') + 0.25*sjtTrait('s10'));
+    traitScores.growth    = clamp(0.40*sjtTrait('s10') + 0.30*sjtTrait('s12') + 0.30*slDepth);
+    traitScores.drive     = clamp(0.45*sjtTrait('s8') + 0.30*viDepth + 0.25*nmDepth);
+    traitScores.ambition  = clamp(0.55*sjtTrait('s9') + 0.30*viDepth + 0.15*sjtTrait('s10'));
+
+    // ── Loyalty & money orientation (admin signal; never shown live) ──────────
+    // Driver pick is a soft secondary signal; the real money read comes from the
+    // loyalty scenarios (hidden key) which a candidate can't easily fake.
+    const mostBuild  = ['build','own','learn'].includes(driverPicks.most);
+    const mostMoney  = driverPicks.most  === 'money';
+    const leastMoney = driverPicks.least === 'money';
+    const driverLoyalty = mostBuild ? 100 : mostMoney ? 0 : 55;
+    const sjtLoyalty = (sjtTrait('s6') + sjtTrait('s7')) / 2;
+
+    traitScores.loyalty = clamp(0.40*sjtTrait('s6') + 0.40*sjtTrait('s7') + 0.10*driverLoyalty + 0.10*nmDepth);
+    loyaltyScore = Math.round(traitScores.loyalty);
+
+    // Higher = more money-driven. SJT money-first picks dominate; the driver pick
+    // nudges it; a real "worked hard for no money" story lowers it.
+    let money = 50;
+    money += (100 - sjtLoyalty) * 0.35;
+    if (mostMoney)  money += 22;
+    if (leastMoney) money -= 22;
+    if (driverPicks.most === 'comfort') money += 8;
+    if (driverPicks.most === 'status')  money += 6;
+    money -= nmDepth * 0.12;
+    moneyOrientation = Math.round(clamp(money));
+
+    let bs =
+      0.18*traitScores.ownership + 0.17*traitScores.tolerance + 0.15*traitScores.ego +
+      0.14*traitScores.growth    + 0.11*traitScores.drive     + 0.11*traitScores.ambition +
+      0.14*traitScores.loyalty;
+    // Penalise strongly money-primary profiles (the founder wants to screen these out).
+    if (moneyOrientation >= 75) bs -= (moneyOrientation - 75) * 0.4;
+    builderScore = Math.round(clamp(bs));
+  }
+
+  function render() {
+    computeScores();
+    const circ = 314.16;
+    const fill = document.getElementById('gauge-fill');
+    if (fill) fill.style.strokeDashoffset = circ - (builderScore / 100) * circ;
+    const pct = document.getElementById('gauge-pct-text');
+    if (pct) pct.textContent = builderScore + '%';
+    traits.forEach(tr => {
+      const v = Math.round(traitScores[tr.key]);
+      const bar = document.querySelector(`[data-trait-fill="${tr.key}"]`);
+      const lbl = document.querySelector(`[data-trait-pct="${tr.key}"]`);
+      if (bar) bar.style.width = v + '%';
+      if (lbl) lbl.textContent = v + '%';
+    });
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  function goToStep(n) {
+    document.getElementById(`step-${currentStep}`)?.classList.add('hidden');
+    document.getElementById(`step-${n}`)?.classList.remove('hidden');
+    currentStep = n;
+    const stepFill = document.getElementById('step-fill');
+    if (stepFill) stepFill.style.width = (n / totalSteps) * 100 + '%';
+    document.querySelectorAll('.step-label').forEach(el => {
+      const s = parseInt(el.dataset.step);
+      el.classList.toggle('active', s === n);
+      el.classList.toggle('completed', s < n);
+    });
+    document.getElementById('builder-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function shake(el) {
+    if (!el) return;
+    el.classList.add('invalid');
+    el.style.animation = 'shake 0.4s ease';
+    setTimeout(() => { el.style.animation = ''; }, 400);
+    setTimeout(() => el.classList.remove('invalid'), 2500);
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function validateStep(n) {
+    if (n === 1) {
+      for (const id of ['fname','lname','email','city','phone','area','linkedin']) {
+        const el = document.getElementById(id);
+        if (!el.value.trim() || (id === 'email' && !el.value.includes('@'))) { shake(el); return false; }
+      }
+      if (!photoDataUrl) { shake(document.getElementById('photo-upload')); return false; }
+      return true;
+    }
+    if (n === 2) {
+      if (driverPicks.most == null || driverPicks.least == null) {
+        shake(document.getElementById('drivers-list')); return false;
+      }
+      return true;
+    }
+    if (n === 3) {
+      for (const s of sjt) {
+        const p = sjtPicks[s.key];
+        if (p.best == null || p.worst == null) { shake(document.querySelector(`[data-sjt="${s.key}"]`)); return false; }
+      }
+      return true;
+    }
+    if (n === 4) {
+      if (countWords(txt('work-sample'))    < 60) { shake(document.getElementById('work-sample')); return false; }
+      if (countWords(txt('story-learning')) < 50) { shake(document.getElementById('story-learning')); return false; }
+      if (countWords(txt('vision'))         < 40) { shake(document.getElementById('vision')); return false; }
+      if (countWords(txt('no-money-story')) < 50) { shake(document.getElementById('no-money-story')); return false; }
+      if (!document.getElementById('ack').checked) { shake(document.getElementById('ack-box')); return false; }
+      return true;
+    }
+    return true;
+  }
+
+  // ── Wiring ──────────────────────────────────────────────────────────────
+  document.querySelectorAll('.lang-btn').forEach(btn =>
+    btn.addEventListener('click', () => applyLanguage(btn.dataset.lang)));
+
+  document.querySelectorAll('.step-next').forEach(btn =>
+    btn.addEventListener('click', () => { if (validateStep(currentStep)) goToStep(parseInt(btn.dataset.next)); }));
+  document.querySelectorAll('.step-prev').forEach(btn =>
+    btn.addEventListener('click', () => goToStep(parseInt(btn.dataset.prev))));
+
+  ['fname','email','city','area','linkedin'].forEach(id =>
+    document.getElementById(id)?.addEventListener('input', render));
+
+  document.querySelectorAll('.sjt-card').forEach(card => {
+    const id = card.dataset.sjt;
+    card.querySelectorAll('.sjt-option').forEach(optEl => {
+      const oi = parseInt(optEl.dataset.opt);
+      optEl.querySelectorAll('.sjt-pick').forEach(btn => {
+        const kind = btn.dataset.kind;
+        btn.addEventListener('click', () => {
+          const other = kind === 'best' ? 'worst' : 'best';
+          if (sjtPicks[id][kind] === oi) {
+            sjtPicks[id][kind] = null;
+          } else {
+            sjtPicks[id][kind] = oi;
+            if (sjtPicks[id][other] === oi) sjtPicks[id][other] = null;
+          }
+          card.querySelectorAll('.sjt-option').forEach(o => {
+            const i = parseInt(o.dataset.opt);
+            o.querySelector('.sjt-best').classList.toggle('on', sjtPicks[id].best === i);
+            o.querySelector('.sjt-worst').classList.toggle('on', sjtPicks[id].worst === i);
+          });
+          card.classList.toggle('complete', sjtPicks[id].best != null && sjtPicks[id].worst != null);
+          render();
+        });
+      });
+    });
+  });
+
+  // ── Drivers (ipsative): one MOST + one LEAST across the whole list ─────────
+  function refreshDrivers() {
+    document.querySelectorAll('.driver-row').forEach(row => {
+      const k = row.dataset.driver;
+      row.querySelector('.driver-most').classList.toggle('on', driverPicks.most === k);
+      row.querySelector('.driver-least').classList.toggle('on', driverPicks.least === k);
+    });
+  }
+  document.querySelectorAll('.driver-row').forEach(row => {
+    const k = row.dataset.driver;
+    row.querySelectorAll('.driver-pick').forEach(btn => {
+      const kind = btn.dataset.kind;                       // 'most' | 'least'
+      const other = kind === 'most' ? 'least' : 'most';
+      btn.addEventListener('click', () => {
+        if (driverPicks[kind] === k) {
+          driverPicks[kind] = null;                        // toggle off
+        } else {
+          driverPicks[kind] = k;
+          if (driverPicks[other] === k) driverPicks[other] = null;  // can't be both
+        }
+        refreshDrivers();
+        render();
+      });
+    });
+  });
+
+  function wireTextarea(id, countId, sentId, target) {
+    const ta = document.getElementById(id);
+    const counter = document.getElementById(countId);
+    const fill = document.getElementById(sentId)?.querySelector('.sentiment-fill');
+    ta?.addEventListener('input', () => {
+      const w = countWords(ta.value);
+      if (counter) { counter.dataset.count = w; counter.textContent = w + ' ' + wordUnit(w); }
+      if (fill) fill.style.width = depth(w, target) + '%';
+      render();
+    });
+  }
+  wireTextarea('work-sample',    'ws-count', 'ws-sent', 80);
+  wireTextarea('story-learning', 'sl-count', 'sl-sent', 70);
+  wireTextarea('vision',         'vi-count', 'vi-sent', 55);
+  wireTextarea('no-money-story', 'nm-count', 'nm-sent', 60);
+
+  document.getElementById('ack')?.addEventListener('change', () =>
+    document.getElementById('ack-box')?.classList.remove('invalid'));
+
+  // ── Profile photo (downscaled, then encoded to keep files small) ───────────
+  // WebP keeps storage tiny; fall back to JPEG only if the browser can't encode
+  // WebP (e.g. older Safari) so the upload still works everywhere.
+  function encodePhoto(canvas, quality) {
+    const webp = canvas.toDataURL('image/webp', quality);
+    if (webp.startsWith('data:image/webp')) return webp;
+    return canvas.toDataURL('image/jpeg', quality);
+  }
+
+  function drawToDataUrl(source, w0, h0, maxSize, quality) {
+    const scale = Math.min(1, maxSize / Math.max(w0, h0));
+    const w = Math.max(1, Math.round(w0 * scale));
+    const h = Math.max(1, Math.round(h0 * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(source, 0, 0, w, h);
+    const url = encodePhoto(canvas, quality);
+    if (!url || !url.startsWith('data:image/')) throw new Error('encode produced no image');
+    return url;
+  }
+
+  function fileToDataUrl(file, maxSize = 512, quality = 0.82) {
+    return new Promise((resolve, reject) => {
+      if (!file || !(file.type || '').startsWith('image/')) { reject(new Error('not an image file')); return; }
+      const timer = setTimeout(() => reject(new Error('photo decode timed out')), 20000);
+      const ok = (url) => { clearTimeout(timer); resolve(url); };
+      const fail = (err) => { clearTimeout(timer); reject(err); };
+
+      // Fallback path: FileReader → <img>. Works on every browser.
+      const viaImg = () => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => { try { ok(drawToDataUrl(img, img.naturalWidth || img.width, img.naturalHeight || img.height, maxSize, quality)); } catch (err) { fail(err); } };
+          img.onerror = () => fail(new Error('image could not be decoded'));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => fail(new Error('file could not be read'));
+        reader.readAsDataURL(file);
+      };
+
+      // Preferred path: createImageBitmap decodes the Blob directly (faster, honors orientation).
+      if (typeof createImageBitmap === 'function') {
+        createImageBitmap(file)
+          .then(bmp => { try { ok(drawToDataUrl(bmp, bmp.width, bmp.height, maxSize, quality)); } catch (err) { fail(err); } })
+          .catch(viaImg);
+      } else {
+        viaImg();
+      }
+    });
+  }
+
+  function setPhotoHint(key, isError) {
+    const hint = document.querySelector('.photo-hint');
+    if (!hint) return;
+    hint.dataset.i18n = key;                 // keep it translatable on language switch
+    hint.textContent = dict(key);
+    hint.classList.toggle('photo-hint-error', !!isError);
+  }
+
+  function readAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = () => reject(new Error('file could not be read'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function showPhotoPreview(url) {
+    const preview = document.getElementById('photo-preview');
+    if (preview) { preview.innerHTML = `<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" />`; preview.classList.add('filled'); }
+    const btn = document.getElementById('photo-btn-label');
+    if (btn) { btn.dataset.i18n = 'photo.change'; btn.textContent = dict('photo.change'); }
+  }
+
+  document.getElementById('photo-input')?.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';                      // allow re-picking the same file later
+    if (!file) return;
+    const upload = document.getElementById('photo-upload');
+    setPhotoHint('photo.reading', false);
+
+    // Step 1 — show the photo immediately from the raw file. This works for any
+    // viewable image and does NOT depend on canvas/WebP, so the preview always
+    // appears the moment a valid image is chosen.
+    let rawUrl = null;
+    try { rawUrl = await readAsDataUrl(file); } catch (err) { console.error('[builder] read error:', err); }
+    if (rawUrl && rawUrl.startsWith('data:image/')) {
+      photoDataUrl = rawUrl;                  // usable fallback even if optimisation fails
+      showPhotoPreview(rawUrl);
+      upload?.classList.remove('invalid');
+      setPhotoHint('photo.hint', false);
+    } else {
+      photoDataUrl = null;
+      upload?.classList.add('invalid');
+      setPhotoHint('photo.error', true);
+      return;
+    }
+
+    // Step 2 — optimise to a small WebP in the background; keep the raw image if
+    // the browser can't encode (older Safari, canvas blocked, etc.).
+    try {
+      const optimised = await fileToDataUrl(file);
+      if (optimised && optimised.startsWith('data:image/')) {
+        photoDataUrl = optimised;
+        showPhotoPreview(optimised);
+      }
+    } catch (err) {
+      console.warn('[builder] photo optimise skipped, keeping original:', err);
+    }
+  });
+
+  // ── Submit ──────────────────────────────────────────────────────────────
+  function collect() {
+    let sjtScore = 0;
+    sjt.forEach(s => {
+      const p = sjtPicks[s.key], k = sjtKey[s.key];
+      if (p.best === k.best)   sjtScore++;
+      if (p.worst === k.worst) sjtScore++;
+    });
+    sjtScore = Math.round((sjtScore / (sjt.length * 2)) * 100);
+    return {
+      firstName: txt('fname'), lastName: txt('lname'), email: txt('email'),
+      city: txt('city'), phone: txt('phone'), photo: photoDataUrl,
+      area: document.getElementById('area').value, interviewLanguage: lang,
+      linkedin: txt('linkedin'), portfolio: txt('portfolio') || null,
+      drivers: driverPicks,
+      sjt: sjtPicks, sjtScore,
+      workSample: txt('work-sample'), storyLearning: txt('story-learning'), vision: txt('vision'),
+      noMoneyStory: txt('no-money-story'),
+      acknowledged: document.getElementById('ack').checked,
+      traitScores, builderScore, loyaltyScore, moneyOrientation,
+    };
+  }
+
+  document.getElementById('submit-btn')?.addEventListener('click', () => {
+    if (!validateStep(4)) return;
+    render();
+    const data = collect();
+    fetch('/api/builder', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).catch(err => console.error('[builder] submit error:', err));
+
+    document.getElementById('final-score').textContent = builderScore + '%';
+    document.getElementById('final-lang').textContent = lang === 'id' ? 'Bahasa Indonesia' : 'English';
+
+    // Populate traits grid on success screen with growth tips
+    const traitsGrid = document.getElementById('success-traits-grid');
+    const traitLongNames = {
+      ownership: lang === 'id' ? 'Kepemilikan & Kerja Keras' : 'Ownership & Hard Work',
+      tolerance: lang === 'id' ? 'Toleransi Startup' : 'Startup Tolerance',
+      ego: lang === 'id' ? 'Ego Rendah, Standar Tinggi' : 'Low Ego, High Standard',
+      growth: lang === 'id' ? 'Pertumbuhan & Pembelajaran' : 'Growth & Learning',
+      drive: lang === 'id' ? 'Dorongan & Motivasi' : 'Drive & Motivation',
+      ambition: lang === 'id' ? 'Ambisi Jangka Panjang' : 'Long-term Ambition',
+      loyalty: lang === 'id' ? 'Loyalitas & Komitmen' : 'Loyalty & Commitment',
+    };
+    const traitGrowthTips = {
+      ownership: lang === 'id'
+        ? 'Tumbuh: Mulai dengan satu masalah di luar peranmu minggu ini. Jangan laporkan—selesaikan, lalu beri tahu bosmu.'
+        : 'Grow: Start with one problem outside your role this week. Don\'t report it—solve it, then tell your boss.',
+      tolerance: lang === 'id'
+        ? 'Tumbuh: Latih "rencana B". Ketika prioritas berubah, jangan frustrasi—tanya "apa yang kami tahu sekarang, dan apa yang bisa kami kirim dalam 24 jam?"'
+        : 'Grow: Practice "Plan B" thinking. When priorities shift, don\'t resist—ask "what do we know now, and what can we ship in 24 hours?"',
+      ego: lang === 'id'
+        ? 'Tumbuh: Minta umpan balik yang keras. Mulai pertemuan dengan "apa yang saya lewatkan?" bukan "inilah hasilnya."'
+        : 'Grow: Ask for hard feedback. Start meetings with "what did I miss?" not "here\'s what I did."',
+      growth: lang === 'id'
+        ? 'Tumbuh: Pilih satu alat/keterampilan yang tidak bisa kamu gunakan. Batas waktu satu minggu. Kapal sesuatu dengan itu.'
+        : 'Grow: Pick one tool/skill you can\'t use. One-week deadline. Ship something with it.',
+      drive: lang === 'id'
+        ? 'Tumbuh: Lakukan satu proyek tanpa hadiah eksternal—tidak ada uang, tidak ada kredit publik, hanya karena masalahnya nyata.'
+        : 'Grow: Do one project with no external reward—no pay, no public credit, just because the problem is real.',
+      ambition: lang === 'id'
+        ? 'Tumbuh: Tuliskan visi lima tahun yang spesifik. Bukan "tumbuh," tetapi "memimpin produk retail AI untuk Indonesia pada tahun 2030."'
+        : 'Grow: Write a specific five-year vision. Not "grow," but "lead retail AI product for Indonesia by 2030."',
+      loyalty: lang === 'id'
+        ? 'Tumbuh: Tanyakan pada diri sendiri: "Apa yang akan membuat saya tinggal jika gaji berhenti?" Jika hanya uang, itu informasi penting.'
+        : 'Grow: Ask yourself: "What would make me stay if the money stopped?" If only money, that\'s important info.',
+    };
+    traitsGrid.innerHTML = Object.entries(traitScores).map(([key, val]) => `
+      <div class="trait-card">
+        <div class="trait-card-name">${traitLongNames[key]}</div>
+        <div class="trait-card-score">${Math.round(val)}%</div>
+        <div class="trait-card-desc">${traitGrowthTips[key]}</div>
+      </div>
+    `).join('');
+
+    // Update score bracket hint based on score
+    const bracketHint = document.getElementById('score-bracket-hint');
+    let bracketText = '';
+    if (builderScore >= 80) {
+      bracketText = lang === 'id' ? '🎯 80–100: Sinyal builder yang kuat di semua area.' : '🎯 80–100: Strong builder signals across the board.';
+    } else if (builderScore >= 60) {
+      bracketText = lang === 'id' ? '📈 60–79: Solid di kebanyakan area, ada ruang untuk tumbuh di satu tempat.' : '📈 60–79: Solid on most traits, room to grow in one area.';
+    } else if (builderScore >= 40) {
+      bracketText = lang === 'id' ? '🔄 40–59: Sinyal campur. Kuat di satu area, lebih lemah di area lain.' : '🔄 40–59: Mixed signals. Strong in one area, weaker in another.';
+    } else {
+      bracketText = lang === 'id' ? '❓ 0–39: Profil yang berbeda. Mungkin kamu lebih kuat di jalur karir lain.' : '❓ 0–39: Different profile. You might be stronger in a different path.';
+    }
+    bracketHint.innerHTML = bracketText;
+
+    document.getElementById('success-screen')?.classList.remove('hidden');
+    // Reveal the Builder Profile summary now that the assessment is complete.
+    document.getElementById('profile-panel')?.classList.remove('meter-hidden');
+    const stepFill = document.getElementById('step-fill');
+    if (stepFill) stepFill.style.width = '100%';
+  });
+
+  // ── Shake keyframe ────────────────────────────────────────────────────────
+  const style = document.createElement('style');
+  style.textContent = `@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }`;
+  document.head.appendChild(style);
+
+  // ── Founder-only meter toggle (hidden from candidates) ──────────────────────
+  // The Builder Profile stays hidden through the whole form. The founder can
+  // reveal it to watch live scoring while testing scenarios — via the tiny
+  // bottom-right dot, Ctrl/Cmd+Shift+M, or ?meter=1. Choice is remembered.
+  const profilePanel = document.getElementById('profile-panel');
+  const meterBtn = document.getElementById('meter-toggle');
+  const meterOn = () => !profilePanel?.classList.contains('meter-hidden');
+  function setMeter(show, persist) {
+    profilePanel?.classList.toggle('meter-hidden', !show);
+    meterBtn?.classList.toggle('on', show);
+    if (persist) { try { localStorage.setItem('builderMeter', show ? '1' : '0'); } catch (e) {} }
+  }
+  let savedMeter = null;
+  try { savedMeter = localStorage.getItem('builderMeter'); } catch (e) {}
+  const urlMeter = new URLSearchParams(window.location.search).get('meter');
+  if (urlMeter === '1' || savedMeter === '1') setMeter(true, false);
+  meterBtn?.addEventListener('click', () => setMeter(!meterOn(), true));
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'M' || e.key === 'm')) {
+      e.preventDefault();
+      setMeter(!meterOn(), true);
+    }
+  });
+
+  // ── Init: honor ?lang=id ──────────────────────────────────────────────────
+  const urlLang = new URLSearchParams(window.location.search).get('lang');
+  if (urlLang === 'id' || urlLang === 'en') applyLanguage(urlLang);
+  render();
+</script>
