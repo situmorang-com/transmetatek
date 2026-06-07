@@ -24,6 +24,38 @@ const TRAIT_GUIDE: Record<string, string> = {
   loyalty: '▪ What it is: Stays & digs in through hard times, not poached for small raises. Mission/team invested, not just paycheck. ▪ Strong (80+): Chooses loyalty even when competitor+40%, stays in rough quarters, mission/team talk. ▪ Weak (0–40): Takes competitor offer, leaves in downturns, "salary is the main thing." ▪ Red flags: Money is top driver, loyalty scenarios answered money-first, "I go where the best opportunity is." ▪ Interview: Ask "If a competitor offered you 40% more after we\'ve trained you, what would you do?" and "What would make you stay if things got hard?" ▪ In writing: Do they talk mission/team or just pay/title?',
 };
 
+// The exact prompts candidates were shown, plus what a strong vs weak answer looks like.
+const WRITTEN_PROMPTS: Record<string, { title: string; question: string; look: string; good: string; bad: string }> = {
+  workSample: {
+    title: 'First 72 hours (work sample)',
+    question: 'Scenario shown: "A mid-sized Indonesian retailer signs with us Monday. They want \'AI to cut customer-service costs,\' but the data is messy, three teams disagree on priorities, and the CEO expects something real within two weeks." → What would you actually do in your first 72 hours? Be concrete.',
+    look: 'Do they understand the messiness? Are they specific (who they\'d talk to, what they\'d look at, what they\'d ship first)? This is the single most predictive answer — it\'s a mini work-sample.',
+    good: 'Day-by-day plan: talk to the disagreeing teams to define what "cut costs" means to each, audit data to find the limiting step, ship a small 80% solution on high-confidence data.',
+    bad: '"I\'d learn about the business and make a plan." Generic, no specifics, no understanding of the chaos.',
+  },
+  storyLearning: {
+    title: 'Learning under fire',
+    question: 'Tell us about a time you taught yourself something hard, fast, because you had to. What did you do, and how did you know it worked?',
+    look: 'Self-direction, speed, and a concrete outcome. Urgency signals real learning (vs hobby learning).',
+    good: '"Had to learn SQL in a week, built a test DB from our live schema, wrote my first query to pull retention — it worked, we used it for 3 months."',
+    bad: '"I took an online course." No urgency, no proof it worked, no shipping.',
+  },
+  vision: {
+    title: 'Where they\'re headed (vision + drive)',
+    question: 'Where do you want to be in 3–5 years, and why is this the work you want to be doing now?',
+    look: 'Concrete ambition, not vague aspirations. Why THIS work, not just any startup.',
+    good: '"Want to ship AI products Indonesia actually uses. Here because TMK builds for real SEA problems. In 5 years, lead product for our retail module."',
+    bad: '"I want to grow and learn and work with a good team." Every candidate says this — it means nothing.',
+  },
+  noMoneyStory: {
+    title: 'Worked hard with little / no money',
+    question: 'Tell us about a time you worked really hard on something when there was little or no money or reward in it. What was it, and why did you keep going?',
+    look: 'Real struggle, real choice, real outcome. Intrinsic motivation — the strongest loyalty/drive signal.',
+    good: '"Built a side project to parse Indonesian banking APIs because I was frustrated no open tools existed. 6 months of nights/weekends, never made money, now two startups use it. Did it because the problem was real."',
+    bad: '"I volunteer" or "I did unpaid work because I had to." Obligation, not choice. No real struggle described.',
+  },
+};
+
 // ── Auth: require ?token=ADMIN_TOKEN or Authorization header ──────────────────
 const adminToken = import.meta.env.ADMIN_TOKEN;
 
@@ -423,6 +455,16 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                   <tr class="detail-row hidden" id={`builder-detail-${b.id}`}>
                     <td colspan="13">
                       <div class="detail-panel">
+                        <div class="builder-photo-header">
+                          {b.photo
+                            ? <img src={b.photo} alt={`${b.firstName} ${b.lastName}`} class="builder-photo-large" />
+                            : <div class="builder-photo-large builder-photo-placeholder">{b.firstName[0]}{b.lastName[0]}</div>}
+                          <div class="builder-photo-info">
+                            <div class="builder-photo-name">{b.firstName} {b.lastName}</div>
+                            <div class="builder-photo-meta">{b.area.replace(/-/g, ' ')} · {b.city} · {LANG_LABELS[b.interviewLanguage] ?? b.interviewLanguage}</div>
+                            <div class="builder-photo-meta">{b.email}</div>
+                          </div>
+                        </div>
                         <div class={`verdict-card ${verdictClass}`}>
                           <div class="verdict-top">
                             <div class="verdict-score-block">
@@ -519,23 +561,25 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                           </div>
                         </div>
                         <div class="detail-block full">
-                          <div class="detail-label">First 72 hours (work sample)</div>
-                          <div class="detail-value detail-text">{b.workSample}</div>
+                          <div class="detail-label">Written answers — read these to decide</div>
                         </div>
-                        <div class="detail-block full">
-                          <div class="detail-label">Learning under fire</div>
-                          <div class="detail-value detail-text">{b.storyLearning}</div>
-                        </div>
-                        <div class="detail-block full">
-                          <div class="detail-label">Where they're headed (vision + drive)</div>
-                          <div class="detail-value detail-text">{b.vision}</div>
-                        </div>
-                        {b.noMoneyStory && (
-                          <div class="detail-block full">
-                            <div class="detail-label">Worked hard with little / no money</div>
-                            <div class="detail-value detail-text">{b.noMoneyStory}</div>
-                          </div>
-                        )}
+                        {([['workSample', b.workSample], ['storyLearning', b.storyLearning], ['vision', b.vision], ['noMoneyStory', b.noMoneyStory]] as const).map(([key, answer]) => {
+                          const p = WRITTEN_PROMPTS[key];
+                          if (!answer) return null;
+                          return (
+                            <div class="answer-block">
+                              <div class="answer-title">{p.title}</div>
+                              <div class="answer-question">{p.question}</div>
+                              <div class="answer-look"><strong>What to look for:</strong> {p.look}</div>
+                              <div class="answer-examples">
+                                <div class="answer-example answer-good"><span class="answer-tag tag-good">Strong</span> {p.good}</div>
+                                <div class="answer-example answer-bad"><span class="answer-tag tag-bad">Weak</span> {p.bad}</div>
+                              </div>
+                              <div class="answer-their-label">Their answer ({(answer.trim().split(/\s+/).length)} words):</div>
+                              <div class="answer-text">{answer}</div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </td>
                   </tr>
@@ -888,6 +932,27 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   .money-flag.flag-low  { color: #10b981; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
   .money-flag.flag-mid  { color: #FFB74D; background: rgba(255,167,77,0.12); border: 1px solid rgba(255,167,77,0.25); }
   .money-flag.flag-high { color: #FF5252; background: rgba(255,82,82,0.12); border: 1px solid rgba(255,82,82,0.28); }
+  /* Large profile photo header in detail panel */
+  .builder-photo-header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem; }
+  .builder-photo-large { width: 96px; height: 96px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(255,255,255,0.12); flex-shrink: 0; }
+  .builder-photo-placeholder { display: flex; align-items: center; justify-content: center; background: rgba(232,25,44,0.12); color: var(--cyan); font-size: 2rem; font-weight: 700; text-transform: uppercase; }
+  .builder-photo-name { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.3rem; }
+  .builder-photo-meta { font-size: 0.82rem; color: var(--text-muted); text-transform: capitalize; }
+  /* Written answer blocks with question + guidance */
+  .answer-block { background: rgba(0,0,0,0.18); border-radius: 8px; padding: 1.1rem 1.25rem; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.06); }
+  .answer-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--cyan); font-weight: 700; margin-bottom: 0.5rem; }
+  .answer-question { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; padding: 0.6rem 0.75rem; background: rgba(255,255,255,0.03); border-radius: 5px; border-left: 2px solid rgba(255,255,255,0.15); margin-bottom: 0.6rem; }
+  .answer-look { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.6rem; }
+  .answer-look strong { color: var(--text-secondary); }
+  .answer-examples { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.75rem; }
+  .answer-example { font-size: 0.76rem; line-height: 1.45; color: var(--text-muted); padding: 0.4rem 0.55rem; border-radius: 5px; }
+  .answer-good { background: rgba(16,185,129,0.06); }
+  .answer-bad { background: rgba(255,82,82,0.06); }
+  .answer-tag { display: inline-block; font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 0.08rem 0.4rem; border-radius: 3px; margin-right: 0.4rem; }
+  .tag-good { color: #10b981; background: rgba(16,185,129,0.15); }
+  .tag-bad { color: #FF5252; background: rgba(255,82,82,0.15); }
+  .answer-their-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.35rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
+  .answer-text { font-size: 0.9rem; color: var(--text-primary); line-height: 1.6; white-space: pre-wrap; }
   /* Name link icon (Results next to name) */
   .name-link-icon { font-size: 0.9rem; color: var(--cyan); opacity: 0; transition: opacity 0.2s ease; text-decoration: none; cursor: pointer; }
   .app-row:hover .name-link-icon { opacity: 1; }
