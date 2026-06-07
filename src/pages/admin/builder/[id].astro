@@ -172,7 +172,7 @@ if (b.builderScore >= 80) {
 </style>
 
 <div class="results-container">
-  <a href="/admin?token=dev-builder-admin-2024#tab-builders" class="back-link">← Back to all builders</a>
+  <a href={`/admin?token=${encodeURIComponent(token ?? '')}#tab-builders`} class="back-link">← Back to all builders</a>
 
   <div class="header">
     <h1>{b.firstName} {b.lastName}</h1>

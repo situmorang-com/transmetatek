@@ -24,6 +24,23 @@ const TRAIT_GUIDE: Record<string, string> = {
   loyalty: '▪ What it is: Stays & digs in through hard times, not poached for small raises. Mission/team invested, not just paycheck. ▪ Strong (80+): Chooses loyalty even when competitor+40%, stays in rough quarters, mission/team talk. ▪ Weak (0–40): Takes competitor offer, leaves in downturns, "salary is the main thing." ▪ Red flags: Money is top driver, loyalty scenarios answered money-first, "I go where the best opportunity is." ▪ Interview: Ask "If a competitor offered you 40% more after we\'ve trained you, what would you do?" and "What would make you stay if things got hard?" ▪ In writing: Do they talk mission/team or just pay/title?',
 };
 
+// Concise hover tips: what the number means, what's good, when it turns bad.
+const METRIC_TIPS: Record<string, string> = {
+  builder: 'Builder Score — overall fit (weighted blend of all 7 traits).\n🟢 70+ strong  ·  60–79 worth a trial  ·  40–59 borderline  ·  below 40 likely not a fit.',
+  loyalty: 'Loyalty — will they stay through hard times?\n🟢 70+ committed  ·  55–69 ok  ·  below 55 flight risk (may leave for a small raise).',
+  sjt: 'SJT — judgment on the hidden-key startup scenarios (can\'t be gamed).\n🟢 65+ good judgment  ·  45–64 mixed  ·  below 45 weak trade-off decisions.',
+  money: 'Money Orientation — how money-driven they are (higher = more).\n🟢 below 55 mission-leaning  ·  55–74 mixed  ·  75+ money-primary (expect them to leave if poached).',
+};
+const TRAIT_TIP: Record<string, string> = {
+  drive: 'Drive — keeps going on hard, unglamorous work.\n🟢 70+ self-motivated  ·  below 55 needs external reward to push.',
+  growth: 'Growth — learns fast & independently.\n🟢 70+ self-starter  ·  below 55 waits to be taught.',
+  ownership: 'Ownership — treats problems as theirs, even outside their role.\n🟢 70+ takes charge  ·  below 55 "not my job" risk.',
+  tolerance: 'Tolerance — handles ambiguity & shifting priorities.\n🟢 70+ thrives in chaos  ·  below 55 struggles in a startup.',
+  ego: 'Low Ego — takes hard feedback, refuses to ship junk.\n🟢 70+ coachable & high standard  ·  below 55 defensive or sloppy.',
+  ambition: 'Ambition — finishes what they start; long-term.\n🟢 70+ committed  ·  below 55 jumps between interests.',
+  loyalty: 'Loyalty — stays & digs in; not just a paycheck.\n🟢 70+ loyal  ·  below 55 flight risk.',
+};
+
 // The exact prompts candidates were shown, plus what a strong vs weak answer looks like.
 const WRITTEN_PROMPTS: Record<string, { title: string; question: string; look: string; good: string; bad: string }> = {
   workSample: {
@@ -352,10 +369,10 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                   <th>Email</th>
                   <th>Area</th>
                   <th>Lang</th>
-                  <th>Builder</th>
-                  <th>Loyalty</th>
-                  <th>SJT</th>
-                  <th>Money</th>
+                  <th class="th-tip" title={METRIC_TIPS.builder}>Builder</th>
+                  <th class="th-tip" title={METRIC_TIPS.loyalty}>Loyalty</th>
+                  <th class="th-tip" title={METRIC_TIPS.sjt}>SJT</th>
+                  <th class="th-tip" title={METRIC_TIPS.money}>Money</th>
                   <th>LinkedIn</th>
                   <th>Submitted</th>
                   <th></th>
@@ -417,21 +434,21 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                           : <span class="name-initials">{b.firstName[0]}{b.lastName[0]}</span>}
                         <div style="display:flex;align-items:center;gap:0.5rem;">
                           <span>{b.firstName} {b.lastName}</span>
-                          <a href={`/admin/builder/${b.id}?token=dev-builder-admin-2024`} class="name-link-icon" title="View results">↗</a>
+                          <a href={`/admin/builder/${b.id}?token=${encodeURIComponent(token ?? '')}`} class="name-link-icon" title="View results">↗</a>
                         </div>
                       </div>
                     </td>
                     <td><a href={`mailto:${b.email}`} class="td-link">{b.email}</a></td>
                     <td><span class="role-badge">{b.area.replace(/-/g, ' ')}</span></td>
                     <td class="td-mono">{LANG_LABELS[b.interviewLanguage] ?? b.interviewLanguage}</td>
-                    <td>
+                    <td title={METRIC_TIPS.builder}>
                       <div class={`score-cell score-${Math.round((b.builderScore ?? 0) / 25)}`}>
                         {b.builderScore ?? '—'}{b.builderScore != null ? '%' : ''}
                       </div>
                     </td>
-                    <td class="td-mono">{b.loyaltyScore != null ? b.loyaltyScore + '%' : '—'}</td>
-                    <td class="td-mono">{b.sjtScore != null ? b.sjtScore + '%' : '—'}</td>
-                    <td>
+                    <td class="td-mono has-tip" title={METRIC_TIPS.loyalty}>{b.loyaltyScore != null ? b.loyaltyScore + '%' : '—'}</td>
+                    <td class="td-mono has-tip" title={METRIC_TIPS.sjt}>{b.sjtScore != null ? b.sjtScore + '%' : '—'}</td>
+                    <td title={METRIC_TIPS.money}>
                       {money != null
                         ? <span class={`money-flag ${moneyClass}`}>{money}%</span>
                         : <span class="td-muted">—</span>}
@@ -497,9 +514,9 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                           <div class="detail-label">Trait signal</div>
                           <div class="trait-grid">
                             {Object.entries(TRAIT_LABELS).map(([key, label]) => (
-                              <div class="trait-mini">
+                              <div class="trait-mini has-tip" title={TRAIT_TIP[key]}>
                                 <div class="trait-mini-head">
-                                  <span title={TRAIT_GUIDE[key]}>{label}</span>
+                                  <span>{label}</span>
                                   <span class="td-mono">{Math.round(ts[key] ?? 0)}%</span>
                                 </div>
                                 <div class="trait-mini-track"><div class="trait-mini-fill" style={`width:${Math.round(ts[key] ?? 0)}%`}></div></div>
@@ -932,6 +949,10 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   .money-flag.flag-low  { color: #10b981; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
   .money-flag.flag-mid  { color: #FFB74D; background: rgba(255,167,77,0.12); border: 1px solid rgba(255,167,77,0.25); }
   .money-flag.flag-high { color: #FF5252; background: rgba(255,82,82,0.12); border: 1px solid rgba(255,82,82,0.28); }
+  /* Hover-tip cues (native title popups: what the number means, good vs bad) */
+  .th-tip, .has-tip { cursor: help; }
+  .th-tip { text-decoration: underline dotted rgba(255,255,255,0.3); text-underline-offset: 3px; }
+  .trait-mini.has-tip:hover .trait-mini-head span:first-child { color: var(--cyan); }
   /* Large profile photo header in detail panel */
   .builder-photo-header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem; }
   .builder-photo-large { width: 96px; height: 96px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(255,255,255,0.12); flex-shrink: 0; }
