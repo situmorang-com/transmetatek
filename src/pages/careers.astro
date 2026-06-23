@@ -328,33 +328,33 @@ const values = [
               </div>
             </div>
 
-            <!-- Email -->
-            <div class="iform-group">
-              <label class="iform-label" for="i-email">Email address <span class="iform-req">*</span></label>
-              <input type="email" id="i-email" class="iform-input" placeholder="budi@ui.ac.id" required autocomplete="email" />
-            </div>
-
-            <!-- Mobile number -->
-            <div class="iform-group">
-              <label class="iform-label" for="i-phone">Mobile number <span class="iform-req">*</span></label>
-              <input type="tel" id="i-phone" class="iform-input" placeholder="+62 812 3456 7890" required autocomplete="tel" />
-            </div>
-
-            <!-- Photo -->
-            <div class="iform-group">
-              <label class="iform-label" for="i-photo">Profile photo <span class="iform-req">*</span></label>
-              <input type="file" id="i-photo" class="iform-input" accept="image/*" required />
-              <div id="i-photo-preview" style="margin-top: 0.5rem; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.05); display: none;">
-                <img id="i-photo-img" style="width: 100%; height: 100%; object-fit: cover;" />
+            <!-- Row: email + phone -->
+            <div class="iform-row">
+              <div class="iform-group">
+                <label class="iform-label" for="i-email">Email address <span class="iform-req">*</span></label>
+                <input type="email" id="i-email" class="iform-input" placeholder="budi@ui.ac.id" required autocomplete="email" />
+              </div>
+              <div class="iform-group">
+                <label class="iform-label" for="i-phone">Mobile number <span class="iform-req">*</span></label>
+                <input type="tel" id="i-phone" class="iform-input" placeholder="0812 3456 7890" required autocomplete="tel" inputmode="numeric" />
               </div>
             </div>
 
-            <!-- CV -->
-            <div class="iform-group">
-              <label class="iform-label" for="i-cv">CV / Resume (PDF) <span class="iform-req">*</span></label>
-              <input type="file" id="i-cv" class="iform-input" accept=".pdf" required />
-              <div id="i-cv-name" style="margin-top: 0.5rem; font-size: 0.85rem; color: rgba(255,255,255,0.6); display: none;">
-                <span id="i-cv-filename"></span>
+            <!-- Row: photo + CV -->
+            <div class="iform-row">
+              <div class="iform-group">
+                <label class="iform-label" for="i-photo">Profile photo <span class="iform-req">*</span></label>
+                <input type="file" id="i-photo" class="iform-input" accept="image/*" required />
+                <div id="i-photo-preview" class="iform-photo-preview">
+                  <img id="i-photo-img" />
+                </div>
+              </div>
+              <div class="iform-group">
+                <label class="iform-label" for="i-cv">CV / Resume (PDF) <span class="iform-req">*</span></label>
+                <input type="file" id="i-cv" class="iform-input" accept=".pdf" required />
+                <div id="i-cv-name" class="iform-cv-name">
+                  <span id="i-cv-filename"></span>
+                </div>
               </div>
             </div>
 
@@ -1155,6 +1155,26 @@ const values = [
 
   .iform-month { color-scheme: dark; }
 
+  .iform-photo-preview {
+    display: none;
+    margin-top: 0.5rem;
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+  }
+  .iform-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+  .iform-cv-name {
+    display: none;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--cyan);
+    font-family: var(--font-mono);
+  }
+
   /* Skill chips */
   .intern-skills {
     display: flex;
@@ -1389,6 +1409,22 @@ const values = [
     if (!file || !nameEl || !filenameEl) return;
     filenameEl.textContent = file.name;
     nameEl.style.display = 'block';
+  });
+
+  // ── Phone masking (digit grouping, matches apply.astro) ────────────────
+  const internPhoneInput = document.getElementById('i-phone');
+  internPhoneInput?.addEventListener('input', (e) => {
+    const cursorFromEnd = e.target.value.length - e.target.selectionStart;
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 14);
+    let formatted = digits;
+    if (digits.length > 4 && digits.length <= 8) {
+      formatted = `${digits.slice(0, 4)} ${digits.slice(4)}`;
+    } else if (digits.length > 8) {
+      formatted = `${digits.slice(0, 4)} ${digits.slice(4, 8)} ${digits.slice(8)}`;
+    }
+    e.target.value = formatted;
+    const pos = Math.max(formatted.length - cursorFromEnd, 0);
+    e.target.setSelectionRange(pos, pos);
   });
 
   // ── Submit ──────────────────────────────────────────────────────────────
