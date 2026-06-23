@@ -50,6 +50,76 @@
       "when": 1780872888293,
       "tag": "0006_abnormal_shriek",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1782202871314,
+      "tag": "0007_faithful_scream",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1782215964791,
+      "tag": "0008_familiar_scalphunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1782229440926,
+      "tag": "0009_nice_red_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1782230166381,
+      "tag": "0010_illegal_fantastic_four",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1782230857267,
+      "tag": "0011_keen_thunderbolt_ross",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1782231419590,
+      "tag": "0012_faulty_power_pack",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1782232135536,
+      "tag": "0013_quiet_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1782255745461,
+      "tag": "0014_smart_triton",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1782257588111,
+      "tag": "0015_outstanding_swordsman",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1782257596367,
+      "tag": "0016_living_electro",
+      "breakpoints": true
     }
   ]
 }

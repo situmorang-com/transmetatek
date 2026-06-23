@@ -334,12 +334,27 @@ const values = [
               <input type="email" id="i-email" class="iform-input" placeholder="budi@ui.ac.id" required autocomplete="email" />
             </div>
 
+            <!-- Mobile number -->
+            <div class="iform-group">
+              <label class="iform-label" for="i-phone">Mobile number <span class="iform-req">*</span></label>
+              <input type="tel" id="i-phone" class="iform-input" placeholder="+62 812 3456 7890" required autocomplete="tel" />
+            </div>
+
             <!-- Photo -->
             <div class="iform-group">
               <label class="iform-label" for="i-photo">Profile photo <span class="iform-req">*</span></label>
               <input type="file" id="i-photo" class="iform-input" accept="image/*" required />
               <div id="i-photo-preview" style="margin-top: 0.5rem; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.05); display: none;">
                 <img id="i-photo-img" style="width: 100%; height: 100%; object-fit: cover;" />
+              </div>
+            </div>
+
+            <!-- CV -->
+            <div class="iform-group">
+              <label class="iform-label" for="i-cv">CV / Resume (PDF) <span class="iform-req">*</span></label>
+              <input type="file" id="i-cv" class="iform-input" accept=".pdf" required />
+              <div id="i-cv-name" style="margin-top: 0.5rem; font-size: 0.85rem; color: rgba(255,255,255,0.6); display: none;">
+                <span id="i-cv-filename"></span>
               </div>
             </div>
 
@@ -1366,6 +1381,16 @@ const values = [
     reader.readAsDataURL(file);
   });
 
+  // ── CV filename display ──────────────────────────────────────────────────
+  document.getElementById('i-cv')?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    const nameEl = document.getElementById('i-cv-name');
+    const filenameEl = document.getElementById('i-cv-filename');
+    if (!file || !nameEl || !filenameEl) return;
+    filenameEl.textContent = file.name;
+    nameEl.style.display = 'block';
+  });
+
   // ── Submit ──────────────────────────────────────────────────────────────
   document.getElementById('intern-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1373,13 +1398,16 @@ const values = [
     const get  = (id) => document.getElementById(id);
     const val  = (id) => get(id)?.value?.trim() ?? '';
     const photoFile = get('i-photo')?.files?.[0];
+    const cvFile = get('i-cv')?.files?.[0];
 
     // Validate required fields
     const required = [
       { id: 'i-fname',    v: val('i-fname') },
       { id: 'i-lname',   v: val('i-lname') },
       { id: 'i-email',   v: val('i-email') },
+      { id: 'i-phone',   v: val('i-phone') },
       { id: 'i-photo',   v: photoFile ? 'file' : null },
+      { id: 'i-cv',      v: cvFile ? 'file' : null },
       { id: 'i-uni',     v: val('i-uni') },
       { id: 'i-course',  v: val('i-course') },
       { id: 'i-year',    v: val('i-year') },
@@ -1416,6 +1444,16 @@ const values = [
       });
     }
 
+    // Read CV as data URL
+    let cvDataUrl = null;
+    if (cvFile) {
+      cvDataUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result);
+        reader.readAsDataURL(cvFile);
+      });
+    }
+
     const btn   = document.getElementById('intern-submit-btn');
     const label = document.getElementById('intern-btn-label');
     const icon  = document.getElementById('intern-btn-icon');
@@ -1435,7 +1473,9 @@ const values = [
           firstName:        val('i-fname'),
           lastName:         val('i-lname'),
           email:            val('i-email'),
+          phone:            val('i-phone'),
           photo:            photoDataUrl,
+          cv:               cvDataUrl,
           university:       val('i-uni'),
           course:           val('i-course'),
           yearOfStudy:      val('i-year'),

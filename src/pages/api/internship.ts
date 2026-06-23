@@ -7,13 +7,13 @@ export const POST: APIRoute = async ({ request }) => {
     const body = await request.json();
 
     const {
-      firstName, lastName, email, photo, university, course, yearOfStudy,
+      firstName, lastName, email, phone, photo, cv, university, course, yearOfStudy,
       area, duration, availability, skills,
       github, linkedin,
       whatExcites, ambitiousProject, aiDream,
     } = body;
 
-    if (!firstName || !lastName || !email || !photo || !university || !course ||
+    if (!firstName || !lastName || !email || !phone || !photo || !cv || !university || !course ||
         !yearOfStudy || !area || !duration || !availability ||
         !whatExcites || !ambitiousProject || !aiDream) {
       return new Response(JSON.stringify({ ok: false, error: 'Missing required fields' }), {
@@ -26,7 +26,9 @@ export const POST: APIRoute = async ({ request }) => {
       firstName,
       lastName,
       email,
+      phone,
       photo,
+      cv,
       university,
       course,
       yearOfStudy,

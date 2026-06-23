@@ -1,0 +1,26 @@
+ALTER TABLE `applications` ADD `drivers` text;--> statement-breakpoint
+ALTER TABLE `applications` ADD `sjt` text;--> statement-breakpoint
+ALTER TABLE `applications` ADD `sjt_score` integer;--> statement-breakpoint
+ALTER TABLE `applications` ADD `work_sample` text;--> statement-breakpoint
+ALTER TABLE `applications` ADD `story_learning` text;--> statement-breakpoint
+ALTER TABLE `applications` ADD `vision` text;--> statement-breakpoint
+ALTER TABLE `applications` ADD `no_money_story` text;--> statement-breakpoint
+ALTER TABLE `applications` ADD `acknowledged` integer;--> statement-breakpoint
+ALTER TABLE `applications` ADD `trait_scores` text;--> statement-breakpoint
+ALTER TABLE `applications` ADD `character_score` integer;--> statement-breakpoint
+ALTER TABLE `applications` ADD `loyalty_score` integer;--> statement-breakpoint
+ALTER TABLE `applications` ADD `money_orientation` integer;--> statement-breakpoint
+ALTER TABLE `applications` ADD `assessment_completed_at` text;--> statement-breakpoint
+ALTER TABLE `internships` ADD `drivers` text;--> statement-breakpoint
+ALTER TABLE `internships` ADD `sjt` text;--> statement-breakpoint
+ALTER TABLE `internships` ADD `sjt_score` integer;--> statement-breakpoint
+ALTER TABLE `internships` ADD `work_sample` text;--> statement-breakpoint
+ALTER TABLE `internships` ADD `story_learning` text;--> statement-breakpoint
+ALTER TABLE `internships` ADD `vision` text;--> statement-breakpoint
+ALTER TABLE `internships` ADD `no_money_story` text;--> statement-breakpoint
+ALTER TABLE `internships` ADD `acknowledged` integer;--> statement-breakpoint
+ALTER TABLE `internships` ADD `trait_scores` text;--> statement-breakpoint
+ALTER TABLE `internships` ADD `character_score` integer;--> statement-breakpoint
+ALTER TABLE `internships` ADD `loyalty_score` integer;--> statement-breakpoint
+ALTER TABLE `internships` ADD `money_orientation` integer;--> statement-breakpoint
+ALTER TABLE `internships` ADD `assessment_completed_at` text;

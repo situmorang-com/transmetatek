@@ -638,6 +638,10 @@ const calibrationRows = [
                             <div class="detail-value">{i.course}</div>
                           </div>
                           <div class="detail-block">
+                            <div class="detail-label">Mobile number</div>
+                            <div class="detail-value">{i.phone}</div>
+                          </div>
+                          <div class="detail-block">
                             <div class="detail-label">Skills</div>
                             <div class="detail-value">
                               {JSON.parse(i.skills ?? '[]').map((s: string) => (
@@ -645,6 +649,14 @@ const calibrationRows = [
                               ))}
                             </div>
                           </div>
+                          {i.cv && (
+                            <div class="detail-block">
+                              <div class="detail-label">CV</div>
+                              <div class="detail-value">
+                                <a href={i.cv} download class="td-link">Download CV</a>
+                              </div>
+                            </div>
+                          )}
                           {i.github && (
                             <div class="detail-block">
                               <div class="detail-label">GitHub / Portfolio</div>
