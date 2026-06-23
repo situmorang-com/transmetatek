@@ -73,6 +73,42 @@ const WRITTEN_PROMPTS: Record<string, { title: string; question: string; look: s
   },
 };
 
+// Role → relevant skills, mirrored from apply.astro's `roles` list, used to
+// reconstruct the matchScore breakdown (the breakdown itself isn't persisted).
+const ROLE_SKILLS: Record<string, string[]> = {
+  'senior-ml-engineer':           ['PyTorch', 'MLflow', 'Kubernetes', 'Python', 'TensorFlow', 'Docker', 'Ray', 'CUDA'],
+  'nlp-llm-specialist':           ['HuggingFace', 'LangChain', 'vLLM', 'Bahasa Indonesia NLP', 'Python', 'RAG', 'Prompt Engineering', 'Fine-tuning'],
+  'ai-strategy-consultant':       ['AI Strategy', 'Stakeholder Management', 'Business Analysis', 'Presentations', 'Change Management', 'ROI Modeling'],
+  'data-scientist':               ['Python', 'SQL', 'Spark', 'Statistical Modeling', 'Machine Learning', 'Data Visualization', 'Experiment Design'],
+  'computer-vision-engineer':     ['OpenCV', 'YOLO', 'TensorRT', 'ONNX', 'Python', 'Deep Learning', 'Object Detection', 'Video Analytics'],
+  'business-development-manager':['Enterprise Sales', 'CRM', 'AI Market Knowledge', 'Bahasa Indonesia', 'Negotiation', 'Account Management'],
+  'open-application':             ['Python', 'Machine Learning', 'AI Strategy', 'Data Science', 'NLP', 'Computer Vision', 'Leadership', 'Communication'],
+};
+
+function countWords(s: string) {
+  return s.trim() ? s.trim().split(/\s+/).length : 0;
+}
+
+// Recreates the criteria breakdown behind `matchScore` (see apply.astro
+// updateScore()) so admins can see *why* a candidate scored what they did.
+function scoreBreakdown(a: typeof applications.$inferSelect) {
+  const roleSkills = ROLE_SKILLS[a.role] ?? [];
+  const skills = JSON.parse(a.skills ?? '[]') as string[];
+  const matched = roleSkills.filter(s => skills.includes(s));
+  const skillPts = roleSkills.length > 0 ? Math.round((matched.length / roleSkills.length) * 20) : 0;
+  const words = countWords(a.whyTmk ?? '') + countWords(a.aiProject ?? '');
+  const storyPts = words > 40 ? Math.min(Math.round(words / 10), 20) : 0;
+
+  return [
+    { label: 'Role selected',        pts: a.role ? 15 : 0,  max: 15, note: a.role.replace(/-/g, ' ') },
+    { label: 'Identity complete',    pts: (a.firstName && a.email?.includes('@') && a.city) ? 20 : 0, max: 20, note: `${a.firstName ?? ''} · ${a.city ?? ''}` },
+    { label: 'Experience provided',  pts: a.experience ? 15 : 0, max: 15, note: a.experience },
+    { label: 'Skills match for role', pts: skillPts, max: 20, note: `${matched.length}/${roleSkills.length} role skills` },
+    { label: 'LinkedIn provided',    pts: a.linkedin ? 10 : 0, max: 10, note: a.linkedin ? 'yes' : 'no' },
+    { label: 'Story depth (why + AI project)', pts: storyPts, max: 20, note: `${words} words` },
+  ];
+}
+
 // ── Auth: require ?token=ADMIN_TOKEN or Authorization header ──────────────────
 const adminToken = import.meta.env.ADMIN_TOKEN;
 
@@ -171,12 +207,15 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                       </span>
                     </td>
                     <td class="td-mono">{a.experience}</td>
-                    <td class="td-skills">
-                      {JSON.parse(a.skills ?? '[]').slice(0, 4).map((s: string) => (
-                        <span class="skill-tag">{s}</span>
-                      ))}
+                    <td class="td-skills-wrap">
+                      <span class="exp-corner-badge" title="Years of experience">{a.experience}</span>
+                      <div class="td-skills">
+                        {JSON.parse(a.skills ?? '[]').slice(0, 4).map((s: string) => (
+                          <span class="skill-tag">{s}</span>
+                        ))}
+                      </div>
                     </td>
-                    <td>
+                    <td class="has-tip" title="Click the row to see the full score breakdown below">
                       <div class={`score-cell score-${Math.round((a.matchScore ?? 0) / 25)}`}>
                         {a.matchScore ?? '—'}
                         {a.matchScore ? '%' : ''}
@@ -201,11 +240,33 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                   <tr class="detail-row hidden" id={`app-detail-${a.id}`}>
                     <td colspan="10">
                       <div class="detail-panel">
+                        <div class="score-breakdown">
+                          <div class="score-breakdown-head">
+                            <span class="score-breakdown-total">{a.matchScore ?? '—'}{a.matchScore ? '%' : ''}</span>
+                            <span class="detail-label">Why this score</span>
+                          </div>
+                          <div class="score-breakdown-rows">
+                            {scoreBreakdown(a).map(row => (
+                              <div class="score-breakdown-row">
+                                <div class="score-breakdown-bar"><div class="score-breakdown-fill" style={`width:${row.max ? (row.pts / row.max) * 100 : 0}%`}></div></div>
+                                <span class="score-breakdown-label">{row.label}</span>
+                                <span class="score-breakdown-note">{row.note}</span>
+                                <span class="score-breakdown-pts td-mono">+{row.pts}/{row.max}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                         <div class="detail-grid">
                           <div class="detail-block">
                             <div class="detail-label">City</div>
                             <div class="detail-value">{a.city}</div>
                           </div>
+                          {a.phone && (
+                            <div class="detail-block">
+                              <div class="detail-label">Phone</div>
+                              <div class="detail-value">{a.phone}</div>
+                            </div>
+                          )}
                           {a.currentOrg && (
                             <div class="detail-block">
                               <div class="detail-label">Organisation</div>
@@ -823,6 +884,21 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
     white-space: nowrap;
   }
 
+  .td-skills-wrap { position: relative; max-width: 220px; padding-top: 0.9rem; }
+  .exp-corner-badge {
+    position: absolute;
+    top: -0.15rem;
+    right: 0;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: var(--cyan);
+    background: rgba(0, 229, 255, 0.08);
+    border: 1px solid rgba(0, 229, 255, 0.25);
+    border-radius: 3px;
+    padding: 0.05rem 0.3rem;
+    line-height: 1.4;
+  }
   .td-skills { display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 220px; }
 
   .skill-tag {
@@ -950,6 +1026,22 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   .money-flag.flag-mid  { color: #FFB74D; background: rgba(255,167,77,0.12); border: 1px solid rgba(255,167,77,0.25); }
   .money-flag.flag-high { color: #FF5252; background: rgba(255,82,82,0.12); border: 1px solid rgba(255,82,82,0.28); }
   /* Hover-tip cues (native title popups: what the number means, good vs bad) */
+  .score-breakdown {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .score-breakdown-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.7rem; }
+  .score-breakdown-total { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--cyan); }
+  .score-breakdown-rows { display: flex; flex-direction: column; gap: 0.4rem; }
+  .score-breakdown-row { display: grid; grid-template-columns: 70px 170px 1fr auto; align-items: center; gap: 0.6rem; }
+  .score-breakdown-bar { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .score-breakdown-fill { height: 100%; background: var(--cyan); border-radius: 3px; }
+  .score-breakdown-label { font-size: 0.74rem; color: var(--text-secondary); }
+  .score-breakdown-note { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .score-breakdown-pts { font-size: 0.7rem; color: var(--text-muted); text-align: right; }
   .th-tip, .has-tip { cursor: help; }
   .th-tip { text-decoration: underline dotted rgba(255,255,255,0.3); text-underline-offset: 3px; }
   .trait-mini.has-tip:hover .trait-mini-head span:first-child { color: var(--cyan); }
