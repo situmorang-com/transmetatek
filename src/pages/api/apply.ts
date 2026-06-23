@@ -7,8 +7,9 @@ export const POST: APIRoute = async ({ request }) => {
     const body = await request.json();
 
     const {
-      role, firstName, lastName, email, city, phone,
+      role, firstName, lastName, email, city, phone, photo,
       experience, skills, linkedin, portfolio, currentOrg,
+      currentSalary, expectedSalary, workHistory,
       whyTmk, aiProject, roleQuestion, matchScore,
     } = body;
 
@@ -20,25 +21,29 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    await db.insert(applications).values({
+    const [inserted] = await db.insert(applications).values({
       role,
       firstName,
       lastName,
       email,
       city,
       phone:        phone        || null,
+      photo:        photo        || null,
       experience,
       skills:       JSON.stringify(skills ?? []),
       linkedin,
       portfolio:    portfolio    || null,
       currentOrg:   currentOrg  || null,
+      currentSalary:  currentSalary  || null,
+      expectedSalary: expectedSalary || null,
+      workHistory:    JSON.stringify(workHistory ?? []),
       whyTmk,
       aiProject,
       roleQuestion,
       matchScore:   matchScore   ?? null,
-    });
+    }).returning({ id: applications.id });
 
-    return new Response(JSON.stringify({ ok: true }), {
+    return new Response(JSON.stringify({ ok: true, id: inserted.id }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

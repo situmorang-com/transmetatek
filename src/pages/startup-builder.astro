@@ -403,9 +403,9 @@ const en = C.en;  // default server render
       <div class="hero-ambient-left"></div>
       <div class="hero-ambient-right"></div>
       <div class="container hero-content">
-        <div class="tag reveal" data-i18n="hero.tag">{en['hero.tag']}</div>
-        <h1 class="hero-title reveal reveal-delay-1" data-i18n-html="hero.title" set:html={en['hero.title']}></h1>
-        <p class="hero-sub reveal reveal-delay-2" data-i18n-html="hero.sub" set:html={en['hero.sub']}></p>
+        <div class="tag reveal" id="hero-tag" data-i18n="hero.tag">{en['hero.tag']}</div>
+        <h1 class="hero-title reveal reveal-delay-1" id="hero-title" data-i18n-html="hero.title" set:html={en['hero.title']}></h1>
+        <p class="hero-sub reveal reveal-delay-2" id="hero-sub" data-i18n-html="hero.sub" set:html={en['hero.sub']}></p>
         <div class="ai-badge reveal reveal-delay-3">
           <div class="ai-badge-dot"></div>
           <span class="ai-badge-text" data-i18n="hero.badge">{en['hero.badge']}</span>
@@ -708,6 +708,23 @@ const en = C.en;  // default server render
             </div>
           </div>
 
+          <!-- ── Step 5: Job-knowledge test (professional/job track only) ── -->
+          <div class="form-step hidden" id="step-5">
+            <div class="step-header">
+              <div class="step-eyebrow">Final step</div>
+              <h2 class="step-title">A few role questions, against the clock</h2>
+              <p class="step-desc">Short, timed, no artifact to build — just answer what you know. <strong id="jk-timer">8:00</strong> remaining.</p>
+            </div>
+            <div class="form-fields" id="jk-questions"></div>
+            <div class="step-actions">
+              <div></div>
+              <button type="button" id="jk-submit-btn" class="btn-primary">
+                <span>Submit & Finish</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l5 5 7-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+
           <!-- ── Success Screen ── -->
           <div class="success-screen hidden" id="success-screen">
             <div class="success-icon">
@@ -935,6 +952,18 @@ const en = C.en;  // default server render
   /* ── Actions ── */
   .step-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
 
+  /* ── Job-knowledge test ── */
+  #jk-timer { color: var(--cyan); font-family: var(--font-mono); }
+  :global(.jk-question) { padding: 1rem 1.1rem; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,0.02); margin-bottom: 1rem; }
+  :global(.jk-question.answered) { border-color: rgba(16,185,129,0.3); }
+  :global(.jk-q-text) { font-size: 0.88rem; color: var(--text-primary); line-height: 1.55; margin-bottom: 0.85rem; }
+  :global(.jk-options) { display: flex; flex-direction: column; gap: 0.5rem; }
+  :global(.jk-option) { display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.02); cursor: pointer; transition: border-color 0.18s ease; font-size: 0.82rem; color: var(--text-secondary); }
+  :global(.jk-option:hover) { border-color: rgba(232,25,44,0.35); }
+  :global(.jk-option.selected) { border-color: var(--cyan); background: rgba(232,25,44,0.08); color: var(--text-primary); }
+  :global(.jk-option-dot) { flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border); display: inline-block; }
+  :global(.jk-option.selected .jk-option-dot) { border-color: var(--cyan); background: var(--cyan); }
+
   /* ── Success ── */
   .success-screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center; padding: 3rem 2rem; background: var(--bg-primary); border-radius: inherit; z-index: 11; animation: fadeIn 0.5s ease; overflow-y: auto; max-height: 100vh; }
   .success-screen.hidden { display: none; }
@@ -1006,8 +1035,18 @@ const en = C.en;  // default server render
 </style>
 
 <script is:inline define:vars={{ C, areas, drivers, sjt, traits, workSample }}>
+  // ── Shared-assessment entry: job/internship applicants land here after
+  // submitting their profile (see apply.astro / careers.astro), tagged with
+  // ?track=job|internship&id=<row id>. Their identity is already captured,
+  // so step 1 is skipped and submit posts to /api/assessment instead of
+  // /api/builder. Default (no params) is the standalone builder track.
+  const urlParams = new URLSearchParams(window.location.search);
+  const track  = urlParams.get('track') === 'job' || urlParams.get('track') === 'internship' ? urlParams.get('track') : 'builder';
+  const linkId = urlParams.get('id');
+  const isLinkedTrack = track !== 'builder';
+
   // ── State ──────────────────────────────────────────────────────────────
-  let currentStep = 1;
+  let currentStep = isLinkedTrack ? 2 : 1;
   let lang = 'en';
   const totalSteps = 4;
   const sjtPicks = {};
@@ -1441,15 +1480,7 @@ const en = C.en;  // default server render
     };
   }
 
-  document.getElementById('submit-btn')?.addEventListener('click', () => {
-    if (!validateStep(4)) return;
-    render();
-    const data = collect();
-    fetch('/api/builder', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    }).catch(err => console.error('[builder] submit error:', err));
-
+  function showFinalSuccess() {
     document.getElementById('final-score').textContent = builderScore + '%';
     document.getElementById('final-lang').textContent = lang === 'id' ? 'Bahasa Indonesia' : 'English';
 
@@ -1514,6 +1545,113 @@ const en = C.en;  // default server render
     document.getElementById('profile-panel')?.classList.remove('meter-hidden');
     const stepFill = document.getElementById('step-fill');
     if (stepFill) stepFill.style.width = '100%';
+  }
+
+  // ── Job-knowledge test (track=job only) — Stage 2 capability layer ────────
+  let jkTimerInterval = null;
+  let jkQuestionCount = 0;
+  function startJobKnowledgeStep() {
+    document.getElementById('step-4')?.classList.add('hidden');
+    document.getElementById('step-5')?.classList.remove('hidden');
+    document.getElementById('builder-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    const role = urlParams.get('role') || 'open-application';
+    fetch(`/api/job-knowledge?role=${encodeURIComponent(role)}`)
+      .then(res => res.json())
+      .then(json => {
+        const container = document.getElementById('jk-questions');
+        if (!container || !json.questions) return;
+        jkQuestionCount = json.questions.length;
+        container.innerHTML = json.questions.map((q, qi) => `
+          <div class="jk-question" data-qi="${qi}">
+            <div class="jk-q-text">${qi + 1}. ${q.question}</div>
+            <div class="jk-options">
+              ${q.options.map((opt, oi) => `
+                <div class="jk-option" data-oi="${oi}">
+                  <span class="jk-option-dot"></span>
+                  <span>${opt}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+
+        const jkAnswers = new Array(jkQuestionCount).fill(null);
+        container.querySelectorAll('.jk-question').forEach(qEl => {
+          const qi = parseInt(qEl.dataset.qi);
+          qEl.querySelectorAll('.jk-option').forEach(optEl => {
+            optEl.addEventListener('click', () => {
+              const oi = parseInt(optEl.dataset.oi);
+              jkAnswers[qi] = oi;
+              qEl.querySelectorAll('.jk-option').forEach(o => o.classList.remove('selected'));
+              optEl.classList.add('selected');
+              qEl.classList.add('answered');
+            });
+          });
+        });
+
+        let timeLeft = json.timeLimitSeconds || 480;
+        const timerEl = document.getElementById('jk-timer');
+        function tick() {
+          const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+          if (timerEl) timerEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+          if (timeLeft <= 0) { clearInterval(jkTimerInterval); submitJobKnowledge(jkAnswers); return; }
+          timeLeft--;
+        }
+        tick();
+        jkTimerInterval = setInterval(tick, 1000);
+
+        document.getElementById('jk-submit-btn')?.addEventListener('click', () => {
+          clearInterval(jkTimerInterval);
+          submitJobKnowledge(jkAnswers);
+        }, { once: true });
+      })
+      .catch(err => { console.error('[job-knowledge] load error:', err); showFinalSuccess(); });
+  }
+
+  function submitJobKnowledge(answers) {
+    const role = urlParams.get('role') || 'open-application';
+    fetch('/api/job-knowledge', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: Number(linkId), role, answers }),
+    }).catch(err => console.error('[job-knowledge] submit error:', err))
+      .finally(() => {
+        document.getElementById('step-5')?.classList.add('hidden');
+        showFinalSuccess();
+      });
+  }
+
+  document.getElementById('submit-btn')?.addEventListener('click', () => {
+    if (!validateStep(4)) return;
+    render();
+
+    if (isLinkedTrack) {
+      fetch('/api/assessment', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          track: track, id: Number(linkId),
+          sjtPicks, driverPicks,
+          workSample: txt('work-sample'), storyLearning: txt('story-learning'),
+          vision: txt('vision'), noMoneyStory: txt('no-money-story'),
+          acknowledged: document.getElementById('ack').checked,
+        }),
+      })
+        .catch(err => console.error('[assessment] submit error:', err))
+        .finally(() => {
+          if (track === 'job') {
+            startJobKnowledgeStep();
+          } else {
+            showFinalSuccess();
+          }
+        });
+    } else {
+      const data = collect();
+      fetch('/api/builder', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).catch(err => console.error('[builder] submit error:', err));
+      showFinalSuccess();
+    }
   });
 
   // ── Shake keyframe ────────────────────────────────────────────────────────
@@ -1549,4 +1687,34 @@ const en = C.en;  // default server render
   const urlLang = new URLSearchParams(window.location.search).get('lang');
   if (urlLang === 'id' || urlLang === 'en') applyLanguage(urlLang);
   render();
+
+  // ── Init: linked track (job/internship) skips identity, starts at step 2 ──
+  if (isLinkedTrack) {
+    document.getElementById('step-1')?.classList.add('hidden');
+    document.getElementById('step-2')?.classList.remove('hidden');
+    document.querySelector('[data-step="1"]')?.classList.add('hidden');
+    const stepFill = document.getElementById('step-fill');
+    if (stepFill) stepFill.style.width = (2 / totalSteps) * 100 + '%';
+    document.querySelectorAll('.step-label').forEach(el => {
+      const s = parseInt(el.dataset.step);
+      el.classList.toggle('active', s === 2);
+    });
+    document.querySelector('#step-2 .step-prev')?.classList.add('hidden');
+
+    // Reframe the hero — this isn't the standalone builder pitch, it's the
+    // next step after a job/internship application the candidate already submitted.
+    const heroCopy = {
+      job:        { tag: '// Step 2 of 2 — Character Assessment', title: 'One more step — <span class="gradient-text">how you operate</span>', sub: 'Thanks for applying. This short assessment — situational judgement and a few honest written questions — is the next step for every candidate. About <strong>7 minutes</strong>, mostly clicks. Answer straight.' },
+      internship: { tag: '// Step 2 of 2 — Character Assessment', title: 'One more step — <span class="gradient-text">how you operate</span>', sub: 'Thanks for applying. This short assessment — situational judgement and a few honest written questions — is the next step for every candidate. About <strong>7 minutes</strong>, mostly clicks. Answer straight.' },
+    };
+    const copy = heroCopy[track];
+    if (copy) {
+      const tagEl = document.getElementById('hero-tag');
+      const titleEl = document.getElementById('hero-title');
+      const subEl = document.getElementById('hero-sub');
+      if (tagEl) { tagEl.removeAttribute('data-i18n'); tagEl.textContent = copy.tag; }
+      if (titleEl) { titleEl.removeAttribute('data-i18n-html'); titleEl.innerHTML = copy.title; }
+      if (subEl) { subEl.removeAttribute('data-i18n-html'); subEl.innerHTML = copy.sub; }
+    }
+  }
 </script>

@@ -3,6 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import { db } from '../db';
 import { applications, internships, builderApplications } from '../db/schema';
 import { desc } from 'drizzle-orm';
+import { scoreBreakdown, computeOverallScore, type SkillEntry } from '../lib/skills';
+import { buildBuilderInterviewGuide, buildCapabilityGuide } from '../lib/interview-questions';
 
 // Labels for the builder tab
 const TRAIT_LABELS: Record<string, string> = {
@@ -73,42 +75,6 @@ const WRITTEN_PROMPTS: Record<string, { title: string; question: string; look: s
   },
 };
 
-// Role → relevant skills, mirrored from apply.astro's `roles` list, used to
-// reconstruct the matchScore breakdown (the breakdown itself isn't persisted).
-const ROLE_SKILLS: Record<string, string[]> = {
-  'senior-ml-engineer':           ['PyTorch', 'MLflow', 'Kubernetes', 'Python', 'TensorFlow', 'Docker', 'Ray', 'CUDA'],
-  'nlp-llm-specialist':           ['HuggingFace', 'LangChain', 'vLLM', 'Bahasa Indonesia NLP', 'Python', 'RAG', 'Prompt Engineering', 'Fine-tuning'],
-  'ai-strategy-consultant':       ['AI Strategy', 'Stakeholder Management', 'Business Analysis', 'Presentations', 'Change Management', 'ROI Modeling'],
-  'data-scientist':               ['Python', 'SQL', 'Spark', 'Statistical Modeling', 'Machine Learning', 'Data Visualization', 'Experiment Design'],
-  'computer-vision-engineer':     ['OpenCV', 'YOLO', 'TensorRT', 'ONNX', 'Python', 'Deep Learning', 'Object Detection', 'Video Analytics'],
-  'business-development-manager':['Enterprise Sales', 'CRM', 'AI Market Knowledge', 'Bahasa Indonesia', 'Negotiation', 'Account Management'],
-  'open-application':             ['Python', 'Machine Learning', 'AI Strategy', 'Data Science', 'NLP', 'Computer Vision', 'Leadership', 'Communication'],
-};
-
-function countWords(s: string) {
-  return s.trim() ? s.trim().split(/\s+/).length : 0;
-}
-
-// Recreates the criteria breakdown behind `matchScore` (see apply.astro
-// updateScore()) so admins can see *why* a candidate scored what they did.
-function scoreBreakdown(a: typeof applications.$inferSelect) {
-  const roleSkills = ROLE_SKILLS[a.role] ?? [];
-  const skills = JSON.parse(a.skills ?? '[]') as string[];
-  const matched = roleSkills.filter(s => skills.includes(s));
-  const skillPts = roleSkills.length > 0 ? Math.round((matched.length / roleSkills.length) * 20) : 0;
-  const words = countWords(a.whyTmk ?? '') + countWords(a.aiProject ?? '');
-  const storyPts = words > 40 ? Math.min(Math.round(words / 10), 20) : 0;
-
-  return [
-    { label: 'Role selected',        pts: a.role ? 15 : 0,  max: 15, note: a.role.replace(/-/g, ' ') },
-    { label: 'Identity complete',    pts: (a.firstName && a.email?.includes('@') && a.city) ? 20 : 0, max: 20, note: `${a.firstName ?? ''} · ${a.city ?? ''}` },
-    { label: 'Experience provided',  pts: a.experience ? 15 : 0, max: 15, note: a.experience },
-    { label: 'Skills match for role', pts: skillPts, max: 20, note: `${matched.length}/${roleSkills.length} role skills` },
-    { label: 'LinkedIn provided',    pts: a.linkedin ? 10 : 0, max: 10, note: a.linkedin ? 'yes' : 'no' },
-    { label: 'Story depth (why + AI project)', pts: storyPts, max: 20, note: `${words} words` },
-  ];
-}
-
 // ── Auth: require ?token=ADMIN_TOKEN or Authorization header ──────────────────
 const adminToken = import.meta.env.ADMIN_TOKEN;
 
@@ -131,6 +97,37 @@ const builders = await db.select().from(builderApplications).orderBy(desc(builde
 
 // Keep token in links so navigation stays authenticated
 const t = `?token=${encodeURIComponent(adminToken)}`;
+
+// Professional-track interview guide is role-based and identical per candidate
+// (no character scores captured for this track yet — see doc/recruitment-funnel.md).
+const capabilityGuide = buildCapabilityGuide();
+
+// Stage 6 calibration roster: every hired candidate across all three tracks,
+// with predicted score (Overall/character/builder) alongside actual performance
+// once reviewed. See doc/recruitment-funnel.md §6 — this is what makes the
+// scoring weights trustworthy over time instead of an educated guess.
+const calibrationRows = [
+  ...apps.filter(a => a.hiredAt).map(a => ({
+    track: 'applications' as const, id: a.id, name: `${a.firstName} ${a.lastName}`, role: a.role.replace(/-/g, ' '),
+    hiredAt: a.hiredAt,
+    predicted: computeOverallScore({
+      role: a.role, characterScore: a.characterScore, jobKnowledgeScore: a.jobKnowledgeScore,
+      interviewScores: (() => { try { return JSON.parse(a.interviewScores ?? '{}'); } catch { return {}; } })(),
+      hasCapabilityLayer: true,
+    }),
+    actual: a.actualPerformanceScore, notes: a.actualPerformanceNotes, reviewedAt: a.performanceReviewedAt,
+  })),
+  ...interns.filter(i => i.hiredAt).map(i => ({
+    track: 'internships' as const, id: i.id, name: `${i.firstName} ${i.lastName}`, role: i.area.replace(/-/g, ' '),
+    hiredAt: i.hiredAt, predicted: i.characterScore,
+    actual: i.actualPerformanceScore, notes: i.actualPerformanceNotes, reviewedAt: i.performanceReviewedAt,
+  })),
+  ...builders.filter(b => b.hiredAt).map(b => ({
+    track: 'builder' as const, id: b.id, name: `${b.firstName} ${b.lastName}`, role: b.area.replace(/-/g, ' '),
+    hiredAt: b.hiredAt, predicted: b.builderScore,
+    actual: b.actualPerformanceScore, notes: b.actualPerformanceNotes, reviewedAt: b.performanceReviewedAt,
+  })),
+].sort((x, y) => new Date(y.hiredAt!).getTime() - new Date(x.hiredAt!).getTime());
 ---
 
 <Layout
@@ -167,6 +164,10 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
           Startup Builders
           <span class="tab-count">{builders.length}</span>
         </button>
+        <button class="admin-tab" data-tab="calibration">
+          Calibration
+          <span class="tab-count">{calibrationRows.length}</span>
+        </button>
       </div>
 
       <!-- ── Job Applications Tab ── -->
@@ -184,19 +185,36 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                   <th>Role</th>
                   <th>Exp</th>
                   <th>Skills</th>
-                  <th>Score</th>
+                  <th>Screen</th>
+                  <th class="th-sortable" id="sort-apps-overall" title="Mechanical roll-up: w·Character + (1-w)·Capability — click to sort">Overall ↕</th>
                   <th>LinkedIn</th>
                   <th>Submitted</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {apps.map(a => (
+                {apps.map(a => {
+                  const breakdown = scoreBreakdown(a);
+                  let workHistory: { company: string; position: string; startDate: string; endDate: string; current: boolean; salary?: string; reason?: string; description: string }[] = [];
+                  try { workHistory = JSON.parse(a.workHistory ?? '[]'); } catch { workHistory = []; }
+                  let currentOrg: { company: string; position: string; startDate: string; endDate: string; current: boolean } | null = null;
+                  if (a.currentOrg) {
+                    try { currentOrg = JSON.parse(a.currentOrg); } catch { currentOrg = { company: a.currentOrg, position: '', startDate: '', endDate: '', current: false }; }
+                  }
+                  const aTraitScores = a.assessmentCompletedAt ? (() => { try { return JSON.parse(a.traitScores ?? '{}'); } catch { return {}; } })() : null;
+                  const aCharacterGuide = aTraitScores ? buildBuilderInterviewGuide(aTraitScores, a.moneyOrientation) : null;
+                  const aMoneyClass = a.moneyOrientation == null ? '' : a.moneyOrientation >= 75 ? 'flag-high' : a.moneyOrientation >= 55 ? 'flag-mid' : 'flag-low';
+                  const aInterviewScores = (() => { try { return JSON.parse(a.interviewScores ?? '{}'); } catch { return {}; } })();
+                  const aOverall = computeOverallScore({ role: a.role, characterScore: a.characterScore, jobKnowledgeScore: a.jobKnowledgeScore, interviewScores: aInterviewScores, hasCapabilityLayer: true });
+                  return (
+                  <>
                   <tr class="app-row" data-id={a.id}>
                     <td class="td-id">{a.id}</td>
                     <td class="td-name">
                       <div class="name-cell">
-                        <span class="name-initials">{a.firstName[0]}{a.lastName[0]}</span>
+                        {a.photo
+                          ? <img src={a.photo} alt="" class="name-photo" />
+                          : <span class="name-initials">{a.firstName[0]}{a.lastName[0]}</span>}
                         <span>{a.firstName} {a.lastName}</span>
                       </div>
                     </td>
@@ -208,19 +226,21 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                     </td>
                     <td class="td-mono">{a.experience}</td>
                     <td class="td-skills-wrap">
-                      <span class="exp-corner-badge" title="Years of experience">{a.experience}</span>
                       <div class="td-skills">
-                        {JSON.parse(a.skills ?? '[]').slice(0, 4).map((s: string) => (
-                          <span class="skill-tag">{s}</span>
+                        {breakdown.entries.slice(0, 4).map((e: SkillEntry) => (
+                          <span class={`skill-tag prof-${e.proficiency}`} title={`${e.proficiency}${e.yearStarted ? ' · since ' + e.yearStarted : ''}`}>{e.skill}</span>
                         ))}
+                        {breakdown.entries.length > 4 && <span class="skill-tag-more">+{breakdown.entries.length - 4}</span>}
                       </div>
                     </td>
-                    <td class="has-tip" title="Click the row to see the full score breakdown below">
-                      <div class={`score-cell score-${Math.round((a.matchScore ?? 0) / 25)}`}>
-                        {a.matchScore ?? '—'}
-                        {a.matchScore ? '%' : ''}
+                    <td>
+                      <div class="screen-control" data-track="applications" data-id={a.id}>
+                        <button class={`screen-btn screen-pass ${a.screenStatus === 'pass' ? 'active' : ''}`} data-status="pass" title="Pass — proceed to assessment">Pass</button>
+                        <button class={`screen-btn screen-hold ${a.screenStatus === 'hold' ? 'active' : ''}`} data-status="hold" title="Hold — needs another look">Hold</button>
+                        <button class={`screen-btn screen-reject ${a.screenStatus === 'reject' ? 'active' : ''}`} data-status="reject" title="Reject">Reject</button>
                       </div>
                     </td>
+                    <td class="td-mono td-overall" data-overall={aOverall ?? -1}>{aOverall != null ? `${aOverall}%` : '—'}</td>
                     <td>
                       {a.linkedin
                         ? <a href={a.linkedin.startsWith('http') ? a.linkedin : `https://${a.linkedin}`}
@@ -238,22 +258,42 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                     </td>
                   </tr>
                   <tr class="detail-row hidden" id={`app-detail-${a.id}`}>
-                    <td colspan="10">
+                    <td colspan="11">
                       <div class="detail-panel">
-                        <div class="score-breakdown">
-                          <div class="score-breakdown-head">
-                            <span class="score-breakdown-total">{a.matchScore ?? '—'}{a.matchScore ? '%' : ''}</span>
-                            <span class="detail-label">Why this score</span>
-                          </div>
-                          <div class="score-breakdown-rows">
-                            {scoreBreakdown(a).map(row => (
-                              <div class="score-breakdown-row">
-                                <div class="score-breakdown-bar"><div class="score-breakdown-fill" style={`width:${row.max ? (row.pts / row.max) * 100 : 0}%`}></div></div>
-                                <span class="score-breakdown-label">{row.label}</span>
-                                <span class="score-breakdown-note">{row.note}</span>
-                                <span class="score-breakdown-pts td-mono">+{row.pts}/{row.max}</span>
+                        <div class="app-overview-card">
+                          <div class="app-overview">
+                            {a.photo
+                              ? <img src={a.photo} alt={`${a.firstName} ${a.lastName}`} class="builder-photo-large" />
+                              : <div class="builder-photo-large builder-photo-placeholder">{a.firstName[0]}{a.lastName[0]}</div>}
+                            <div class="app-overview-body">
+                              <div class="app-overview-header">
+                                <div class="app-photo-info">
+                                  <div class="builder-photo-name">{a.firstName} {a.lastName}</div>
+                                  <div class="builder-photo-meta">{a.role.replace(/-/g, ' ')} · {a.city} · {a.experience} yrs exp · {a.email}</div>
+                                </div>
+                                {aOverall != null && (
+                                  <div class="app-photo-overall">
+                                    <span class="app-photo-overall-val">{aOverall}%</span>
+                                    <span class="app-photo-overall-label">Overall score</span>
+                                  </div>
+                                )}
                               </div>
-                            ))}
+                              <div class="score-breakdown">
+                                <div class="score-breakdown-head">
+                                  <span class="detail-label">Profile completeness (reference only — not a screening decision)</span>
+                                </div>
+                                <div class="score-breakdown-rows">
+                                  {breakdown.rows.map(row => (
+                                    <div class="score-breakdown-row">
+                                      <div class="score-breakdown-bar"><div class="score-breakdown-fill" style={`width:${row.max ? (row.pts / row.max) * 100 : 0}%`}></div></div>
+                                      <span class="score-breakdown-label">{row.label}</span>
+                                      <span class="score-breakdown-note">{row.note}</span>
+                                      <span class="score-breakdown-pts td-mono">+{row.pts}/{row.max}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                         <div class="detail-grid">
@@ -267,10 +307,15 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                               <div class="detail-value">{a.phone}</div>
                             </div>
                           )}
-                          {a.currentOrg && (
+                          {currentOrg && (currentOrg.company || currentOrg.position) && (
                             <div class="detail-block">
-                              <div class="detail-label">Organisation</div>
-                              <div class="detail-value">{a.currentOrg}</div>
+                              <div class="detail-label">Current / most recent organisation</div>
+                              <div class="detail-value">
+                                {currentOrg.position || '—'}{currentOrg.company ? ` · ${currentOrg.company}` : ''}
+                                <div class="wh-card-dates">
+                                  {currentOrg.startDate || '—'} – {currentOrg.current ? 'Present' : (currentOrg.endDate || '—')}
+                                </div>
+                              </div>
                             </div>
                           )}
                           {a.portfolio && (
@@ -280,7 +325,50 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                                 target="_blank" rel="noopener" class="td-link detail-value">{a.portfolio}</a>
                             </div>
                           )}
+                          {a.currentSalary && (
+                            <div class="detail-block">
+                              <div class="detail-label">Current salary</div>
+                              <div class="detail-value">{a.currentSalary}</div>
+                            </div>
+                          )}
+                          {a.expectedSalary && (
+                            <div class="detail-block">
+                              <div class="detail-label">Expected salary</div>
+                              <div class="detail-value">{a.expectedSalary}</div>
+                            </div>
+                          )}
                         </div>
+                        {breakdown.entries.length > 0 && (
+                          <div class="detail-block full">
+                            <div class="detail-label">All skills</div>
+                            <div class="detail-value">
+                              {breakdown.entries.map((e: SkillEntry) => (
+                                <span class={`skill-tag prof-${e.proficiency}`} title={`${e.proficiency}${e.yearStarted ? ' · since ' + e.yearStarted : ''}`}>{e.skill}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {workHistory.length > 0 && (
+                          <div class="detail-block full">
+                            <div class="detail-label">Work history</div>
+                            <div class="work-history-cards">
+                              {workHistory.map(w => (
+                                <div class="wh-card">
+                                  <div class="wh-card-head">
+                                    <span class="wh-card-position">{w.position || '—'}</span>
+                                    {w.company && <span class="wh-card-company">· {w.company}</span>}
+                                  </div>
+                                  <div class="wh-card-dates">
+                                    {w.startDate || '—'} – {w.current ? 'Present' : (w.endDate || '—')}
+                                    {w.salary && ` · Rp. ${w.salary}`}
+                                  </div>
+                                  {w.reason && <div class="wh-card-reason"><strong>Reason for leaving:</strong> {w.reason}</div>}
+                                  {w.description && <div class="wh-card-desc">{w.description}</div>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         <div class="detail-block full">
                           <div class="detail-label">Why TransMetaTek</div>
                           <div class="detail-value detail-text">{a.whyTmk}</div>
@@ -293,10 +381,155 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                           <div class="detail-label">Role Question</div>
                           <div class="detail-value detail-text">{a.roleQuestion}</div>
                         </div>
+                        {a.workSample && (
+                          <div class="detail-block full">
+                            <div class="detail-label">First 72 hours (work scenario)</div>
+                            <div class="detail-value detail-text">{a.workSample}</div>
+                          </div>
+                        )}
+                        {a.storyLearning && (
+                          <div class="detail-block full">
+                            <div class="detail-label">Learning under fire</div>
+                            <div class="detail-value detail-text">{a.storyLearning}</div>
+                          </div>
+                        )}
+                        {a.vision && (
+                          <div class="detail-block full">
+                            <div class="detail-label">Where they're headed</div>
+                            <div class="detail-value detail-text">{a.vision}</div>
+                          </div>
+                        )}
+                        {a.noMoneyStory && (
+                          <div class="detail-block full">
+                            <div class="detail-label">Hard work, no reward</div>
+                            <div class="detail-value detail-text">{a.noMoneyStory}</div>
+                          </div>
+                        )}
+
+                        {aTraitScores ? (
+                          <div class="detail-block full">
+                            <div class="detail-label">Character assessment</div>
+                            <div class="trait-grid">
+                              {Object.entries(TRAIT_LABELS).map(([key, label]) => (
+                                <div class="trait-mini has-tip" title={TRAIT_TIP[key]}>
+                                  <div class="trait-mini-head">
+                                    <span>{label}</span>
+                                    <span class="td-mono">{Math.round(aTraitScores[key] ?? 0)}%</span>
+                                  </div>
+                                  <div class="trait-mini-track"><div class="trait-mini-fill" style={`width:${Math.round(aTraitScores[key] ?? 0)}%`}></div></div>
+                                </div>
+                              ))}
+                            </div>
+                            <div class="detail-grid" style="margin-top:0.75rem;">
+                              <div class="detail-block">
+                                <div class="detail-label">Character score</div>
+                                <div class="detail-value">{a.characterScore}%</div>
+                              </div>
+                              <div class="detail-block">
+                                <div class="detail-label">Money orientation</div>
+                                <div class="detail-value">
+                                  {a.moneyOrientation != null
+                                    ? <span class={`money-flag ${aMoneyClass}`}>{a.moneyOrientation}%</span>
+                                    : '—'}
+                                </div>
+                              </div>
+                              <div class="detail-block">
+                                <div class="detail-label">Job-knowledge test</div>
+                                <div class="detail-value">{a.jobKnowledgeScore != null ? `${a.jobKnowledgeScore}%` : 'Not yet completed'}</div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div class="detail-block full">
+                            <div class="detail-label">Character assessment</div>
+                            <div class="iguide-intro">Not yet completed — candidate has not finished Stage 2 (the character assessment redirect after applying).</div>
+                          </div>
+                        )}
+                        <div class="detail-block full">
+                          <div class="detail-label">Hiring outcome (Stage 6 calibration)</div>
+                          <div class="hire-outcome" data-track="applications" data-id={a.id}>
+                            <button type="button" class={`btn-outline hire-toggle-btn ${a.hiredAt ? 'is-hired' : ''}`} style="padding:0.35rem 0.8rem;font-size:0.78rem;">
+                              {a.hiredAt ? `Hired ${new Date(a.hiredAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })} — click to unmark` : 'Mark as Hired'}
+                            </button>
+                            {a.hiredAt && <span class="hire-note">Review actual performance in the Calibration tab once 3–6 months have passed.</span>}
+                          </div>
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">Offline interview guide</div>
+                          <div class="iguide-intro">Tailor the problem-solving and depth questions to <strong>{a.role.replace(/-/g, ' ')}</strong>. Score each answer 1 / 3 / 5 against the anchors.{aCharacterGuide ? ' Character questions below are prioritised by this candidate\'s weakest traits.' : ' This candidate has not completed the character assessment — probe drive, ownership and loyalty in conversation.'}</div>
+                        </div>
+                        {(aCharacterGuide ?? []).map(item => (
+                          <div class={`iguide-item ip-border-${item.priority}`}>
+                            <div class="iguide-head">
+                              <span class="iguide-attr">{item.label}</span>
+                              <span class={`ip ip-${item.priority}`}>{item.priority === 'probe-hard' ? 'probe hard' : item.priority}</span>
+                              {item.score != null && <span class="iguide-score td-mono">{item.score}%</span>}
+                              <div class="iscore-control" data-track="applications" data-id={a.id} data-attr={item.attribute}>
+                                {[1, 3, 5].map(lvl => (
+                                  <button type="button" class={`iscore-btn ${aInterviewScores[item.attribute] === lvl ? 'active' : ''}`} data-level={lvl}>{lvl}</button>
+                                ))}
+                              </div>
+                            </div>
+                            <div class="iguide-reason">{item.reason}</div>
+                            {item.questions.map(q => (
+                              <div class="iguide-q">
+                                <div class="iguide-q-head"><span class={`iguide-qtype qt-${q.type}`}>{q.type}</span></div>
+                                <div class="iguide-q-text">{q.question}</div>
+                                <div class="iguide-listen"><strong>Listen for:</strong> {q.listenFor}</div>
+                                <div class="iguide-probes">
+                                  <span class="iguide-probes-label">Follow-ups:</span>
+                                  <ul>{q.probes.map(p => <li>{p}</li>)}</ul>
+                                </div>
+                                <div class="iguide-anchors">
+                                  {q.anchors.map(anc => (
+                                    <div class={`iguide-anchor anchor-${anc.level}`}>
+                                      <span class="anchor-num">{anc.level}</span>
+                                      <span class="anchor-text">{anc.text}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                        {capabilityGuide.map(item => (
+                          <div class="iguide-item ip-border-verify">
+                            <div class="iguide-head">
+                              <span class="iguide-attr">{item.label}</span>
+                              <span class="ip ip-verify">{item.priority}</span>
+                              <div class="iscore-control" data-track="applications" data-id={a.id} data-attr={item.attribute}>
+                                {[1, 3, 5].map(lvl => (
+                                  <button type="button" class={`iscore-btn ${aInterviewScores[item.attribute] === lvl ? 'active' : ''}`} data-level={lvl}>{lvl}</button>
+                                ))}
+                              </div>
+                            </div>
+                            {item.questions.map(q => (
+                              <div class="iguide-q">
+                                <div class="iguide-q-head"><span class={`iguide-qtype qt-${q.type}`}>{q.type}</span></div>
+                                <div class="iguide-q-text">{q.question}</div>
+                                <div class="iguide-listen"><strong>Listen for:</strong> {q.listenFor}</div>
+                                <div class="iguide-probes">
+                                  <span class="iguide-probes-label">Follow-ups:</span>
+                                  <ul>{q.probes.map(p => <li>{p}</li>)}</ul>
+                                </div>
+                                <div class="iguide-anchors">
+                                  {q.anchors.map(anc => (
+                                    <div class={`iguide-anchor anchor-${anc.level}`}>
+                                      <span class="anchor-num">{anc.level}</span>
+                                      <span class="anchor-text">{anc.text}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
                       </div>
                     </td>
                   </tr>
-                ))}
+                  </>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -325,12 +558,21 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                   <th>Area</th>
                   <th>Duration</th>
                   <th>Start</th>
+                  <th>Screen</th>
+                  <th title="Character score — interns have no capability layer">Overall</th>
                   <th>Submitted</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {interns.map(i => (
+                {interns.map(i => {
+                  const iTraitScores = i.assessmentCompletedAt ? (() => { try { return JSON.parse(i.traitScores ?? '{}'); } catch { return {}; } })() : null;
+                  const iCharacterGuide = iTraitScores ? buildBuilderInterviewGuide(iTraitScores, i.moneyOrientation) : null;
+                  const iMoneyClass = i.moneyOrientation == null ? '' : i.moneyOrientation >= 75 ? 'flag-high' : i.moneyOrientation >= 55 ? 'flag-mid' : 'flag-low';
+                  const iInterviewScores = (() => { try { return JSON.parse(i.interviewScores ?? '{}'); } catch { return {}; } })();
+                  const iOverall = computeOverallScore({ role: 'open-application', characterScore: i.characterScore, jobKnowledgeScore: null, interviewScores: iInterviewScores, hasCapabilityLayer: false });
+                  return (
+                  <>
                   <tr class="app-row" data-id={i.id}>
                     <td class="td-id">{i.id}</td>
                     <td class="td-name">
@@ -349,6 +591,14 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                     </td>
                     <td class="td-mono">{i.duration}</td>
                     <td class="td-mono">{i.availability}</td>
+                    <td>
+                      <div class="screen-control" data-track="internships" data-id={i.id}>
+                        <button class={`screen-btn screen-pass ${i.screenStatus === 'pass' ? 'active' : ''}`} data-status="pass" title="Pass — proceed to assessment">Pass</button>
+                        <button class={`screen-btn screen-hold ${i.screenStatus === 'hold' ? 'active' : ''}`} data-status="hold" title="Hold — needs another look">Hold</button>
+                        <button class={`screen-btn screen-reject ${i.screenStatus === 'reject' ? 'active' : ''}`} data-status="reject" title="Reject">Reject</button>
+                      </div>
+                    </td>
+                    <td class="td-mono">{iOverall != null ? `${iOverall}%` : '—'}</td>
                     <td class="td-mono td-date">{new Date(i.createdAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}</td>
                     <td>
                       <button class="btn-expand" data-intern-id={i.id}>
@@ -359,8 +609,29 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                     </td>
                   </tr>
                   <tr class="detail-row hidden" id={`intern-detail-${i.id}`}>
-                    <td colspan="10">
+                    <td colspan="12">
                       <div class="detail-panel">
+                        <div class="app-overview-card">
+                          <div class="app-overview">
+                            {i.photo
+                              ? <img src={i.photo} alt={`${i.firstName} ${i.lastName}`} class="builder-photo-large" />
+                              : <div class="builder-photo-large builder-photo-placeholder">{i.firstName[0]}{i.lastName[0]}</div>}
+                            <div class="app-overview-body">
+                              <div class="app-overview-header">
+                                <div class="app-photo-info">
+                                  <div class="builder-photo-name">{i.firstName} {i.lastName}</div>
+                                  <div class="builder-photo-meta">{i.course} · {i.yearOfStudy} · {i.university}</div>
+                                </div>
+                                {iOverall != null && (
+                                  <div class="app-photo-overall">
+                                    <span class="app-photo-overall-val">{iOverall}%</span>
+                                    <span class="app-photo-overall-label">Character score</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                         <div class="detail-grid">
                           <div class="detail-block">
                             <div class="detail-label">Course</div>
@@ -401,10 +672,114 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                           <div class="detail-label">AI dream for internship</div>
                           <div class="detail-value detail-text">{i.aiDream}</div>
                         </div>
+                        {iTraitScores ? (
+                          <div class="detail-block full">
+                            <div class="detail-label">Character assessment</div>
+                            <div class="trait-grid">
+                              {Object.entries(TRAIT_LABELS).map(([key, label]) => (
+                                <div class="trait-mini has-tip" title={TRAIT_TIP[key]}>
+                                  <div class="trait-mini-head">
+                                    <span>{label}</span>
+                                    <span class="td-mono">{Math.round(iTraitScores[key] ?? 0)}%</span>
+                                  </div>
+                                  <div class="trait-mini-track"><div class="trait-mini-fill" style={`width:${Math.round(iTraitScores[key] ?? 0)}%`}></div></div>
+                                </div>
+                              ))}
+                            </div>
+                            <div class="detail-grid" style="margin-top:0.75rem;">
+                              <div class="detail-block">
+                                <div class="detail-label">Character score</div>
+                                <div class="detail-value">{i.characterScore}%</div>
+                              </div>
+                              <div class="detail-block">
+                                <div class="detail-label">Money orientation</div>
+                                <div class="detail-value">
+                                  {i.moneyOrientation != null
+                                    ? <span class={`money-flag ${iMoneyClass}`}>{i.moneyOrientation}%</span>
+                                    : '—'}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div class="detail-block full">
+                            <div class="detail-label">Character assessment</div>
+                            <div class="iguide-intro">Not yet completed — candidate has not finished Stage 2 (the character assessment redirect after applying).</div>
+                          </div>
+                        )}
+                        <div class="detail-block full">
+                          <div class="detail-label">Hiring outcome (Stage 6 calibration)</div>
+                          <div class="hire-outcome" data-track="internships" data-id={i.id}>
+                            <button type="button" class={`btn-outline hire-toggle-btn ${i.hiredAt ? 'is-hired' : ''}`} style="padding:0.35rem 0.8rem;font-size:0.78rem;">
+                              {i.hiredAt ? `Hired ${new Date(i.hiredAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })} — click to unmark` : 'Mark as Hired'}
+                            </button>
+                            {i.hiredAt && <span class="hire-note">Review actual performance in the Calibration tab once 3–6 months have passed.</span>}
+                          </div>
+                        </div>
+                        {i.workSample && (
+                          <div class="detail-block full">
+                            <div class="detail-label">First 72 hours (work scenario)</div>
+                            <div class="detail-value detail-text">{i.workSample}</div>
+                          </div>
+                        )}
+                        {i.storyLearning && (
+                          <div class="detail-block full">
+                            <div class="detail-label">Learning under fire</div>
+                            <div class="detail-value detail-text">{i.storyLearning}</div>
+                          </div>
+                        )}
+                        {i.vision && (
+                          <div class="detail-block full">
+                            <div class="detail-label">Where they're headed</div>
+                            <div class="detail-value detail-text">{i.vision}</div>
+                          </div>
+                        )}
+                        {i.noMoneyStory && (
+                          <div class="detail-block full">
+                            <div class="detail-label">Hard work, no reward</div>
+                            <div class="detail-value detail-text">{i.noMoneyStory}</div>
+                          </div>
+                        )}
+                        {(iCharacterGuide ?? []).map(item => (
+                          <div class={`iguide-item ip-border-${item.priority}`}>
+                            <div class="iguide-head">
+                              <span class="iguide-attr">{item.label}</span>
+                              <span class={`ip ip-${item.priority}`}>{item.priority === 'probe-hard' ? 'probe hard' : item.priority}</span>
+                              {item.score != null && <span class="iguide-score td-mono">{item.score}%</span>}
+                              <div class="iscore-control" data-track="internships" data-id={i.id} data-attr={item.attribute}>
+                                {[1, 3, 5].map(lvl => (
+                                  <button type="button" class={`iscore-btn ${iInterviewScores[item.attribute] === lvl ? 'active' : ''}`} data-level={lvl}>{lvl}</button>
+                                ))}
+                              </div>
+                            </div>
+                            <div class="iguide-reason">{item.reason}</div>
+                            {item.questions.map(q => (
+                              <div class="iguide-q">
+                                <div class="iguide-q-head"><span class={`iguide-qtype qt-${q.type}`}>{q.type}</span></div>
+                                <div class="iguide-q-text">{q.question}</div>
+                                <div class="iguide-listen"><strong>Listen for:</strong> {q.listenFor}</div>
+                                <div class="iguide-probes">
+                                  <span class="iguide-probes-label">Follow-ups:</span>
+                                  <ul>{q.probes.map(p => <li>{p}</li>)}</ul>
+                                </div>
+                                <div class="iguide-anchors">
+                                  {q.anchors.map(anc => (
+                                    <div class={`iguide-anchor anchor-${anc.level}`}>
+                                      <span class="anchor-num">{anc.level}</span>
+                                      <span class="anchor-text">{anc.text}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
                       </div>
                     </td>
                   </tr>
-                ))}
+                  </>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -434,6 +809,7 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                   <th class="th-tip" title={METRIC_TIPS.loyalty}>Loyalty</th>
                   <th class="th-tip" title={METRIC_TIPS.sjt}>SJT</th>
                   <th class="th-tip" title={METRIC_TIPS.money}>Money</th>
+                  <th>Screen</th>
                   <th>LinkedIn</th>
                   <th>Submitted</th>
                   <th></th>
@@ -444,6 +820,12 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                   const ts = JSON.parse(b.traitScores ?? '{}');
                   const dv = JSON.parse(b.drivers ?? '{}');
                   const money = b.moneyOrientation;
+                  const interviewGuide = buildBuilderInterviewGuide(ts, money);
+                  const writtenFor = {
+                    workSample: b.workSample, storyLearning: b.storyLearning, vision: b.vision, noMoneyStory: b.noMoneyStory,
+                  };
+                  const bInterviewScores = (() => { try { return JSON.parse(b.interviewScores ?? '{}'); } catch { return {}; } })();
+                  const bOverall = computeOverallScore({ role: 'builder', characterScore: b.builderScore, jobKnowledgeScore: null, interviewScores: bInterviewScores, hasCapabilityLayer: false });
                   const moneyClass = money == null ? '' : money >= 75 ? 'flag-high' : money >= 55 ? 'flag-mid' : 'flag-low';
 
                   // ── Build an interpretive assessment of this candidate ──
@@ -515,6 +897,13 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                         : <span class="td-muted">—</span>}
                     </td>
                     <td>
+                      <div class="screen-control" data-track="builder" data-id={b.id}>
+                        <button class={`screen-btn screen-pass ${b.screenStatus === 'pass' ? 'active' : ''}`} data-status="pass" title="Pass — proceed to assessment">Pass</button>
+                        <button class={`screen-btn screen-hold ${b.screenStatus === 'hold' ? 'active' : ''}`} data-status="hold" title="Hold — needs another look">Hold</button>
+                        <button class={`screen-btn screen-reject ${b.screenStatus === 'reject' ? 'active' : ''}`} data-status="reject" title="Reject">Reject</button>
+                      </div>
+                    </td>
+                    <td>
                       {b.linkedin
                         ? <a href={b.linkedin.startsWith('http') ? b.linkedin : `https://${b.linkedin}`}
                             target="_blank" rel="noopener" class="td-link">LinkedIn ↗</a>
@@ -531,45 +920,55 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                     </td>
                   </tr>
                   <tr class="detail-row hidden" id={`builder-detail-${b.id}`}>
-                    <td colspan="13">
+                    <td colspan="14">
                       <div class="detail-panel">
-                        <div class="builder-photo-header">
-                          {b.photo
-                            ? <img src={b.photo} alt={`${b.firstName} ${b.lastName}`} class="builder-photo-large" />
-                            : <div class="builder-photo-large builder-photo-placeholder">{b.firstName[0]}{b.lastName[0]}</div>}
-                          <div class="builder-photo-info">
-                            <div class="builder-photo-name">{b.firstName} {b.lastName}</div>
-                            <div class="builder-photo-meta">{b.area.replace(/-/g, ' ')} · {b.city} · {LANG_LABELS[b.interviewLanguage] ?? b.interviewLanguage}</div>
-                            <div class="builder-photo-meta">{b.email}</div>
-                          </div>
-                        </div>
                         <div class={`verdict-card ${verdictClass}`}>
-                          <div class="verdict-top">
-                            <div class="verdict-score-block">
-                              <div class="verdict-score">{score}%</div>
-                              <div class="verdict-score-label">Builder Score</div>
-                            </div>
-                            <div class="verdict-text-block">
-                              <div class="verdict-headline">{verdict}</div>
-                              <div class="verdict-why">{verdictWhy}</div>
-                            </div>
-                          </div>
-                          <div class="verdict-detail-row">
-                            <div class="verdict-col">
-                              <div class="verdict-col-label">✅ Strengths (70%+)</div>
-                              {strengths.length > 0
-                                ? <div class="verdict-chips">{strengths.map(s => <span class="verdict-chip chip-strong">{s.label} {s.val}%</span>)}</div>
-                                : <div class="verdict-none">No standout strengths above 70%.</div>}
-                            </div>
-                            <div class="verdict-col">
-                              <div class="verdict-col-label">⚠ Watch areas (below 55%)</div>
-                              {weaknesses.length > 0
-                                ? <div class="verdict-chips">{weaknesses.map(w => <span class="verdict-chip chip-weak">{w.label} {w.val}%</span>)}</div>
-                                : <div class="verdict-none">No traits below 55% — well-rounded.</div>}
+                          <div class="verdict-main">
+                            {b.photo
+                              ? <img src={b.photo} alt={`${b.firstName} ${b.lastName}`} class="builder-photo-large" />
+                              : <div class="builder-photo-large builder-photo-placeholder">{b.firstName[0]}{b.lastName[0]}</div>}
+                            <div class="verdict-body">
+                              <div class="verdict-header">
+                                <div class="verdict-id">
+                                  <div class="builder-photo-name">{b.firstName} {b.lastName}</div>
+                                  <div class="builder-photo-meta">{b.area.replace(/-/g, ' ')} · {b.city} · {LANG_LABELS[b.interviewLanguage] ?? b.interviewLanguage} · {b.email}</div>
+                                </div>
+                                <div class="verdict-score-block">
+                                  <div class="verdict-score">{score}%</div>
+                                  <div class="verdict-score-label">Builder Score</div>
+                                </div>
+                              </div>
+                              <div class="verdict-verdict">
+                                <div class="verdict-headline">{verdict}</div>
+                                <div class="verdict-why">{verdictWhy}</div>
+                              </div>
+                              <div class="verdict-detail-row">
+                                <div class="verdict-col">
+                                  <div class="verdict-col-label">✅ Strengths (70%+)</div>
+                                  {strengths.length > 0
+                                    ? <div class="verdict-chips">{strengths.map(s => <span class="verdict-chip chip-strong">{s.label} {s.val}%</span>)}</div>
+                                    : <div class="verdict-none">No standout strengths above 70%.</div>}
+                                </div>
+                                <div class="verdict-col">
+                                  <div class="verdict-col-label">⚠ Watch areas (below 55%)</div>
+                                  {weaknesses.length > 0
+                                    ? <div class="verdict-chips">{weaknesses.map(w => <span class="verdict-chip chip-weak">{w.label} {w.val}%</span>)}</div>
+                                    : <div class="verdict-none">No traits below 55% — well-rounded.</div>}
+                                </div>
+                              </div>
                             </div>
                           </div>
                           {moneyNote && <div class="verdict-money">{moneyNote}</div>}
                           <div class="verdict-footer">The score ranks and flags — it does not decide. Read the written answers below; they are your real tiebreaker. Every builder is reviewed by a person.</div>
+                        </div>
+                        <div class="detail-block full">
+                          <div class="detail-label">Hiring outcome (Stage 6 calibration)</div>
+                          <div class="hire-outcome" data-track="builder" data-id={b.id}>
+                            <button type="button" class={`btn-outline hire-toggle-btn ${b.hiredAt ? 'is-hired' : ''}`} style="padding:0.35rem 0.8rem;font-size:0.78rem;">
+                              {b.hiredAt ? `Hired ${new Date(b.hiredAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })} — click to unmark` : 'Mark as Hired'}
+                            </button>
+                            {b.hiredAt && <span class="hire-note">Review actual performance in the Calibration tab once 3–6 months have passed.</span>}
+                          </div>
                         </div>
                         <div class="detail-block full">
                           <div class="detail-label">Trait signal</div>
@@ -658,6 +1057,54 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
                             </div>
                           );
                         })}
+
+                        <div class="detail-block full">
+                          <div class="detail-label">Offline interview guide — tailored to this candidate</div>
+                          <div class="iguide-intro">Ordered by priority. Spend your time on the <span class="ip ip-probe">probe hard</span> items — those are where the assessment flags risk. Score each answer 1 / 3 / 5 against the anchors.</div>
+                        </div>
+                        {interviewGuide.map(item => (
+                          <div class={`iguide-item ip-border-${item.priority}`}>
+                            <div class="iguide-head">
+                              <span class="iguide-attr">{item.label}</span>
+                              <span class={`ip ip-${item.priority}`}>{item.priority === 'probe-hard' ? 'probe hard' : item.priority}</span>
+                              {item.score != null && <span class="iguide-score td-mono">{item.score}%</span>}
+                              <div class="iscore-control" data-track="builder" data-id={b.id} data-attr={item.attribute}>
+                                {[1, 3, 5].map(lvl => (
+                                  <button type="button" class={`iscore-btn ${bInterviewScores[item.attribute] === lvl ? 'active' : ''}`} data-level={lvl}>{lvl}</button>
+                                ))}
+                              </div>
+                            </div>
+                            <div class="iguide-reason">{item.reason}</div>
+                            {item.questions.map(q => {
+                              const tied = q.tiesTo ? writtenFor[q.tiesTo] : null;
+                              return (
+                                <div class="iguide-q">
+                                  <div class="iguide-q-head"><span class={`iguide-qtype qt-${q.type}`}>{q.type}</span></div>
+                                  <div class="iguide-q-text">{q.question}</div>
+                                  <div class="iguide-listen"><strong>Listen for:</strong> {q.listenFor}</div>
+                                  {tied && (
+                                    <div class="iguide-tied">
+                                      <span class="iguide-tied-label">Make them defend what they wrote:</span>
+                                      <span class="iguide-tied-text">{tied}</span>
+                                    </div>
+                                  )}
+                                  <div class="iguide-probes">
+                                    <span class="iguide-probes-label">Follow-ups:</span>
+                                    <ul>{q.probes.map(p => <li>{p}</li>)}</ul>
+                                  </div>
+                                  <div class="iguide-anchors">
+                                    {q.anchors.map(a => (
+                                      <div class={`iguide-anchor anchor-${a.level}`}>
+                                        <span class="anchor-num">{a.level}</span>
+                                        <span class="anchor-text">{a.text}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
                       </div>
                     </td>
                   </tr>
@@ -670,6 +1117,56 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
         {builders.length > 0 && (
           <div class="table-footer">
             <button class="btn-export" id="export-builders">Export CSV</button>
+          </div>
+        )}
+      </div>
+
+      <!-- ── Calibration Tab (Stage 6: predicted vs actual) ── -->
+      <div class="tab-panel hidden" id="tab-calibration">
+        <div class="calibration-intro">
+          Every hire's predicted score (Overall / Character / Builder) next to their actual on-the-job
+          performance, reviewed by a person at 3–6 months. This is the only honest check on whether the
+          funnel's weights track reality — without it, the scoring is an educated guess.
+        </div>
+        {calibrationRows.length === 0 ? (
+          <div class="empty-state">No hires marked yet. Mark a candidate as "Hired" from their detail panel in the other tabs to start tracking calibration.</div>
+        ) : (
+          <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Track</th>
+                  <th>Role / Area</th>
+                  <th>Hired</th>
+                  <th>Predicted</th>
+                  <th>Actual performance</th>
+                  <th>Reviewed</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {calibrationRows.map(row => (
+                  <tr>
+                    <td class="td-name">{row.name}</td>
+                    <td><span class="role-badge">{row.track === 'applications' ? 'Job' : row.track === 'internships' ? 'Internship' : 'Builder'}</span></td>
+                    <td>{row.role}</td>
+                    <td class="td-mono td-date">{new Date(row.hiredAt!).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })}</td>
+                    <td class="td-mono">{row.predicted != null ? `${row.predicted}%` : '—'}</td>
+                    <td>
+                      <div class="calib-review" data-track={row.track} data-id={row.id}>
+                        <input type="number" min="0" max="100" class="calib-actual-input" placeholder="0-100" value={row.actual ?? ''} />
+                        <button type="button" class="btn-outline calib-save-btn" style="padding:0.3rem 0.7rem;font-size:0.75rem;">Save</button>
+                      </div>
+                    </td>
+                    <td class="td-mono td-date">{row.reviewedAt ? new Date(row.reviewedAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : '—'}</td>
+                    <td>
+                      <input type="text" class="calib-notes-input" data-track={row.track} data-id={row.id} placeholder="Notes..." value={row.notes ?? ''} style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px;padding:0.3rem 0.5rem;font-size:0.78rem;color:var(--text-primary);width:160px;" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -884,21 +1381,7 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
     white-space: nowrap;
   }
 
-  .td-skills-wrap { position: relative; max-width: 220px; padding-top: 0.9rem; }
-  .exp-corner-badge {
-    position: absolute;
-    top: -0.15rem;
-    right: 0;
-    font-family: var(--font-mono);
-    font-size: 0.58rem;
-    font-weight: 700;
-    color: var(--cyan);
-    background: rgba(0, 229, 255, 0.08);
-    border: 1px solid rgba(0, 229, 255, 0.25);
-    border-radius: 3px;
-    padding: 0.05rem 0.3rem;
-    line-height: 1.4;
-  }
+  .td-skills-wrap { max-width: 220px; }
   .td-skills { display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 220px; }
 
   .skill-tag {
@@ -910,7 +1393,29 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
     padding: 0.15rem 0.4rem;
     color: var(--text-muted);
     white-space: nowrap;
+    cursor: help;
   }
+  .skill-tag-more {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    padding: 0.15rem 0.2rem;
+  }
+  /* Proficiency-tinted skill tags: green (new) → red (expert) */
+  .skill-tag.prof-beginner     { color: #4ade80; background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.22); }
+  .skill-tag.prof-intermediate { color: #facc15; background: rgba(250,204,21,0.08); border-color: rgba(250,204,21,0.22); }
+  .skill-tag.prof-advanced     { color: #fb923c; background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.25); }
+  .skill-tag.prof-expert       { color: #ef4444; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.28); font-weight: 600; }
+
+  /* Work history cards (admin detail panel) */
+  .work-history-cards { display: flex; flex-direction: column; gap: 0.6rem; max-width: 760px; }
+  .wh-card { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 0.7rem 0.9rem; }
+  .wh-card-head { display: flex; gap: 0.4rem; align-items: baseline; font-size: 0.85rem; color: var(--text-primary); font-weight: 600; }
+  .wh-card-company { color: var(--text-muted); font-weight: 400; }
+  .wh-card-dates { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .wh-card-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin-top: 0.4rem; }
+  .wh-card-reason { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem; }
+  .wh-card-reason strong { color: var(--text-secondary); }
 
   .score-cell {
     font-family: var(--font-mono);
@@ -1025,6 +1530,52 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   .money-flag.flag-low  { color: #10b981; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
   .money-flag.flag-mid  { color: #FFB74D; background: rgba(255,167,77,0.12); border: 1px solid rgba(255,167,77,0.25); }
   .money-flag.flag-high { color: #FF5252; background: rgba(255,82,82,0.12); border: 1px solid rgba(255,82,82,0.28); }
+
+  /* Stage 1 screen control: pass / hold / reject */
+  .screen-control { display: flex; gap: 0.25rem; }
+  .screen-btn {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 700;
+    padding: 0.2rem 0.45rem;
+    border-radius: 4px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .screen-btn:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.25); }
+  .screen-btn.screen-pass.active   { color: #10b981; background: rgba(16,185,129,0.14); border-color: rgba(16,185,129,0.35); }
+  .screen-btn.screen-hold.active   { color: #FFB74D; background: rgba(255,167,77,0.14); border-color: rgba(255,167,77,0.35); }
+  .screen-btn.screen-reject.active { color: #FF5252; background: rgba(255,82,82,0.14); border-color: rgba(255,82,82,0.35); }
+
+  /* Stage 3 interviewer score entry (1/3/5 anchored) + Stage 5 mechanical roll-up */
+  .iscore-control { display: flex; gap: 0.25rem; margin-left: auto; }
+  .iscore-btn {
+    font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700;
+    width: 22px; height: 22px; border-radius: 4px; cursor: pointer;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-muted); transition: all 0.15s ease;
+  }
+  .iscore-btn:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.25); }
+  .iscore-btn.active { color: var(--cyan); background: rgba(232,25,44,0.14); border-color: rgba(232,25,44,0.4); }
+  .td-overall { font-weight: 700; }
+  .th-sortable { cursor: pointer; user-select: none; }
+  .th-sortable:hover { color: var(--cyan); }
+
+  /* Stage 6 calibration tab */
+  .calibration-intro { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.25rem; max-width: 760px; }
+  .calib-review { display: flex; gap: 0.4rem; align-items: center; }
+  .calib-actual-input {
+    width: 64px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.3rem 0.5rem; font-size: 0.78rem; color: var(--text-primary); font-family: var(--font-mono);
+  }
+  .calib-hire-btn { margin-top: 0.5rem; }
+  .hire-outcome { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .hire-toggle-btn.is-hired { color: #10b981; border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.08); }
+  .hire-note { font-size: 0.76rem; color: var(--text-muted); }
   /* Hover-tip cues (native title popups: what the number means, good vs bad) */
   .score-breakdown {
     background: rgba(255,255,255,0.025);
@@ -1046,11 +1597,28 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   .th-tip { text-decoration: underline dotted rgba(255,255,255,0.3); text-underline-offset: 3px; }
   .trait-mini.has-tip:hover .trait-mini-head span:first-child { color: var(--cyan); }
   /* Large profile photo header in detail panel */
-  .builder-photo-header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem; }
-  .builder-photo-large { width: 96px; height: 96px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(255,255,255,0.12); flex-shrink: 0; }
-  .builder-photo-placeholder { display: flex; align-items: center; justify-content: center; background: rgba(232,25,44,0.12); color: var(--cyan); font-size: 2rem; font-weight: 700; text-transform: uppercase; }
-  .builder-photo-name { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.3rem; }
-  .builder-photo-meta { font-size: 0.82rem; color: var(--text-muted); text-transform: capitalize; }
+  .builder-photo-large { width: 300px; height: 300px; border-radius: 16px; object-fit: cover; border: 2px solid rgba(255,255,255,0.12); flex-shrink: 0; }
+  .builder-photo-placeholder { display: flex; align-items: center; justify-content: center; background: rgba(232,25,44,0.12); color: var(--cyan); font-size: 5rem; font-weight: 700; text-transform: uppercase; }
+  .builder-photo-name { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem; }
+  .builder-photo-meta { font-size: 0.78rem; color: var(--text-muted); text-transform: capitalize; margin-bottom: 0.6rem; }
+  @media (max-width: 900px) { .builder-photo-large { width: 220px; height: 220px; } }
+  @media (max-width: 640px) { .builder-photo-large { width: 160px; height: 160px; } }
+  /* Job-application overview (mirrors the builder card: one bordered card, photo left, body fills its height) */
+  .app-overview-card { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08); border-left: 4px solid var(--cyan); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .app-overview { display: flex; gap: 1.5rem; align-items: stretch; }
+  .app-overview-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .app-overview-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; }
+  .app-photo-info { min-width: 0; }
+  .app-photo-overall { flex-shrink: 0; text-align: center; padding: 0.5rem 1rem; border-radius: 10px; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.08); }
+  .app-photo-overall-val { display: block; font-size: 1.9rem; font-weight: 800; color: var(--cyan); line-height: 1; }
+  .app-photo-overall-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
+  /* Inside the card the breakdown is a section, not its own box — divider, no chrome */
+  .app-overview-body .score-breakdown { margin: auto 0 0; padding: 1rem 0 0; background: none; border: none; border-top: 1px solid rgba(255,255,255,0.08); border-radius: 0; }
+  @media (max-width: 768px) {
+    .app-overview { flex-direction: column; align-items: center; text-align: center; }
+    .app-overview-header { flex-direction: column; align-items: center; gap: 0.75rem; }
+    .app-overview-body .score-breakdown { text-align: left; }
+  }
   /* Written answer blocks with question + guidance */
   .answer-block { background: rgba(0,0,0,0.18); border-radius: 8px; padding: 1.1rem 1.25rem; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.06); }
   .answer-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--cyan); font-weight: 700; margin-bottom: 0.5rem; }
@@ -1066,6 +1634,43 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   .tag-bad { color: #FF5252; background: rgba(255,82,82,0.15); }
   .answer-their-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.35rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
   .answer-text { font-size: 0.9rem; color: var(--text-primary); line-height: 1.6; white-space: pre-wrap; }
+
+  /* ── Offline interview guide ── */
+  .iguide-intro { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; margin-top: 0.4rem; }
+  .iguide-intro strong { color: var(--text-secondary); text-transform: capitalize; }
+  .iguide-item { background: rgba(0,0,0,0.18); border-radius: 8px; padding: 1rem 1.15rem; margin-bottom: 0.9rem; border: 1px solid rgba(255,255,255,0.06); border-left-width: 3px; }
+  .ip-border-probe-hard { border-left-color: #ef4444; }
+  .ip-border-verify     { border-left-color: #facc15; }
+  .ip-border-confirm    { border-left-color: #22c55e; }
+  .iguide-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }
+  .iguide-attr { font-size: 0.92rem; font-weight: 600; color: var(--text-primary); }
+  .iguide-score { font-size: 0.78rem; color: var(--text-muted); margin-left: auto; }
+  .ip { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 0.1rem 0.45rem; border-radius: 3px; }
+  .ip-probe-hard, .ip-probe { color: #ef4444; background: rgba(239,68,68,0.14); }
+  .ip-verify  { color: #facc15; background: rgba(250,204,21,0.14); }
+  .ip-confirm { color: #22c55e; background: rgba(34,197,94,0.14); }
+  .iguide-reason { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.7rem; }
+  .iguide-q { background: rgba(255,255,255,0.025); border-radius: 6px; padding: 0.75rem 0.85rem; margin-top: 0.6rem; }
+  .iguide-q-head { margin-bottom: 0.4rem; }
+  .iguide-qtype { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 0.08rem 0.4rem; border-radius: 3px; color: var(--text-muted); background: rgba(255,255,255,0.07); }
+  .qt-behavioral { color: #8ec9ff; background: rgba(56,189,248,0.12); }
+  .qt-situational { color: #c4a3ff; background: rgba(167,139,250,0.12); }
+  .iguide-q-text { font-size: 0.9rem; color: var(--text-primary); line-height: 1.5; margin-bottom: 0.5rem; }
+  .iguide-listen { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.5rem; }
+  .iguide-listen strong { color: var(--text-secondary); }
+  .iguide-tied { font-size: 0.8rem; line-height: 1.5; margin-bottom: 0.5rem; padding: 0.5rem 0.65rem; background: rgba(232,25,44,0.06); border-radius: 5px; border-left: 2px solid var(--cyan-glow); }
+  .iguide-tied-label { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px; color: var(--cyan); font-weight: 700; margin-bottom: 0.2rem; }
+  .iguide-tied-text { color: var(--text-secondary); font-style: italic; white-space: pre-wrap; }
+  .iguide-probes { font-size: 0.8rem; margin-bottom: 0.6rem; }
+  .iguide-probes-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; }
+  .iguide-probes ul { margin: 0.25rem 0 0; padding-left: 1.1rem; color: var(--text-muted); line-height: 1.5; }
+  .iguide-anchors { display: flex; flex-direction: column; gap: 0.3rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
+  .iguide-anchor { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.78rem; line-height: 1.45; color: var(--text-muted); }
+  .anchor-num { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 700; }
+  .anchor-1 .anchor-num { color: #ef4444; background: rgba(239,68,68,0.16); }
+  .anchor-3 .anchor-num { color: #facc15; background: rgba(250,204,21,0.16); }
+  .anchor-5 .anchor-num { color: #22c55e; background: rgba(34,197,94,0.16); }
+
   /* Name link icon (Results next to name) */
   .name-link-icon { font-size: 0.9rem; color: var(--cyan); opacity: 0; transition: opacity 0.2s ease; text-decoration: none; cursor: pointer; }
   .app-row:hover .name-link-icon { opacity: 1; }
@@ -1075,17 +1680,20 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   .verdict-card.verdict-good   { background: rgba(56,189,248,0.07); border-left-color: #38bdf8; }
   .verdict-card.verdict-mixed  { background: rgba(255,167,77,0.07); border-left-color: #FFB74D; }
   .verdict-card.verdict-weak   { background: rgba(255,82,82,0.07); border-left-color: #FF5252; }
-  .verdict-top { display: flex; gap: 1.25rem; align-items: center; margin-bottom: 1rem; }
-  .verdict-score-block { text-align: center; flex-shrink: 0; min-width: 90px; }
-  .verdict-score { font-size: 2.5rem; font-weight: 800; line-height: 1; }
+  .verdict-main { display: flex; gap: 1.5rem; align-items: stretch; margin-bottom: 1rem; }
+  .verdict-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .verdict-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; }
+  .verdict-id { min-width: 0; }
+  .verdict-score-block { text-align: center; flex-shrink: 0; padding: 0.6rem 1rem; border-radius: 10px; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.08); }
+  .verdict-score { font-size: 2.6rem; font-weight: 800; line-height: 1; }
   .verdict-strong .verdict-score { color: #10b981; }
   .verdict-good   .verdict-score { color: #38bdf8; }
   .verdict-mixed  .verdict-score { color: #FFB74D; }
   .verdict-weak   .verdict-score { color: #FF5252; }
-  .verdict-score-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-top: 0.25rem; }
-  .verdict-headline { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; }
-  .verdict-why { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
-  .verdict-detail-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding: 1rem 0; border-top: 1px solid rgba(255,255,255,0.08); }
+  .verdict-score-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-top: 0.3rem; }
+  .verdict-headline { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; }
+  .verdict-why { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; }
+  .verdict-detail-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); }
   .verdict-col-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.5rem; }
   .verdict-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .verdict-chip { font-size: 0.74rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 5px; white-space: nowrap; }
@@ -1094,7 +1702,12 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
   .verdict-none { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
   .verdict-money { font-size: 0.83rem; color: var(--text-secondary); padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 6px; margin-bottom: 0.75rem; line-height: 1.5; }
   .verdict-footer { font-size: 0.78rem; color: var(--text-muted); font-style: italic; line-height: 1.5; }
-  @media (max-width: 640px) { .verdict-detail-row { grid-template-columns: 1fr; } .verdict-top { flex-direction: column; text-align: center; } }
+  @media (max-width: 768px) {
+    .verdict-main { flex-direction: column; align-items: center; text-align: center; }
+    .verdict-header { flex-direction: column; align-items: center; gap: 0.75rem; }
+    .verdict-detail-row { grid-template-columns: 1fr; gap: 1rem; text-align: left; }
+    .verdict-chips { justify-content: center; }
+  }
   /* Trait guide toggle & panel */
   .trait-guide-toggle { transition: color 0.2s ease; }
   .trait-guide-toggle:hover { color: var(--text-primary); }
@@ -1129,6 +1742,127 @@ const t = `?token=${encodeURIComponent(adminToken)}`;
       row.classList.toggle('hidden');
       btn.classList.toggle('open');
     });
+  });
+
+  // ── Stage 1 screen: pass / hold / reject ──────────────────────────────────
+  const adminToken = new URLSearchParams(window.location.search).get('token');
+  document.querySelectorAll('.screen-control').forEach(ctrl => {
+    ctrl.querySelectorAll('.screen-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const track  = ctrl.dataset.track;
+        const id     = Number(ctrl.dataset.id);
+        const status = btn.classList.contains('active') ? null : btn.dataset.status;
+        try {
+          const res = await fetch(`/api/screen?token=${encodeURIComponent(adminToken ?? '')}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ track, id, status }),
+          });
+          if (!res.ok) throw new Error('Request failed');
+          ctrl.querySelectorAll('.screen-btn').forEach(b => b.classList.remove('active'));
+          if (status) btn.classList.add('active');
+        } catch (err) {
+          console.error('[admin] screen update failed:', err);
+        }
+      });
+    });
+  });
+
+  // ── Stage 3: interviewer score entry (1/3/5 anchored, mechanical roll-up) ──
+  // Each candidate's detail panel can hold several .iscore-control blocks (one
+  // per scorecard attribute). Clicking a level re-collects every control within
+  // the same panel and POSTs the whole scores object, so partial scoring across
+  // multiple sessions/interviewers just keeps merging into the same record.
+  document.querySelectorAll('.iscore-control').forEach(ctrl => {
+    ctrl.querySelectorAll('.iscore-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const track = ctrl.dataset.track;
+        const id    = Number(ctrl.dataset.id);
+        const panel = ctrl.closest('.detail-panel');
+        const wasActive = btn.classList.contains('active');
+
+        ctrl.querySelectorAll('.iscore-btn').forEach(b => b.classList.remove('active'));
+        if (!wasActive) btn.classList.add('active');
+
+        const scores = {};
+        panel?.querySelectorAll(`.iscore-control[data-track="${track}"][data-id="${id}"]`).forEach(c => {
+          const active = c.querySelector('.iscore-btn.active');
+          if (active) scores[c.dataset.attr] = Number(active.dataset.level);
+        });
+
+        try {
+          const res = await fetch(`/api/interview-score?token=${encodeURIComponent(adminToken ?? '')}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ track, id, scores }),
+          });
+          if (!res.ok) throw new Error('Request failed');
+        } catch (err) {
+          console.error('[admin] interview score update failed:', err);
+        }
+      });
+    });
+  });
+
+  // ── Stage 6: mark hired / unmark ───────────────────────────────────────────
+  document.querySelectorAll('.hire-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const ctrl = btn.closest('.hire-outcome');
+      const track = ctrl.dataset.track;
+      const id = Number(ctrl.dataset.id);
+      const action = btn.classList.contains('is-hired') ? 'unmark-hired' : 'mark-hired';
+      try {
+        const res = await fetch(`/api/calibration?token=${encodeURIComponent(adminToken ?? '')}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ track, id, action }),
+        });
+        if (!res.ok) throw new Error('Request failed');
+        window.location.reload();
+      } catch (err) {
+        console.error('[admin] hire toggle failed:', err);
+      }
+    });
+  });
+
+  // ── Stage 6: save actual performance review (Calibration tab) ─────────────
+  document.querySelectorAll('.calib-save-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const ctrl = btn.closest('.calib-review');
+      const track = ctrl.dataset.track;
+      const id = Number(ctrl.dataset.id);
+      const actualPerformanceScore = Number(ctrl.querySelector('.calib-actual-input').value);
+      const notesInput = document.querySelector(`.calib-notes-input[data-track="${track}"][data-id="${id}"]`);
+      const actualPerformanceNotes = notesInput ? notesInput.value : '';
+      try {
+        const res = await fetch(`/api/calibration?token=${encodeURIComponent(adminToken ?? '')}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ track, id, action: 'review', actualPerformanceScore, actualPerformanceNotes }),
+        });
+        if (!res.ok) throw new Error('Request failed');
+        btn.textContent = 'Saved ✓';
+        setTimeout(() => { btn.textContent = 'Save'; }, 1500);
+      } catch (err) {
+        console.error('[admin] calibration review save failed:', err);
+      }
+    });
+  });
+
+  // ── Stage 5: sort job applications by mechanical Overall roll-up ──────────
+  let overallSortDesc = true;
+  document.getElementById('sort-apps-overall')?.addEventListener('click', () => {
+    const tbody = document.querySelector('#tab-applications tbody');
+    if (!tbody) return;
+    // Rows come in pairs: the visible row, then its hidden detail row.
+    const pairs = [];
+    const rows = Array.from(tbody.querySelectorAll('tr.app-row'));
+    rows.forEach(row => {
+      const detail = row.nextElementSibling;
+      const overall = Number(row.querySelector('.td-overall')?.dataset.overall ?? -1);
+      pairs.push({ row, detail, overall });
+    });
+    pairs.sort((a, b) => overallSortDesc ? b.overall - a.overall : a.overall - b.overall);
+    pairs.forEach(p => { tbody.appendChild(p.row); if (p.detail) tbody.appendChild(p.detail); });
+    overallSortDesc = !overallSortDesc;
   });
 
   // ── CSV export ───────────────────────────────────────────────────────────

@@ -7,13 +7,13 @@ export const POST: APIRoute = async ({ request }) => {
     const body = await request.json();
 
     const {
-      firstName, lastName, email, university, course, yearOfStudy,
+      firstName, lastName, email, photo, university, course, yearOfStudy,
       area, duration, availability, skills,
       github, linkedin,
       whatExcites, ambitiousProject, aiDream,
     } = body;
 
-    if (!firstName || !lastName || !email || !university || !course ||
+    if (!firstName || !lastName || !email || !photo || !university || !course ||
         !yearOfStudy || !area || !duration || !availability ||
         !whatExcites || !ambitiousProject || !aiDream) {
       return new Response(JSON.stringify({ ok: false, error: 'Missing required fields' }), {
@@ -22,10 +22,11 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    await db.insert(internships).values({
+    const [inserted] = await db.insert(internships).values({
       firstName,
       lastName,
       email,
+      photo,
       university,
       course,
       yearOfStudy,
@@ -38,9 +39,9 @@ export const POST: APIRoute = async ({ request }) => {
       whatExcites,
       ambitiousProject,
       aiDream,
-    });
+    }).returning({ id: internships.id });
 
-    return new Response(JSON.stringify({ ok: true }), {
+    return new Response(JSON.stringify({ ok: true, id: inserted.id }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

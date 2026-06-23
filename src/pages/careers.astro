@@ -334,6 +334,15 @@ const values = [
               <input type="email" id="i-email" class="iform-input" placeholder="budi@ui.ac.id" required autocomplete="email" />
             </div>
 
+            <!-- Photo -->
+            <div class="iform-group">
+              <label class="iform-label" for="i-photo">Profile photo <span class="iform-req">*</span></label>
+              <input type="file" id="i-photo" class="iform-input" accept="image/*" required />
+              <div id="i-photo-preview" style="margin-top: 0.5rem; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.05); display: none;">
+                <img id="i-photo-img" style="width: 100%; height: 100%; object-fit: cover;" />
+              </div>
+            </div>
+
             <!-- Row: university + course -->
             <div class="iform-row">
               <div class="iform-group">
@@ -384,7 +393,7 @@ const values = [
             <!-- Row: duration + availability -->
             <div class="iform-row">
               <div class="iform-group">
-                <label class="iform-label" for="i-duration">Duration <span class="iform-req">*</span></label>
+                <label class="iform-label" for="i-duration">Internship Duration <span class="iform-req">*</span></label>
                 <div class="iform-select-wrap">
                   <select id="i-duration" class="iform-select" required>
                     <option value="">— Select —</option>
@@ -1341,18 +1350,36 @@ const values = [
   sty.textContent = '@keyframes ishake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}';
   document.head.appendChild(sty);
 
+  // ── Photo preview for internship ──────────────────────────────────────
+  document.getElementById('i-photo')?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const previewEl = document.getElementById('i-photo-preview');
+      const imgEl = document.getElementById('i-photo-img');
+      if (previewEl && imgEl) {
+        imgEl.src = evt.target?.result;
+        previewEl.style.display = 'block';
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
   // ── Submit ──────────────────────────────────────────────────────────────
   document.getElementById('intern-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const get  = (id) => document.getElementById(id);
     const val  = (id) => get(id)?.value?.trim() ?? '';
+    const photoFile = get('i-photo')?.files?.[0];
 
     // Validate required fields
     const required = [
       { id: 'i-fname',    v: val('i-fname') },
       { id: 'i-lname',   v: val('i-lname') },
       { id: 'i-email',   v: val('i-email') },
+      { id: 'i-photo',   v: photoFile ? 'file' : null },
       { id: 'i-uni',     v: val('i-uni') },
       { id: 'i-course',  v: val('i-course') },
       { id: 'i-year',    v: val('i-year') },
@@ -1379,6 +1406,16 @@ const values = [
       document.querySelectorAll('input[name="intern-skill"]:checked')
     ).map(cb => cb.value);
 
+    // Read photo as data URL
+    let photoDataUrl = null;
+    if (photoFile) {
+      photoDataUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result);
+        reader.readAsDataURL(photoFile);
+      });
+    }
+
     const btn   = document.getElementById('intern-submit-btn');
     const label = document.getElementById('intern-btn-label');
     const icon  = document.getElementById('intern-btn-icon');
@@ -1398,6 +1435,7 @@ const values = [
           firstName:        val('i-fname'),
           lastName:         val('i-lname'),
           email:            val('i-email'),
+          photo:            photoDataUrl,
           university:       val('i-uni'),
           course:           val('i-course'),
           yearOfStudy:      val('i-year'),
@@ -1414,6 +1452,13 @@ const values = [
       });
 
       if (res.ok) {
+        const json = await res.json();
+        // Identity/profile already captured — route straight into the shared
+        // character assessment (Stage 2) instead of a terminal success screen.
+        if (json && json.ok && json.id) {
+          window.location.href = `/startup-builder?track=internship&id=${json.id}`;
+          return;
+        }
         const form    = document.getElementById('intern-form');
         const success = document.getElementById('intern-success');
         if (form)    form.style.display = 'none';

@@ -2,16 +2,12 @@
 import Layout from '../layouts/Layout.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import { ROLES, SKILL_CATEGORIES, SKILL_LEVELS } from '../lib/skills';
 
-const roles = [
-  { value: 'senior-ml-engineer',            label: 'Senior ML Engineer',           dept: 'Engineering', skills: ['PyTorch', 'MLflow', 'Kubernetes', 'Python', 'TensorFlow', 'Docker', 'Ray', 'CUDA'] },
-  { value: 'nlp-llm-specialist',             label: 'NLP / LLM Specialist',          dept: 'Engineering', skills: ['HuggingFace', 'LangChain', 'vLLM', 'Bahasa Indonesia NLP', 'Python', 'RAG', 'Prompt Engineering', 'Fine-tuning'] },
-  { value: 'ai-strategy-consultant',         label: 'AI Strategy Consultant',        dept: 'Consulting',  skills: ['AI Strategy', 'Stakeholder Management', 'Business Analysis', 'Presentations', 'Change Management', 'ROI Modeling'] },
-  { value: 'data-scientist',                 label: 'Data Scientist',                dept: 'Engineering', skills: ['Python', 'SQL', 'Spark', 'Statistical Modeling', 'Machine Learning', 'Data Visualization', 'Experiment Design'] },
-  { value: 'computer-vision-engineer',       label: 'Computer Vision Engineer',      dept: 'Engineering', skills: ['OpenCV', 'YOLO', 'TensorRT', 'ONNX', 'Python', 'Deep Learning', 'Object Detection', 'Video Analytics'] },
-  { value: 'business-development-manager',  label: 'Business Development Manager',  dept: 'Growth',      skills: ['Enterprise Sales', 'CRM', 'AI Market Knowledge', 'Bahasa Indonesia', 'Negotiation', 'Account Management'] },
-  { value: 'open-application',              label: 'Open Application',              dept: 'General',     skills: ['Python', 'Machine Learning', 'AI Strategy', 'Data Science', 'NLP', 'Computer Vision', 'Leadership', 'Communication'] },
-];
+const roles = ROLES;
+const currentYear = new Date().getFullYear();
+const skillYears: number[] = [];
+for (let y = currentYear; y >= 1990; y--) skillYears.push(y);
 ---
 
 <Layout
@@ -122,8 +118,25 @@ const roles = [
                   <input type="text" id="city" name="city" class="field-input" placeholder="Jakarta" required />
                 </div>
                 <div class="field-group">
-                  <label class="field-label" for="phone">Phone (optional)</label>
-                  <input type="tel" id="phone" name="phone" class="field-input" placeholder="+62 812 xxxx xxxx" autocomplete="tel" />
+                  <label class="field-label" for="phone">Phone</label>
+                  <input type="tel" id="phone" name="phone" class="field-input" placeholder="0812 345 6789" autocomplete="tel" inputmode="numeric" />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label">Profile picture <span class="req">*</span></label>
+                <div class="photo-upload" id="photo-upload">
+                  <div class="photo-preview" id="photo-preview">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/>
+                      <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <div class="photo-actions">
+                    <label class="photo-btn" for="photo-input" id="photo-btn-label">Upload photo</label>
+                    <input type="file" id="photo-input" accept="image/*" hidden />
+                    <span class="photo-hint" id="photo-hint">A clear, recent photo of your face. JPG, PNG, or WebP.</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -185,6 +198,41 @@ const roles = [
                     <div class="skills-bar-fill" id="skills-bar-fill"></div>
                   </div>
                 </div>
+
+                <div class="skills-tip" id="skills-tip">
+                  💡 <strong>Tip:</strong> pick the skills above, or check more from the full catalog below. For each
+                  skill you'll be asked when you started using it and how proficient you are — this helps us understand
+                  your technical background beyond a yes/no checklist.
+                </div>
+
+                <div class="skills-selected-status" id="skills-selected-status">
+                  ✓ Skills selected: <strong id="skills-selected-count">0</strong> skill(s) selected
+                </div>
+
+                <div class="skills-catalog" id="skills-catalog">
+                  {Object.entries(SKILL_CATEGORIES).map(([category, catSkills]) => (
+                    <div class="skill-category">
+                      <div class="skill-category-title">{category}</div>
+                      <div class="skill-category-grid" data-category={category}>
+                        {catSkills.map(skill => (
+                          <label class="skill-check">
+                            <input type="checkbox" class="skill-checkbox" data-skill={skill} data-category={category} />
+                            <span class="skill-check-box"></span>
+                            <span class="skill-check-dot"></span>
+                            <span class="skill-check-label">{skill}</span>
+                            <span class="skill-check-years"></span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  <div class="custom-skill-row">
+                    <input type="text" id="custom-skill-input" class="field-input" placeholder="Don't see your skill? Type it here..." />
+                    <button type="button" class="btn-outline" id="custom-skill-add">Add skill</button>
+                  </div>
+                  <div class="custom-skills-list" id="custom-skills-list"></div>
+                </div>
               </div>
 
               <div class="field-row">
@@ -193,14 +241,62 @@ const roles = [
                   <input type="url" id="linkedin" name="linkedin" class="field-input" placeholder="linkedin.com/in/yourname" required />
                 </div>
                 <div class="field-group">
-                  <label class="field-label" for="portfolio">Portfolio / GitHub (optional)</label>
+                  <label class="field-label" for="portfolio">Portfolio / GitHub</label>
                   <input type="url" id="portfolio" name="portfolio" class="field-input" placeholder="github.com/yourname" />
                 </div>
               </div>
 
               <div class="field-group">
-                <label class="field-label" for="current-org">Current or most recent organisation</label>
-                <input type="text" id="current-org" name="current-org" class="field-input" placeholder="e.g. Gojek, Tokopedia, Telkom" />
+                <label class="field-label">Current or most recent organisation</label>
+                <div class="field-row">
+                  <div class="field-group">
+                    <label class="field-label" for="current-org-company">Company</label>
+                    <input type="text" id="current-org-company" class="field-input" placeholder="e.g. Gojek, Tokopedia, Telkom" />
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="current-org-position">Position</label>
+                    <input type="text" id="current-org-position" class="field-input" placeholder="e.g. Data Analyst" />
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field-group">
+                    <label class="field-label" for="current-org-start">Start date</label>
+                    <input type="month" id="current-org-start" class="field-input" />
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="current-org-end">End date</label>
+                    <input type="month" id="current-org-end" class="field-input" />
+                  </div>
+                </div>
+                <label class="wh-current-check">
+                  <input type="checkbox" id="current-org-current" />
+                  <span>I currently work here</span>
+                </label>
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label" for="current-salary">Current salary</label>
+                  <div class="money-input-wrap">
+                    <span class="money-prefix">Rp.</span>
+                    <input type="text" id="current-salary" name="current-salary" class="field-input money-input" placeholder="15,000,000" inputmode="numeric" />
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="expected-salary">Expected salary</label>
+                  <div class="money-input-wrap">
+                    <span class="money-prefix">Rp.</span>
+                    <input type="text" id="expected-salary" name="expected-salary" class="field-input money-input" placeholder="20,000,000" inputmode="numeric" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <div class="work-history-header">
+                  <label class="field-label">Work history <span class="field-label-hint">— add as many as you like</span></label>
+                  <button type="button" class="btn-outline btn-sm" id="work-history-add">+ Add role</button>
+                </div>
+                <div id="work-history-list"></div>
               </div>
             </div>
 
@@ -338,18 +434,13 @@ const roles = [
             </div>
             <h2 class="success-title">Application Received</h2>
             <p class="success-sub">
-              Our AI has flagged your profile for human review. You'll hear from us within
+              Your profile is queued for human review. You'll hear from us within
               <strong>3–5 business days</strong> — often sooner.
             </p>
             <div class="success-stats" id="success-stats">
               <div class="success-stat">
-                <span class="success-stat-val" id="final-score">—</span>
-                <span class="success-stat-label">AI Match Score</span>
-              </div>
-              <div class="success-stat-div"></div>
-              <div class="success-stat">
                 <span class="success-stat-val" id="final-skills">—</span>
-                <span class="success-stat-label">Skills Matched</span>
+                <span class="success-stat-label">Skills Listed</span>
               </div>
               <div class="success-stat-div"></div>
               <div class="success-stat">
@@ -364,11 +455,89 @@ const roles = [
 
         </div><!-- /form-container -->
 
+        <!-- ── Skill Details Modal ── -->
+        <div class="skill-modal-overlay hidden" id="skill-modal-overlay">
+          <div class="skill-modal">
+            <div class="skill-modal-title">Skill Details: <span id="skill-modal-name"></span></div>
+            <div class="field-group">
+              <label class="field-label" for="skill-modal-year">Year started using this skill <span class="req">*</span></label>
+              <input type="text" id="skill-modal-year" class="field-input" placeholder="YYYY" inputmode="numeric" maxlength="4" list="skill-year-options" autocomplete="off" required />
+              <datalist id="skill-year-options">
+                {skillYears.map(y => <option value={y}></option>)}
+              </datalist>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="skill-modal-level">Proficiency level <span class="req">*</span></label>
+              <div class="field-select-wrap">
+                <select id="skill-modal-level" class="field-select">
+                  <option value="">— Select level —</option>
+                  {SKILL_LEVELS.map(l => <option value={l.value}>{l.label}</option>)}
+                </select>
+                <svg class="select-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="skill-modal-actions">
+              <button type="button" class="btn-outline" id="skill-modal-cancel">Cancel</button>
+              <button type="button" class="btn-primary" id="skill-modal-save">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Work History Row Template ── -->
+        <template id="work-history-row-template">
+          <div class="work-history-row">
+            <button type="button" class="work-history-remove" title="Remove">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label">Company</label>
+                <input type="text" class="field-input wh-company" placeholder="e.g. Gojek" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Position</label>
+                <input type="text" class="field-input wh-position" placeholder="e.g. Data Analyst" />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label">Start date</label>
+                <input type="month" class="field-input wh-start" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">End date</label>
+                <input type="month" class="field-input wh-end" />
+              </div>
+            </div>
+            <label class="wh-current-check">
+              <input type="checkbox" class="wh-current" />
+              <span class="wh-current-label">I currently work here</span>
+            </label>
+            <div class="field-group wh-reason-group">
+              <label class="field-label">Reason for leaving</label>
+              <input type="text" class="field-input wh-reason" placeholder="e.g. Looking for new challenges, company restructuring..." />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Salary at this role</label>
+              <div class="money-input-wrap">
+                <span class="money-prefix">Rp.</span>
+                <input type="text" class="field-input money-input wh-salary" placeholder="15,000,000" inputmode="numeric" />
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">What did you work on?</label>
+              <textarea class="field-textarea wh-description" rows="2" placeholder="Brief description of your role and impact..."></textarea>
+            </div>
+          </div>
+        </template>
+
         <!-- ─── AI Panel ─── -->
         <aside class="ai-panel glass-card">
           <div class="ai-panel-header">
             <div class="ai-status-dot"></div>
-            <span class="ai-panel-title">AI SCREENING</span>
+            <span class="ai-panel-title">APPLICATION PROGRESS</span>
           </div>
 
           <!-- Score Gauge -->
@@ -377,13 +546,13 @@ const roles = [
               <circle class="gauge-track"    cx="60" cy="60" r="50" />
               <circle class="gauge-fill"     cx="60" cy="60" r="50" id="gauge-fill" />
               <text class="gauge-pct"  x="60" y="54" text-anchor="middle" dominant-baseline="middle" id="gauge-pct-text">0%</text>
-              <text class="gauge-label" x="60" y="70" text-anchor="middle">Match Score</text>
+              <text class="gauge-label" x="60" y="70" text-anchor="middle">Completeness</text>
             </svg>
           </div>
 
           <!-- Criteria Checklist -->
           <div class="criteria-section">
-            <div class="criteria-title">CANDIDATE CRITERIA</div>
+            <div class="criteria-title">PROFILE CHECKLIST</div>
             <div class="criteria-list" id="criteria-list">
               <div class="criterion" data-key="role">
                 <div class="crit-icon pending">
@@ -419,14 +588,14 @@ const roles = [
                 <div class="crit-icon pending">
                   <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="3" fill="currentColor"/></svg>
                 </div>
-                <span>Story quality assessed</span>
+                <span>Story added</span>
               </div>
             </div>
           </div>
 
           <!-- AI Status Message -->
           <div class="ai-status-section">
-            <div class="ai-status-label">AI STATUS</div>
+            <div class="ai-status-label">STATUS</div>
             <div class="ai-message-box">
               <div class="ai-message-cursor"></div>
               <div class="ai-message-text" id="ai-message-text">Waiting for application data...</div>
@@ -696,6 +865,21 @@ const roles = [
 
   .field-group { display: flex; flex-direction: column; gap: 0.4rem; }
 
+  /* ── Photo upload ── */
+  .photo-upload { display: flex; align-items: center; gap: 1.1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,0.02); }
+  .photo-upload.invalid { border-color: rgba(232,25,44,0.5); }
+  .photo-preview { flex-shrink: 0; width: 64px; height: 64px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--border); background: rgba(232,25,44,0.06); color: var(--text-muted); }
+  .photo-preview.filled { border-color: var(--cyan); box-shadow: 0 0 14px rgba(232,25,44,0.18); }
+  .photo-actions { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+  .photo-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem; border-radius: 8px; border: 1px solid var(--cyan-glow); background: transparent; color: var(--cyan); font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: background 0.2s ease; }
+  .photo-btn:hover { background: var(--cyan-dim); }
+  .photo-hint { font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; }
+  .photo-hint.photo-hint-error { color: #FF6B6B; }
+
+  @media (max-width: 640px) {
+    .photo-upload { flex-direction: column; align-items: flex-start; gap: 0.85rem; }
+  }
+
   .field-label {
     font-size: 0.82rem;
     font-weight: 500;
@@ -739,7 +923,7 @@ const roles = [
   }
 
   .field-input.valid { border-color: rgba(16,185,129,0.4); }
-  .field-input.invalid { border-color: rgba(232,25,44,0.5); }
+  .field-input.invalid, .field-select.invalid { border-color: rgba(232,25,44,0.5); }
 
   .field-select-wrap { position: relative; }
 
@@ -871,6 +1055,12 @@ const roles = [
     transform: translateY(-1px);
   }
 
+  :global(.skill-chip.disabled) {
+    opacity: 0.35;
+    pointer-events: none;
+    transform: none;
+  }
+
   :global(.skill-chip.selected) {
     border-color: transparent;
     background:
@@ -938,6 +1128,270 @@ const roles = [
     background-clip: text;
     font-weight: 600;
   }
+
+  :global(.skill-name-years) {
+    font-size: 0.72rem;
+    font-weight: 400;
+    -webkit-text-fill-color: var(--text-muted);
+    color: var(--text-muted);
+    background: none;
+  }
+
+  .money-input-wrap {
+    position: relative;
+  }
+
+  .money-prefix {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    pointer-events: none;
+  }
+
+  .money-input {
+    padding-left: 2.4rem !important;
+  }
+
+  .skills-tip {
+    margin-top: 0.75rem;
+    padding: 0.65rem 0.8rem;
+    border-radius: 8px;
+    background: rgba(255, 196, 0, 0.07);
+    border: 1px solid rgba(255, 196, 0, 0.2);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+  }
+
+  .skills-selected-status {
+    margin-top: 0.75rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: 8px;
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    font-size: 0.8rem;
+    color: #22c55e;
+    font-family: var(--font-mono);
+  }
+
+  .skills-catalog {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.015);
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .skill-category-title {
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .skill-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem 1rem;
+  }
+
+  @media (min-width: 720px) {
+    .skill-category-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .skill-check {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .skill-check input { display: none; }
+
+  .skill-check-box {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    border: 1.5px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    position: relative;
+    transition: all 0.15s ease;
+  }
+
+  .skill-check input:checked + .skill-check-box {
+    background: var(--cyan);
+    border-color: var(--cyan);
+  }
+
+  .skill-check input:checked + .skill-check-box::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+  }
+
+  .skill-check input:disabled + .skill-check-box { opacity: 0.35; cursor: not-allowed; }
+  .skill-check:has(input:disabled) { cursor: not-allowed; opacity: 0.6; }
+
+  .skill-check input:checked ~ .skill-check-label { color: var(--text-primary); }
+
+  .skill-check-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: none;
+    background: var(--text-muted);
+  }
+
+  .skill-check-dot.show { display: inline-block; }
+  .skill-check-dot.prof-beginner     { background: #22c55e; }
+  .skill-check-dot.prof-intermediate { background: #facc15; }
+  .skill-check-dot.prof-advanced     { background: #fb923c; }
+  .skill-check-dot.prof-expert       { background: #ef4444; }
+
+  .skill-check-years {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .custom-skill-row {
+    display: flex;
+    gap: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .custom-skill-row .field-input { flex: 1; }
+
+  .custom-skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .skill-chip-remove {
+    margin-left: 0.3rem;
+    font-size: 0.95rem;
+    line-height: 1;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .skill-chip-remove:hover { color: var(--cyan); }
+
+  /* ── Skill Details Modal ── */
+  .skill-modal-overlay.hidden { display: none; }
+
+  .skill-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 1rem;
+  }
+
+  .skill-modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-hover);
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .skill-modal-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .skill-modal-title span { color: var(--cyan); }
+
+  .skill-modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  /* ── Work History ── */
+  .work-history-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.78rem; }
+
+  .work-history-row {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: rgba(255,255,255,0.015);
+  }
+
+  .work-history-remove {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .work-history-remove:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  .wh-current-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .wh-reason-group.hidden { display: none; }
 
   .skills-match-bar {
     margin-top: 0.75rem;
@@ -1497,17 +1951,23 @@ const roles = [
   }
 </style>
 
-<script is:inline define:vars={{ roles }}>
+<script is:inline define:vars={{ roles, SKILL_CATEGORIES, SKILL_LEVELS }}>
   // ── State ──────────────────────────────────────────────────────────────
   let currentStep = 1;
   let criteriaState = { role: false, identity: false, experience: false, skills: false, portfolio: false, story: false };
-  let selectedSkills = new Set();
+  // skill name -> { skill, category, yearStarted, proficiency }
+  let skillEntries = new Map();
   let currentRoleSkills = [];
   let aiMsgInterval = null;
+  let photoDataUrl = null;
   let matchScore = 0;
+  let pendingSkill = null; // { skill, category, checkboxEl } awaiting modal save/cancel
 
   const roleSkillsMap = {};
   roles.forEach(r => { roleSkillsMap[r.value] = r.skills; });
+
+  const skillLevelWeight = {};
+  SKILL_LEVELS.forEach(l => { skillLevelWeight[l.value] = l.weight; });
 
   const roleQuestions = {
     'senior-ml-engineer':           'Describe a time you scaled an ML model from prototype to production. What bottlenecks did you encounter?',
@@ -1522,18 +1982,15 @@ const roles = [
   const aiMessages = [
     'Waiting for application data...',
     'Parsing candidate profile...',
-    'Cross-referencing skill matrix...',
-    'Evaluating cultural alignment signals...',
-    'Running semantic analysis on responses...',
-    'Comparing against top performer profiles...',
-    'Assessing communication clarity...',
+    'Organising skills and experience...',
+    'Structuring work history...',
+    'Compiling written responses...',
+    'Linking portfolio and contact details...',
     'Building candidate profile graph...',
-    'Calculating role alignment score...',
-    'Reviewing portfolio signals...',
-    'Analysing career trajectory...',
-    'Checking domain expertise depth...',
-    'Scoring motivation indicators...',
-    'Profiling technical vocabulary...',
+    'Formatting application for reviewer...',
+    'Checking required fields...',
+    'Packaging submission...',
+    'Queuing for human review...',
   ];
 
   // ── DOM refs ────────────────────────────────────────────────────────────
@@ -1551,6 +2008,23 @@ const roles = [
   const roleHint       = document.getElementById('role-hint');
   const emailHint      = document.getElementById('email-hint');
   const whyHint        = document.getElementById('why-hint');
+
+  const skillsCatalog     = document.getElementById('skills-catalog');
+  const skillsSelectedCount = document.getElementById('skills-selected-count');
+  const customSkillInput  = document.getElementById('custom-skill-input');
+  const customSkillAdd    = document.getElementById('custom-skill-add');
+  const customSkillsList  = document.getElementById('custom-skills-list');
+
+  const skillModalOverlay = document.getElementById('skill-modal-overlay');
+  const skillModalName    = document.getElementById('skill-modal-name');
+  const skillModalYear    = document.getElementById('skill-modal-year');
+  const skillModalLevel   = document.getElementById('skill-modal-level');
+  const skillModalCancel  = document.getElementById('skill-modal-cancel');
+  const skillModalSave    = document.getElementById('skill-modal-save');
+
+  const workHistoryList     = document.getElementById('work-history-list');
+  const workHistoryAdd      = document.getElementById('work-history-add');
+  const workHistoryTemplate = document.getElementById('work-history-row-template');
 
   // ── Gauge SVG gradient ──────────────────────────────────────────────────
   const gaugeSvg = document.querySelector('.gauge-svg');
@@ -1630,6 +2104,7 @@ const roles = [
       if (!lname) { shakeField('lname'); return false; }
       if (!email || !email.includes('@')) { shakeField('email'); return false; }
       if (!city)  { shakeField('city');  return false; }
+      if (!photoDataUrl) { shakeField('photo-upload'); return false; }
       return true;
     }
     if (n === 2) {
@@ -1700,29 +2175,25 @@ const roles = [
     }
     currentRoleSkills.forEach(skill => {
       const chip = document.createElement('div');
-      const isSelected = selectedSkills.has(skill);
+      const isSelected = skillEntries.has(skill);
       chip.className = 'skill-chip' + (isSelected ? ' selected' : '');
+      chip.dataset.skill = skill;
+      const entry = skillEntries.get(skill);
+      const yearsLabel = entry ? skillYearsLabel(entry.yearStarted) : '';
       chip.innerHTML = `
         <span class="skill-tick-badge">
           <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
             <path d="M1.5 4.5l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </span>
-        <span class="skill-name-text">${skill}</span>
+        <span class="skill-name-text">${skill}${yearsLabel ? ` <span class="skill-name-years">(${yearsLabel})</span>` : ''}</span>
       `;
       chip.addEventListener('click', () => {
-        if (selectedSkills.has(skill)) {
-          selectedSkills.delete(skill);
-          chip.classList.remove('selected');
+        if (skillEntries.has(skill)) {
+          removeSkill(skill);
         } else {
-          selectedSkills.add(skill);
-          chip.classList.add('selected');
-          // burst flash
-          chip.classList.add('flash');
-          setTimeout(() => chip.classList.remove('flash'), 500);
+          openSkillModal(skill, '');
         }
-        updateSkillBar();
-        updateScore();
       });
       skillsContainer.appendChild(chip);
     });
@@ -1731,10 +2202,364 @@ const roles = [
 
   function updateSkillBar() {
     const total = currentRoleSkills.length;
-    const matched = currentRoleSkills.filter(s => selectedSkills.has(s)).length;
+    const matched = currentRoleSkills.filter(s => skillEntries.has(s)).length;
     const pct = total > 0 ? Math.round((matched / total) * 100) : 0;
     if (matchPct) matchPct.textContent = pct + '%';
     if (matchBar) matchBar.style.width = pct + '%';
+    if (skillsSelectedCount) skillsSelectedCount.textContent = String(skillEntries.size);
+  }
+
+  function skillYearsLabel(yearStarted) {
+    const y = parseInt(yearStarted, 10);
+    if (!y) return '';
+    const years = Math.max(new Date().getFullYear() - y, 0);
+    return `${years} year${years === 1 ? '' : 's'}`;
+  }
+
+  function updateCatalogSkillLabel(skill) {
+    const box = skillsCatalog.querySelector(`.skill-checkbox[data-skill="${cssEscape(skill)}"]`);
+    if (!box) return;
+    const label = box.closest('.skill-check');
+    const dot = label?.querySelector('.skill-check-dot');
+    const yearsEl = label?.querySelector('.skill-check-years');
+    const entry = skillEntries.get(skill);
+    if (dot) {
+      dot.className = 'skill-check-dot';
+      if (entry) dot.classList.add('show', `prof-${entry.proficiency}`);
+    }
+    if (yearsEl) yearsEl.textContent = entry ? `(${skillYearsLabel(entry.yearStarted)})` : '';
+  }
+
+  // ── Skill selection UI sync (quick chips + catalog checkboxes) ─────────
+  function setSkillChecked(skill, checked) {
+    const chip = skillsContainer.querySelector(`.skill-chip[data-skill="${cssEscape(skill)}"]`);
+    if (chip) {
+      chip.classList.toggle('selected', checked);
+      const textEl = chip.querySelector('.skill-name-text');
+      if (textEl) {
+        const entry = skillEntries.get(skill);
+        const yearsLabel = entry ? skillYearsLabel(entry.yearStarted) : '';
+        textEl.innerHTML = `${skill}${yearsLabel ? ` <span class="skill-name-years">(${yearsLabel})</span>` : ''}`;
+      }
+    }
+    const box = skillsCatalog.querySelector(`.skill-checkbox[data-skill="${cssEscape(skill)}"]`);
+    if (box) box.checked = checked;
+    updateCatalogSkillLabel(skill);
+  }
+
+  function cssEscape(s) {
+    return String(s).replace(/["\\]/g, '\\$&');
+  }
+
+  function setOtherSkillControlsDisabled(skill, disabled) {
+    skillsContainer.querySelectorAll('.skill-chip').forEach(chip => {
+      if (chip.dataset.skill !== skill) chip.classList.toggle('disabled', disabled);
+    });
+    skillsCatalog.querySelectorAll('.skill-checkbox').forEach(box => {
+      if (box.dataset.skill !== skill) box.disabled = disabled;
+    });
+  }
+
+  function removeSkill(skill) {
+    skillEntries.delete(skill);
+    setSkillChecked(skill, false);
+    renderCustomSkills();
+    updateSkillBar();
+    updateScore();
+  }
+
+  // Custom skills (typed in, not part of the role chips or catalog) have
+  // nowhere else to render — give them their own chip list.
+  function renderCustomSkills() {
+    if (!customSkillsList) return;
+    customSkillsList.innerHTML = '';
+    for (const [skill, entry] of skillEntries) {
+      if (entry.category !== 'Custom') continue;
+      const yearsLabel = skillYearsLabel(entry.yearStarted);
+      const chip = document.createElement('div');
+      chip.className = 'skill-chip selected custom-skill-chip';
+      chip.dataset.skill = skill;
+      chip.innerHTML = `
+        <span class="skill-check-dot show prof-${entry.proficiency}"></span>
+        <span class="skill-name-text">${skill}${yearsLabel ? ` <span class="skill-name-years">(${yearsLabel})</span>` : ''}</span>
+        <span class="skill-chip-remove" title="Remove">&times;</span>
+      `;
+      chip.querySelector('.skill-chip-remove')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeSkill(skill);
+      });
+      customSkillsList.appendChild(chip);
+    }
+  }
+
+  // ── Skill Details modal ─────────────────────────────────────────────────
+  function openSkillModal(skill, category) {
+    pendingSkill = { skill, category };
+    if (skillModalName)  skillModalName.textContent = skill;
+    if (skillModalYear)  skillModalYear.value = '';
+    if (skillModalLevel) skillModalLevel.value = '';
+    setOtherSkillControlsDisabled(skill, true);
+    skillModalOverlay?.classList.remove('hidden');
+    skillModalYear?.focus();
+  }
+
+  function closeSkillModal(saved) {
+    if (!saved && pendingSkill) setSkillChecked(pendingSkill.skill, false);
+    if (pendingSkill) setOtherSkillControlsDisabled(pendingSkill.skill, false);
+    pendingSkill = null;
+    skillModalOverlay?.classList.add('hidden');
+  }
+
+  skillModalCancel?.addEventListener('click', () => closeSkillModal(false));
+
+  skillModalSave?.addEventListener('click', () => {
+    if (!pendingSkill) return;
+    const year = skillModalYear.value.trim();
+    const level = skillModalLevel.value;
+    if (!/^\d{4}$/.test(year)) { shakeField('skill-modal-year'); return; }
+    if (!level) { shakeField('skill-modal-level'); return; }
+
+    skillEntries.set(pendingSkill.skill, {
+      skill: pendingSkill.skill,
+      category: pendingSkill.category,
+      yearStarted: year,
+      proficiency: level,
+    });
+    setSkillChecked(pendingSkill.skill, true);
+    closeSkillModal(true);
+    renderCustomSkills();
+    updateSkillBar();
+    updateScore();
+  });
+
+  // ── Skills catalog ───────────────────────────────────────────────────────
+  skillsCatalog?.querySelectorAll('.skill-checkbox').forEach(box => {
+    box.addEventListener('change', () => {
+      const skill    = box.dataset.skill;
+      const category = box.dataset.category;
+      if (box.checked) {
+        openSkillModal(skill, category);
+      } else {
+        removeSkill(skill);
+      }
+    });
+  });
+
+  customSkillAdd?.addEventListener('click', () => {
+    const name = customSkillInput.value.trim();
+    if (!name) { shakeField('custom-skill-input'); return; }
+    if (skillEntries.has(name)) { customSkillInput.value = ''; return; }
+    customSkillInput.value = '';
+    openSkillModal(name, 'Custom');
+  });
+
+  customSkillInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); customSkillAdd?.click(); }
+  });
+
+  // ── Profile photo (downscaled, then encoded to keep files small) ───────────
+  function encodePhoto(canvas, quality) {
+    // AVIF gives the smallest file size, but canvas-encode support is still
+    // patchy across browsers — fall back to WebP, then JPEG, whichever the
+    // browser can actually produce.
+    const avif = canvas.toDataURL('image/avif', quality);
+    if (avif.startsWith('data:image/avif')) return avif;
+    const webp = canvas.toDataURL('image/webp', quality);
+    if (webp.startsWith('data:image/webp')) return webp;
+    return canvas.toDataURL('image/jpeg', quality);
+  }
+
+  function drawToDataUrl(source, w0, h0, maxSize, quality) {
+    const scale = Math.min(1, maxSize / Math.max(w0, h0));
+    const w = Math.max(1, Math.round(w0 * scale));
+    const h = Math.max(1, Math.round(h0 * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(source, 0, 0, w, h);
+    const url = encodePhoto(canvas, quality);
+    if (!url || !url.startsWith('data:image/')) throw new Error('encode produced no image');
+    return url;
+  }
+
+  function fileToDataUrl(file, maxSize = 384, quality = 0.78) {
+    return new Promise((resolve, reject) => {
+      if (!file || !(file.type || '').startsWith('image/')) { reject(new Error('not an image file')); return; }
+      const timer = setTimeout(() => reject(new Error('photo decode timed out')), 20000);
+      const ok = (url) => { clearTimeout(timer); resolve(url); };
+      const fail = (err) => { clearTimeout(timer); reject(err); };
+
+      const viaImg = () => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => { try { ok(drawToDataUrl(img, img.naturalWidth || img.width, img.naturalHeight || img.height, maxSize, quality)); } catch (err) { fail(err); } };
+          img.onerror = () => fail(new Error('image could not be decoded'));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => fail(new Error('file could not be read'));
+        reader.readAsDataURL(file);
+      };
+
+      if (typeof createImageBitmap === 'function') {
+        createImageBitmap(file)
+          .then(bmp => { try { ok(drawToDataUrl(bmp, bmp.width, bmp.height, maxSize, quality)); } catch (err) { fail(err); } })
+          .catch(viaImg);
+      } else {
+        viaImg();
+      }
+    });
+  }
+
+  function readAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = () => reject(new Error('file could not be read'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function setPhotoHint(text, isError) {
+    const hint = document.getElementById('photo-hint');
+    if (!hint) return;
+    hint.textContent = text;
+    hint.classList.toggle('photo-hint-error', !!isError);
+  }
+
+  function showPhotoPreview(url) {
+    const preview = document.getElementById('photo-preview');
+    if (preview) { preview.innerHTML = `<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" />`; preview.classList.add('filled'); }
+    const btn = document.getElementById('photo-btn-label');
+    if (btn) btn.textContent = 'Change photo';
+  }
+
+  document.getElementById('photo-input')?.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    const upload = document.getElementById('photo-upload');
+    setPhotoHint('Reading your photo…', false);
+
+    let rawUrl = null;
+    try { rawUrl = await readAsDataUrl(file); } catch (err) { console.error('[apply] photo read error:', err); }
+    if (rawUrl && rawUrl.startsWith('data:image/')) {
+      photoDataUrl = rawUrl;
+      showPhotoPreview(rawUrl);
+      upload?.classList.remove('invalid');
+      setPhotoHint('A clear, recent photo of your face. JPG, PNG, or WebP.', false);
+    } else {
+      photoDataUrl = null;
+      upload?.classList.add('invalid');
+      setPhotoHint("Couldn't read that image — please try a different photo.", true);
+      return;
+    }
+
+    try {
+      const optimised = await fileToDataUrl(file);
+      if (optimised && optimised.startsWith('data:image/')) {
+        photoDataUrl = optimised;
+        showPhotoPreview(optimised);
+      }
+    } catch (err) {
+      console.warn('[apply] photo optimise skipped, keeping original:', err);
+    }
+  });
+
+  // ── Input masking: phone (digit grouping) & salary (Rp. thousands) ──────
+  const phoneInput = document.getElementById('phone');
+  phoneInput?.addEventListener('input', (e) => {
+    const cursorFromEnd = e.target.value.length - e.target.selectionStart;
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 14);
+    let formatted = digits;
+    if (digits.length > 4 && digits.length <= 8) {
+      formatted = `${digits.slice(0, 4)} ${digits.slice(4)}`;
+    } else if (digits.length > 8) {
+      formatted = `${digits.slice(0, 4)} ${digits.slice(4, 8)} ${digits.slice(8)}`;
+    }
+    e.target.value = formatted;
+    const pos = Math.max(formatted.length - cursorFromEnd, 0);
+    e.target.setSelectionRange(pos, pos);
+  });
+
+  function attachMoneyMask(idOrEl) {
+    const input = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl;
+    input?.addEventListener('input', (e) => {
+      const cursorFromEnd = e.target.value.length - e.target.selectionStart;
+      const digits = e.target.value.replace(/\D/g, '');
+      const formatted = digits ? parseInt(digits, 10).toLocaleString('en-US') : '';
+      e.target.value = formatted;
+      const pos = Math.max(formatted.length - cursorFromEnd, 0);
+      e.target.setSelectionRange(pos, pos);
+    });
+  }
+  attachMoneyMask('current-salary');
+  attachMoneyMask('expected-salary');
+
+  // ── Current / most recent organisation (start/end dates) ────────────────
+  const currentOrgCurrentBox = document.getElementById('current-org-current');
+  const currentOrgEndInput   = document.getElementById('current-org-end');
+  currentOrgCurrentBox?.addEventListener('change', () => {
+    if (currentOrgEndInput) {
+      currentOrgEndInput.disabled = currentOrgCurrentBox.checked;
+      if (currentOrgCurrentBox.checked) currentOrgEndInput.value = '';
+    }
+    updateCurrentWorkLabels();
+  });
+
+  // ── Work history (repeatable rows) ──────────────────────────────────────
+  function updateCurrentWorkLabels() {
+    const boxes = Array.from(workHistoryList?.querySelectorAll('.wh-current') ?? []);
+    const orgCurrentBox = document.getElementById('current-org-current');
+    const checkedCount = boxes.filter(b => b.checked).length + (orgCurrentBox?.checked ? 1 : 0);
+    boxes.forEach(b => {
+      const label = b.closest('.wh-current-check')?.querySelector('.wh-current-label');
+      if (label) label.textContent = (b.checked && checkedCount > 1) ? 'I currently work here also' : 'I currently work here';
+    });
+  }
+
+  function addWorkHistoryRow() {
+    if (!workHistoryTemplate || !workHistoryList) return;
+    const node = workHistoryTemplate.content.firstElementChild.cloneNode(true);
+    const removeBtn = node.querySelector('.work-history-remove');
+    const currentBox = node.querySelector('.wh-current');
+    const endInput   = node.querySelector('.wh-end');
+    const salaryInput = node.querySelector('.wh-salary');
+    const reasonGroup = node.querySelector('.wh-reason-group');
+    removeBtn?.addEventListener('click', () => { node.remove(); updateCurrentWorkLabels(); });
+    currentBox?.addEventListener('change', () => {
+      if (endInput) { endInput.disabled = currentBox.checked; if (currentBox.checked) endInput.value = ''; }
+      if (reasonGroup) reasonGroup.classList.toggle('hidden', currentBox.checked);
+      updateCurrentWorkLabels();
+    });
+    attachMoneyMask(salaryInput);
+    workHistoryList.appendChild(node);
+    updateCurrentWorkLabels();
+  }
+
+  workHistoryAdd?.addEventListener('click', addWorkHistoryRow);
+
+  function collectWorkHistory() {
+    if (!workHistoryList) return [];
+    return Array.from(workHistoryList.querySelectorAll('.work-history-row')).map(row => ({
+      company:     row.querySelector('.wh-company')?.value.trim() ?? '',
+      position:    row.querySelector('.wh-position')?.value.trim() ?? '',
+      startDate:   row.querySelector('.wh-start')?.value ?? '',
+      endDate:     row.querySelector('.wh-end')?.value ?? '',
+      current:     row.querySelector('.wh-current')?.checked ?? false,
+      salary:      row.querySelector('.wh-salary')?.value.trim() ?? '',
+      reason:      row.querySelector('.wh-reason')?.value.trim() ?? '',
+      description: row.querySelector('.wh-description')?.value.trim() ?? '',
+    })).filter(w => w.company || w.position);
+  }
+
+  function collectCurrentOrg() {
+    const company  = document.getElementById('current-org-company')?.value.trim() ?? '';
+    const position = document.getElementById('current-org-position')?.value.trim() ?? '';
+    const startDate = document.getElementById('current-org-start')?.value ?? '';
+    const endDate   = document.getElementById('current-org-end')?.value ?? '';
+    const current   = document.getElementById('current-org-current')?.checked ?? false;
+    if (!company && !position) return null;
+    return JSON.stringify({ company, position, startDate, endDate, current });
   }
 
   // ── Role-specific question ─────────────────────────────────────────────
@@ -1766,13 +2591,13 @@ const roles = [
     const exp = document.querySelector('input[name="experience"]:checked');
     if (exp) { criteria.experience = true; score += 15; }
 
-    // Skills
+    // Skills — weighted by proficiency level of each matched role skill
     const total   = currentRoleSkills.length;
-    const matched = currentRoleSkills.filter(s => selectedSkills.has(s)).length;
-    if (matched > 0) {
-      const skillPct = total > 0 ? matched / total : 0;
-      score += Math.round(skillPct * 20);
-      if (matched >= 2) criteria.skills = true;
+    const matched = currentRoleSkills.filter(s => skillEntries.has(s));
+    if (matched.length > 0) {
+      const weightedSum = matched.reduce((sum, s) => sum + (skillLevelWeight[skillEntries.get(s).proficiency] ?? 0.5), 0);
+      score += total > 0 ? Math.round((weightedSum / total) * 20) : 0;
+      if (matched.length >= 2) criteria.skills = true;
     }
 
     // Portfolio
@@ -1859,13 +2684,13 @@ const roles = [
   // ── Analysis animation ─────────────────────────────────────────────────
   const analysisSteps = [
     { msg: 'Parsing application data...',               pct: 12 },
-    { msg: 'Cross-referencing skill requirements...',   pct: 25 },
-    { msg: 'Evaluating culture fit signals...',         pct: 40 },
-    { msg: 'Analysing written response quality...',     pct: 55 },
-    { msg: 'Comparing against benchmark profiles...',   pct: 68 },
-    { msg: 'Scoring motivation indicators...',          pct: 80 },
+    { msg: 'Organising skill profile...',               pct: 25 },
+    { msg: 'Structuring work history...',               pct: 40 },
+    { msg: 'Compiling written responses...',            pct: 55 },
+    { msg: 'Preparing profile for review...',           pct: 68 },
+    { msg: 'Formatting submission...',                  pct: 80 },
     { msg: 'Building candidate profile graph...',       pct: 91 },
-    { msg: 'Finalising match score...',                 pct: 98 },
+    { msg: 'Packaging for reviewer queue...',           pct: 98 },
     { msg: 'Application submitted successfully.',       pct: 100 },
   ];
 
@@ -1877,11 +2702,15 @@ const roles = [
       email:        document.getElementById('email').value.trim(),
       city:         document.getElementById('city').value.trim(),
       phone:        document.getElementById('phone').value.trim() || null,
+      photo:        photoDataUrl,
       experience:   document.querySelector('input[name="experience"]:checked')?.value ?? '',
-      skills:       Array.from(selectedSkills),
+      skills:       Array.from(skillEntries.values()),
       linkedin:     document.getElementById('linkedin').value.trim(),
       portfolio:    document.getElementById('portfolio').value.trim() || null,
-      currentOrg:   document.getElementById('current-org').value.trim() || null,
+      currentOrg:   collectCurrentOrg(),
+      currentSalary:  document.getElementById('current-salary')?.value.trim() || null,
+      expectedSalary: document.getElementById('expected-salary')?.value.trim() || null,
+      workHistory:    collectWorkHistory(),
       whyTmk:       document.getElementById('why-tmk').value.trim(),
       aiProject:    document.getElementById('ai-project').value.trim(),
       roleQuestion: document.getElementById('role-question').value.trim(),
@@ -1901,18 +2730,36 @@ const roles = [
     initAnalysisCanvas();
     aiMsgInterval && clearInterval(aiMsgInterval);
 
-    // POST data to API in the background while animation plays
-    collectFormData().then(data =>
-      fetch('/api/apply', {
+    // POST data to API in the background while animation plays. The candidate's
+    // identity/profile is already captured here — once submitted, route them
+    // straight into the shared character assessment (Stage 2) instead of a
+    // terminal success screen, so the whole funnel is one continuous workflow.
+    let submittedId = null;
+    const submitPromise = collectFormData()
+      .then(data => fetch('/api/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      }).catch(err => console.error('[apply] submit error:', err))
-    );
+      }))
+      .then(res => res.json())
+      .then(json => { if (json && json.ok && json.id) submittedId = json.id; })
+      .catch(err => console.error('[apply] submit error:', err));
 
     let i = 0;
     function next() {
-      if (i >= analysisSteps.length) { setTimeout(showSuccess, 600); return; }
+      if (i >= analysisSteps.length) {
+        setTimeout(() => {
+          submitPromise.finally(() => {
+            if (submittedId) {
+              const roleVal = document.getElementById('role').value;
+              window.location.href = `/startup-builder?track=job&id=${submittedId}&role=${encodeURIComponent(roleVal)}`;
+            } else {
+              showSuccess();
+            }
+          });
+        }, 600);
+        return;
+      }
       const s = analysisSteps[i++];
       if (progressEl) progressEl.style.width = s.pct + '%';
       if (pctEl)      pctEl.textContent = s.pct + '%';
@@ -1933,15 +2780,12 @@ const roles = [
   function showSuccess() {
     const overlay = document.getElementById('analysis-overlay');
     const success = document.getElementById('success-screen');
-    const finalScore  = document.getElementById('final-score');
     const finalSkills = document.getElementById('final-skills');
 
     if (overlay) overlay.classList.add('hidden');
     if (success) success.classList.remove('hidden');
 
-    const matched = currentRoleSkills.filter(s => selectedSkills.has(s)).length;
-    if (finalScore)  finalScore.textContent  = matchScore + '%';
-    if (finalSkills) finalSkills.textContent = matched + '/' + currentRoleSkills.length;
+    if (finalSkills) finalSkills.textContent = String(skillEntries.size);
 
     // mark step-fill 100%
     if (stepFill) stepFill.style.width = '100%';
