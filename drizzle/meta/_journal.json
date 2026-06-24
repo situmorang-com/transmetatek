@@ -110,13 +110,6 @@
     {
       "idx": 15,
       "version": "6",
-      "when": 1782257588111,
-      "tag": "0015_outstanding_swordsman",
-      "breakpoints": true
-    },
-    {
-      "idx": 16,
-      "version": "6",
       "when": 1782257596367,
       "tag": "0016_living_electro",
       "breakpoints": true
